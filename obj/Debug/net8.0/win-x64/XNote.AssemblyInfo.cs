@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("XNote")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bfd1f6b44313b98ca1e49c51eaf85da97327798e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+df29b03afa026e2962235f11467806f6befe6eb2")]
 [assembly: System.Reflection.AssemblyProductAttribute("XNote")]
 [assembly: System.Reflection.AssemblyTitleAttribute("XNote")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
