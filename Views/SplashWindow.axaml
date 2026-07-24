@@ -6,9 +6,7 @@
         CanResize="False"
         SystemDecorations="None"
         WindowStartupLocation="CenterScreen"
-        Background="Transparent"
-        TransparencyLevelHint="Transparent"
-        ExtendClientAreaToDecorationsHint="True"
+        Background="{StaticResource XnBlackBrush}"
         ShowInTaskbar="True">
 
   <Window.Styles>
@@ -19,9 +17,6 @@
 
   <Border Name="RootBorder"
           Background="{StaticResource XnBlackBrush}"
-          CornerRadius="10"
-          BorderBrush="{StaticResource XnBorderBrush}"
-          BorderThickness="1"
           Opacity="0">
     <Border.Transitions>
       <Transitions>
@@ -31,6 +26,8 @@
 
     <Grid RowDefinitions="*,Auto,*,Auto">
 
+      <!-- Emblem: a simple monochrome mark built from primitives, no image
+           asset required. A square notepad glyph with a corner fold. -->
       <Viewbox Grid.Row="1" Width="88" Height="88" HorizontalAlignment="Center">
         <Canvas Width="100" Height="100">
           <Path Fill="Transparent"

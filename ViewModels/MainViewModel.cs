@@ -1,5 +1,7 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Threading;
 using XNote.Models;
 using XNote.Services;
 
@@ -9,10 +11,12 @@ public class MainViewModel : ViewModelBase
 {
     private readonly NoteStore _store;
     private readonly System.Collections.Generic.List<NoteViewModel> _allNotes = new();
+    private readonly DispatcherTimer _saveDebounceTimer;
 
     private string _searchText = string.Empty;
     private NoteViewModel? _selectedNote;
     private int _nextId = 1;
+    private bool _isApplyingFilter;
 
     public ObservableCollection<NoteViewModel> FilteredNotes { get; } = new();
 
@@ -36,6 +40,8 @@ public class MainViewModel : ViewModelBase
             if (SetField(ref _selectedNote, value))
             {
                 OnPropertyChanged(nameof(HasSelection));
+                IsConfirmingDelete = false;
+                RequestDeleteCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -44,8 +50,17 @@ public class MainViewModel : ViewModelBase
 
     public string TotalCountLabel => _allNotes.Count == 1 ? "1 note" : $"{_allNotes.Count} notes";
 
+    private bool _isConfirmingDelete;
+    public bool IsConfirmingDelete
+    {
+        get => _isConfirmingDelete;
+        set => SetField(ref _isConfirmingDelete, value);
+    }
+
     public RelayCommand AddNoteCommand { get; }
-    public RelayCommand DeleteSelectedCommand { get; }
+    public RelayCommand RequestDeleteCommand { get; }
+    public RelayCommand ConfirmDeleteCommand { get; }
+    public RelayCommand CancelDeleteCommand { get; }
 
     public MainViewModel() : this(new NoteStore())
     {
@@ -55,28 +70,49 @@ public class MainViewModel : ViewModelBase
     {
         _store = store;
         AddNoteCommand = new RelayCommand(AddNote);
-        DeleteSelectedCommand = new RelayCommand(DeleteSelected, () => SelectedNote is not null);
+        RequestDeleteCommand = new RelayCommand(() => IsConfirmingDelete = true, () => SelectedNote is not null);
+        ConfirmDeleteCommand = new RelayCommand(DeleteSelected);
+        CancelDeleteCommand = new RelayCommand(() => IsConfirmingDelete = false);
+
+        // Typing triggers PropertyChanged on every keystroke; writing to
+        // disk that often is wasted work and is what made the app feel like
+        // it was hanging on fast input. Coalesce rapid edits into a single
+        // write ~250ms after typing pauses.
+        _saveDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+        _saveDebounceTimer.Tick += (_, _) =>
+        {
+            _saveDebounceTimer.Stop();
+            SaveToDisk();
+        };
 
         LoadFromDisk();
-
-        PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == nameof(SelectedNote))
-            {
-                HookSelectedNoteChanges();
-            }
-        };
-        HookSelectedNoteChanges();
     }
 
-    private void HookSelectedNoteChanges()
+    /// <summary>
+    /// Every NoteViewModel gets exactly one subscription, created once when
+    /// the wrapper is first constructed. This is the only place that should
+    /// ever attach to NoteViewModel.PropertyChanged — do not add more
+    /// subscriptions elsewhere (e.g. reacting to SelectedNote changing),
+    /// or edits will re-trigger saves/filtering multiple times over and the
+    /// app will progressively slow down the more you type.
+    /// </summary>
+    private NoteViewModel WrapAndSubscribe(Note note)
     {
-        if (SelectedNote is null) return;
-        SelectedNote.PropertyChanged += (_, _) =>
+        var vm = new NoteViewModel(note);
+        vm.PropertyChanged += (_, _) =>
         {
-            SaveToDisk();
-            ApplyFilter();
+            _saveDebounceTimer.Stop();
+            _saveDebounceTimer.Start();
+
+            // Re-filtering here keeps the sidebar preview/title in sync as
+            // you type. Guard against re-entrancy: ApplyFilter can reassign
+            // SelectedNote, which must NOT cascade into more filtering.
+            if (!_isApplyingFilter)
+            {
+                ApplyFilter();
+            }
         };
+        return vm;
     }
 
     private void LoadFromDisk()
@@ -85,9 +121,7 @@ public class MainViewModel : ViewModelBase
         _allNotes.Clear();
         foreach (var note in notes.OrderByDescending(n => n.CreatedUtc))
         {
-            var vm = new NoteViewModel(note);
-            vm.PropertyChanged += (_, _) => { SaveToDisk(); ApplyFilter(); };
-            _allNotes.Add(vm);
+            _allNotes.Add(WrapAndSubscribe(note));
         }
 
         _nextId = _allNotes.Count == 0 ? 1 : _allNotes.Max(n => n.Id) + 1;
@@ -103,26 +137,35 @@ public class MainViewModel : ViewModelBase
 
     private void ApplyFilter()
     {
-        var query = SearchText.Trim().ToLowerInvariant();
-
-        var matches = string.IsNullOrEmpty(query)
-            ? _allNotes
-            : _allNotes.Where(n =>
-                n.Title.ToLowerInvariant().Contains(query) ||
-                n.Body.ToLowerInvariant().Contains(query) ||
-                n.TagsText.ToLowerInvariant().Contains(query));
-
-        var previouslySelectedId = SelectedNote?.Id;
-
-        FilteredNotes.Clear();
-        foreach (var n in matches)
+        if (_isApplyingFilter) return;
+        _isApplyingFilter = true;
+        try
         {
-            FilteredNotes.Add(n);
+            var query = SearchText.Trim().ToLowerInvariant();
+
+            var matches = string.IsNullOrEmpty(query)
+                ? _allNotes
+                : _allNotes.Where(n =>
+                    n.Title.ToLowerInvariant().Contains(query) ||
+                    n.Body.ToLowerInvariant().Contains(query) ||
+                    n.TagsText.ToLowerInvariant().Contains(query));
+
+            var previouslySelectedId = SelectedNote?.Id;
+
+            FilteredNotes.Clear();
+            foreach (var n in matches)
+            {
+                FilteredNotes.Add(n);
+            }
+
+            if (previouslySelectedId is not null)
+            {
+                SelectedNote = FilteredNotes.FirstOrDefault(n => n.Id == previouslySelectedId);
+            }
         }
-
-        if (previouslySelectedId is not null)
+        finally
         {
-            SelectedNote = FilteredNotes.FirstOrDefault(n => n.Id == previouslySelectedId);
+            _isApplyingFilter = false;
         }
     }
 
@@ -135,8 +178,7 @@ public class MainViewModel : ViewModelBase
             Body = string.Empty,
         };
 
-        var vm = new NoteViewModel(note);
-        vm.PropertyChanged += (_, _) => { SaveToDisk(); ApplyFilter(); };
+        var vm = WrapAndSubscribe(note);
 
         _allNotes.Insert(0, vm);
         SaveToDisk();
@@ -151,8 +193,9 @@ public class MainViewModel : ViewModelBase
         if (SelectedNote is null) return;
 
         _allNotes.Remove(SelectedNote);
-        SaveToDisk();
         SelectedNote = null;
+        IsConfirmingDelete = false;
+        SaveToDisk();
         ApplyFilter();
         OnPropertyChanged(nameof(TotalCountLabel));
     }

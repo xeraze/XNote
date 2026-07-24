@@ -4,6 +4,12 @@ using System.Runtime.CompilerServices;
 
 namespace XNote.ViewModels;
 
+/// <summary>
+/// Minimal INotifyPropertyChanged base, written by hand rather than pulling
+/// in a full MVVM framework (CommunityToolkit.Mvvm etc.) — this app is small
+/// enough that a hand-rolled base class keeps the dependency list short and
+/// makes the binding plumbing explicit.
+/// </summary>
 public abstract class ViewModelBase : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;

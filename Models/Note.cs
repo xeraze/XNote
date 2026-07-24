@@ -3,6 +3,10 @@ using System.Collections.Generic;
 
 namespace XNote.Models;
 
+/// <summary>
+/// A single note or task. Kept as a plain data record with no UI concerns —
+/// the ViewModel layer wraps this for display/binding purposes.
+/// </summary>
 public class Note
 {
     public int Id { get; set; }
@@ -14,6 +18,7 @@ public class Note
     public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
     public DateTime? DueUtc { get; set; }
 
+    /// <summary>Short preview of the body shown in the list, one line only.</summary>
     public string Preview
     {
         get

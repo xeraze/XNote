@@ -6,6 +6,12 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace XNote.Views;
 
+/// <summary>
+/// Splash screen shown at startup: fades in, sits briefly while the app
+/// "loads" (data is cheap to read here, but the pause keeps the brand
+/// moment from feeling instant/jarring), then fades out and hands off to
+/// the main window.
+/// </summary>
 public partial class SplashWindow : Window
 {
     private readonly Border _root;
@@ -19,6 +25,7 @@ public partial class SplashWindow : Window
 
     private async void OnOpened(object? sender, EventArgs e)
     {
+        // Fade in (the transition on RootBorder.Opacity animates this).
         _root.Opacity = 1;
 
         await Task.Delay(1100);
@@ -31,6 +38,7 @@ public partial class SplashWindow : Window
 
         await Task.Delay(350);
 
+        // Fade out, then swap to the main window.
         _root.Opacity = 0;
         await Task.Delay(650);
 

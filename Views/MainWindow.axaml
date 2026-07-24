@@ -10,7 +10,15 @@
         WindowStartupLocation="CenterScreen">
 
   <Window.Resources>
+    <!-- Small dot indicator style shared by list rows -->
     <SolidColorBrush x:Key="DotOpen" Color="{StaticResource XnTextFaintColor}" />
+
+    <!-- Simple monochrome icon paths (24x24 viewbox), drawn by hand so no
+         external image/icon-font asset is needed. -->
+    <StreamGeometry x:Key="IconPlus">M 12,5 L 12,19 M 5,12 L 19,12</StreamGeometry>
+    <StreamGeometry x:Key="IconTrash">M 5,7 L 19,7 M 9,7 L 9,5 L 15,5 L 15,7 M 7,7 L 7,20 L 17,20 L 17,7 M 10,11 L 10,16 M 14,11 L 14,16</StreamGeometry>
+    <StreamGeometry x:Key="IconClose">M 6,6 L 18,18 M 18,6 L 6,18</StreamGeometry>
+    <StreamGeometry x:Key="IconCheck">M 5,13 L 10,18 L 19,7</StreamGeometry>
   </Window.Resources>
 
   <Window.Styles>
@@ -27,16 +35,43 @@
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
     </Style>
 
+    <Style Selector="Button.danger">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="#5A3030" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="#E08080" />
+      <Setter Property="Padding" Value="14,8" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#2A1616" />
+    </Style>
+
     <Style Selector="Button.iconbtn">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
       <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
-      <Setter Property="Padding" Value="6" />
-      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Padding" Value="8" />
+      <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Width" Value="34" />
+      <Setter Property="Height" Value="34" />
     </Style>
     <Style Selector="Button.iconbtn:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+
+    <Style Selector="Button.iconbtn.deletebtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#2A1616" />
+    </Style>
+    <Style Selector="Button.iconbtn.deletebtn:pointerover PathIcon">
+      <Setter Property="Foreground" Value="#E08080" />
+    </Style>
+
+    <Style Selector="PathIcon">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
     </Style>
 
     <Style Selector="TextBox">
@@ -62,6 +97,7 @@
 
   <Grid ColumnDefinitions="300,1,*">
 
+    <!-- LEFT: sidebar with note list -->
     <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*,Auto" Background="{StaticResource XnBlackBrush}">
 
       <TextBlock Grid.Row="0" Text="XNOTE"
@@ -70,14 +106,22 @@
                  Margin="20,20,20,16" />
 
       <Grid Grid.Row="1" Margin="16,0,16,12" ColumnDefinitions="*,Auto">
-        <TextBox Grid.Column="0"
-                 Watermark="Search…"
-                 Text="{Binding SearchText}"
-                 Height="34" />
+        <Grid Grid.Column="0">
+          <TextBox Watermark="Search notes…"
+                   Text="{Binding SearchText}"
+                   Height="34"
+                   Padding="34,0,10,0" />
+          <Canvas Width="14" Height="14" HorizontalAlignment="Left" Margin="10,0,0,0" IsHitTestVisible="False">
+            <Ellipse Width="9" Height="9" Canvas.Left="0" Canvas.Top="0"
+                     Stroke="{StaticResource XnTextFaintBrush}" StrokeThickness="1.5" />
+            <Line StartPoint="8,8" EndPoint="13,13"
+                  Stroke="{StaticResource XnTextFaintBrush}" StrokeThickness="1.5" />
+          </Canvas>
+        </Grid>
         <Button Grid.Column="1" Classes="iconbtn" Margin="6,0,0,0"
                 Command="{Binding AddNoteCommand}"
-                ToolTip.Tip="New note">
-          <TextBlock Text="+" FontSize="18" />
+                ToolTip.Tip="New note (Ctrl+N)">
+          <PathIcon Data="{StaticResource IconPlus}" Foreground="{StaticResource XnTextBrush}" />
         </Button>
       </Grid>
 
@@ -114,8 +158,10 @@
       </StackPanel>
     </Grid>
 
+    <!-- Divider -->
     <Border Grid.Column="1" Background="{StaticResource XnBorderSubtleBrush}" />
 
+    <!-- RIGHT: editor -->
     <Grid Grid.Column="2" Background="{StaticResource XnBlackBrush}" IsVisible="{Binding HasSelection}">
       <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="32,28,32,24">
 
@@ -128,21 +174,47 @@
 
           <ToggleButton Grid.Column="1" Classes="flat" Margin="6,0,0,0"
                         IsChecked="{Binding SelectedNote.IsTask, Mode=TwoWay}"
+                        ToolTip.Tip="Mark as a task with a done/not-done state"
                         Content="Task" />
           <ToggleButton Grid.Column="2" Classes="flat" Margin="6,0,0,0"
                         IsChecked="{Binding SelectedNote.IsDone, Mode=TwoWay}"
                         IsVisible="{Binding SelectedNote.IsTask}"
+                        ToolTip.Tip="Mark this task as done"
                         Content="Done" />
-          <Button Grid.Column="3" Classes="iconbtn" Margin="10,0,0,0"
-                  Command="{Binding DeleteSelectedCommand}"
-                  ToolTip.Tip="Delete note">
-            <TextBlock Text="✕" FontSize="14" />
-          </Button>
+
+          <!-- Delete: icon button that reveals an inline confirm/cancel
+               strip instead of deleting immediately, so a stray click can't
+               destroy a note. -->
+          <Grid Grid.Column="3" Margin="10,0,0,0">
+            <Button Classes="iconbtn deletebtn"
+                    Command="{Binding RequestDeleteCommand}"
+                    IsVisible="{Binding !IsConfirmingDelete}"
+                    ToolTip.Tip="Delete this note">
+              <PathIcon Data="{StaticResource IconTrash}" Foreground="{StaticResource XnTextDimBrush}" />
+            </Button>
+
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        IsVisible="{Binding IsConfirmingDelete}">
+              <TextBlock Text="Delete this note?"
+                         Foreground="{StaticResource XnTextDimBrush}"
+                         FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
+              <Button Classes="danger" Padding="10,6"
+                      Command="{Binding ConfirmDeleteCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <PathIcon Data="{StaticResource IconCheck}" Width="12" Height="12" Foreground="#E08080" />
+                  <TextBlock Text="Delete" FontSize="12" />
+                </StackPanel>
+              </Button>
+              <Button Classes="flat" Padding="10,6"
+                      Command="{Binding CancelDeleteCommand}"
+                      Content="Cancel" FontSize="12" />
+            </StackPanel>
+          </Grid>
         </Grid>
 
         <TextBox Grid.Row="1" Margin="0,10,0,14"
                  Text="{Binding SelectedNote.TagsText, Mode=TwoWay}"
-                 Watermark="tags, comma, separated"
+                 Watermark="Add tags, separated by commas…"
                  FontSize="12" Height="30" />
 
         <TextBox Grid.Row="2"
@@ -159,10 +231,16 @@
       </Grid>
     </Grid>
 
+    <!-- Empty state when nothing is selected -->
     <Grid Grid.Column="2" Background="{StaticResource XnBlackBrush}" IsVisible="{Binding !HasSelection}">
-      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
-        <TextBlock Text="No note selected" Foreground="{StaticResource XnTextFaintBrush}"
+      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
+        <PathIcon Data="{StaticResource IconPlus}" Width="28" Height="28"
+                   Foreground="{StaticResource XnTextFaintBrush}"
+                   HorizontalAlignment="Center" />
+        <TextBlock Text="No note selected" Foreground="{StaticResource XnTextDimBrush}"
                    FontSize="14" HorizontalAlignment="Center" />
+        <TextBlock Text="Pick a note on the left, or create a new one" Foreground="{StaticResource XnTextFaintBrush}"
+                   FontSize="12" HorizontalAlignment="Center" />
         <Button Classes="flat" HorizontalAlignment="Center"
                 Command="{Binding AddNoteCommand}" Content="Create your first note" />
       </StackPanel>
