@@ -1,0 +1,67 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="XNote.Views.SplashWindow"
+        Title="XNote"
+        Width="420" Height="420"
+        CanResize="False"
+        SystemDecorations="None"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        ShowInTaskbar="True">
+
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="RenderTransform" Value="none" />
+    </Style>
+  </Window.Styles>
+
+  <Border Name="RootBorder"
+          Background="{StaticResource XnBlackBrush}"
+          CornerRadius="10"
+          BorderBrush="{StaticResource XnBorderBrush}"
+          BorderThickness="1"
+          Opacity="0">
+    <Border.Transitions>
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.6" Easing="CubicEaseInOut" />
+      </Transitions>
+    </Border.Transitions>
+
+    <Grid RowDefinitions="*,Auto,*,Auto">
+
+      <Viewbox Grid.Row="1" Width="88" Height="88" HorizontalAlignment="Center">
+        <Canvas Width="100" Height="100">
+          <Path Fill="Transparent"
+                Stroke="{StaticResource XnAccentBrush}"
+                StrokeThickness="3"
+                Data="M 20,10 L 68,10 L 90,32 L 90,90 L 20,90 Z" />
+          <Path Fill="{StaticResource XnPanelBrush}"
+                Stroke="{StaticResource XnAccentBrush}"
+                StrokeThickness="3"
+                StrokeLineJoin="Round"
+                Data="M 68,10 L 68,32 L 90,32 Z" />
+          <Line StartPoint="34,46" EndPoint="76,46" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="3" />
+          <Line StartPoint="34,60" EndPoint="76,60" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="3" />
+          <Line StartPoint="34,74" EndPoint="60,74" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="3" />
+        </Canvas>
+      </Viewbox>
+
+      <StackPanel Grid.Row="3" HorizontalAlignment="Center" Margin="0,28,0,40" Spacing="10">
+        <TextBlock Text="XNOTE"
+                   Foreground="{StaticResource XnAccentBrush}"
+                   FontSize="26"
+                   FontWeight="Light"
+                   LetterSpacing="6"
+                   HorizontalAlignment="Center" />
+        <TextBlock Name="StatusText"
+                   Text="loading"
+                   Foreground="{StaticResource XnTextFaintBrush}"
+                   FontSize="12"
+                   LetterSpacing="2"
+                   HorizontalAlignment="Center" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>

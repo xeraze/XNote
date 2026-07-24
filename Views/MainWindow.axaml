@@ -1,0 +1,172 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:XNote.ViewModels"
+        x:Class="XNote.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="XNote"
+        Width="980" Height="640"
+        MinWidth="720" MinHeight="480"
+        Background="{StaticResource XnBlackBrush}"
+        WindowStartupLocation="CenterScreen">
+
+  <Window.Resources>
+    <SolidColorBrush x:Key="DotOpen" Color="{StaticResource XnTextFaintColor}" />
+  </Window.Resources>
+
+  <Window.Styles>
+    <Style Selector="Button.flat">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Padding" Value="14,8" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.flat:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+
+    <Style Selector="Button.iconbtn">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="Padding" Value="6" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.iconbtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+
+    <Style Selector="TextBox">
+      <Setter Property="Background" Value="{StaticResource XnPanelBrush}" />
+      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="CaretBrush" Value="{StaticResource XnAccentBrush}" />
+      <Setter Property="SelectionBrush" Value="#33FFFFFF" />
+    </Style>
+
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#141414" />
+    </Style>
+  </Window.Styles>
+
+  <Grid ColumnDefinitions="300,1,*">
+
+    <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*,Auto" Background="{StaticResource XnBlackBrush}">
+
+      <TextBlock Grid.Row="0" Text="XNOTE"
+                 Foreground="{StaticResource XnAccentBrush}"
+                 FontSize="15" FontWeight="Medium" LetterSpacing="4"
+                 Margin="20,20,20,16" />
+
+      <Grid Grid.Row="1" Margin="16,0,16,12" ColumnDefinitions="*,Auto">
+        <TextBox Grid.Column="0"
+                 Watermark="Search…"
+                 Text="{Binding SearchText}"
+                 Height="34" />
+        <Button Grid.Column="1" Classes="iconbtn" Margin="6,0,0,0"
+                Command="{Binding AddNoteCommand}"
+                ToolTip.Tip="New note">
+          <TextBlock Text="+" FontSize="18" />
+        </Button>
+      </Grid>
+
+      <ScrollViewer Grid.Row="2">
+        <ListBox ItemsSource="{Binding FilteredNotes}"
+                 SelectedItem="{Binding SelectedNote}"
+                 Background="Transparent"
+                 Margin="12,0,12,0">
+          <ListBox.ItemTemplate>
+            <DataTemplate DataType="vm:NoteViewModel">
+              <Grid ColumnDefinitions="Auto,*" Margin="10,8">
+                <Ellipse Grid.Column="0" Width="7" Height="7" Margin="0,5,10,0"
+                         VerticalAlignment="Top"
+                         Fill="{Binding IsDone, Converter={x:Static vm:Converters.DoneToBrush}}" />
+                <StackPanel Grid.Column="1" Spacing="3">
+                  <TextBlock Text="{Binding Title}"
+                             Foreground="{StaticResource XnTextBrush}"
+                             FontSize="14" FontWeight="Medium"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Text="{Binding Preview}"
+                             Foreground="{StaticResource XnTextDimBrush}"
+                             FontSize="12"
+                             TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </ScrollViewer>
+
+      <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="20,10,20,16" Spacing="16">
+        <TextBlock Text="{Binding TotalCountLabel}"
+                   Foreground="{StaticResource XnTextFaintBrush}" FontSize="11" />
+      </StackPanel>
+    </Grid>
+
+    <Border Grid.Column="1" Background="{StaticResource XnBorderSubtleBrush}" />
+
+    <Grid Grid.Column="2" Background="{StaticResource XnBlackBrush}" IsVisible="{Binding HasSelection}">
+      <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="32,28,32,24">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto">
+          <TextBox Grid.Column="0"
+                    Text="{Binding SelectedNote.Title, Mode=TwoWay}"
+                    FontSize="20" FontWeight="Medium"
+                    BorderThickness="0" Background="Transparent"
+                    Padding="0" Watermark="Untitled" />
+
+          <ToggleButton Grid.Column="1" Classes="flat" Margin="6,0,0,0"
+                        IsChecked="{Binding SelectedNote.IsTask, Mode=TwoWay}"
+                        Content="Task" />
+          <ToggleButton Grid.Column="2" Classes="flat" Margin="6,0,0,0"
+                        IsChecked="{Binding SelectedNote.IsDone, Mode=TwoWay}"
+                        IsVisible="{Binding SelectedNote.IsTask}"
+                        Content="Done" />
+          <Button Grid.Column="3" Classes="iconbtn" Margin="10,0,0,0"
+                  Command="{Binding DeleteSelectedCommand}"
+                  ToolTip.Tip="Delete note">
+            <TextBlock Text="✕" FontSize="14" />
+          </Button>
+        </Grid>
+
+        <TextBox Grid.Row="1" Margin="0,10,0,14"
+                 Text="{Binding SelectedNote.TagsText, Mode=TwoWay}"
+                 Watermark="tags, comma, separated"
+                 FontSize="12" Height="30" />
+
+        <TextBox Grid.Row="2"
+                 Text="{Binding SelectedNote.Body, Mode=TwoWay}"
+                 AcceptsReturn="True" TextWrapping="Wrap"
+                 VerticalContentAlignment="Top"
+                 BorderThickness="0" Background="Transparent"
+                 Padding="0" FontSize="14" LineHeight="22"
+                 Watermark="Write something…" />
+
+        <TextBlock Grid.Row="3" Text="{Binding SelectedNote.MetaLabel}"
+                   Foreground="{StaticResource XnTextFaintBrush}" FontSize="11"
+                   Margin="0,8,0,0" />
+      </Grid>
+    </Grid>
+
+    <Grid Grid.Column="2" Background="{StaticResource XnBlackBrush}" IsVisible="{Binding !HasSelection}">
+      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+        <TextBlock Text="No note selected" Foreground="{StaticResource XnTextFaintBrush}"
+                   FontSize="14" HorizontalAlignment="Center" />
+        <Button Classes="flat" HorizontalAlignment="Center"
+                Command="{Binding AddNoteCommand}" Content="Create your first note" />
+      </StackPanel>
+    </Grid>
+
+  </Grid>
+</Window>
