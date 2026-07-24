@@ -40,7 +40,6 @@
           <Path Fill="{StaticResource XnPanelBrush}"
                 Stroke="{StaticResource XnAccentBrush}"
                 StrokeThickness="3"
-                StrokeLineJoin="Round"
                 Data="M 68,10 L 68,32 L 90,32 Z" />
           <Line StartPoint="34,46" EndPoint="76,46" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="3" />
           <Line StartPoint="34,60" EndPoint="76,60" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="3" />

@@ -6,3 +6,8 @@ D:\Codding\XNote\obj\Debug\net8.0\win-x64\XNote.AssemblyInfoInputs.cache
 D:\Codding\XNote\obj\Debug\net8.0\win-x64\XNote.AssemblyInfo.cs
 D:\Codding\XNote\obj\Debug\net8.0\win-x64\XNote.csproj.CoreCompileInputs.cache
 D:\Codding\XNote\obj\Debug\net8.0\win-x64\XNote.sourcelink.json
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\Avalonia\references
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\Avalonia\original.dll
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\Avalonia\original.pdb
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\Avalonia\original.ref.dll
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\refint\XNote.dll
