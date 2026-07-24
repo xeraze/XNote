@@ -1,0 +1,8 @@
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\XNote.csproj.AssemblyReference.cache
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\Avalonia\Resources.Inputs.cache
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\Avalonia\resources
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\XNote.GeneratedMSBuildEditorConfig.editorconfig
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\XNote.AssemblyInfoInputs.cache
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\XNote.AssemblyInfo.cs
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\XNote.csproj.CoreCompileInputs.cache
+D:\Codding\XNote\obj\Debug\net8.0\win-x64\XNote.sourcelink.json

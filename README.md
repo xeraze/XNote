@@ -1,138 +1,76 @@
 # XNote
 
-A minimal, monochrome desktop notes & tasks app for Windows, built with
-**C# and Avalonia UI**. Splash screen with a fade in/out animation, then a
-dark, black/grey/white two-pane note editor. Notes persist locally as JSON.
+Desktop notes app, C# + Avalonia. Black/grey theme, splash screen with fade animation, then a two-pane note list + editor. Saves to a local JSON file.
 
-## Requirements (one-time setup)
+## Setup
 
-You need the **.NET 8 SDK** installed to build it. You do **not** need
-Visual Studio — this all works from PowerShell.
+Install .NET 8 SDK: https://dotnet.microsoft.com/download/dotnet/8.0 (the SDK installer, not just runtime).
 
-1. Download and install the .NET 8 SDK from:
-   https://dotnet.microsoft.com/download/dotnet/8.0
-   (pick the "SDK" installer for Windows x64, not just the runtime)
-2. Verify it installed, in PowerShell:
-   ```powershell
-   dotnet --version
-   ```
-   should print something like `8.0.xxx`.
+Check it worked:
+```powershell
+dotnet --version
+```
 
-That's it — Avalonia itself is a NuGet package and gets downloaded
-automatically the first time you build (this requires an internet
-connection once; after that, builds work offline).
-
-## Running it while you develop (fastest way to try it)
-
-Unzip the project, then in PowerShell:
+## Run it (dev mode)
 
 ```powershell
 cd XNote
 dotnet run
 ```
 
-The first run will take a bit longer (downloading Avalonia packages).
-A window should appear: splash screen first, then the main app after
-about 2 seconds.
+First run downloads Avalonia packages, takes a bit longer. This does NOT create an exe you can double-click — see below for that.
 
-## Building a real .exe you can double-click
-
-This produces a single, self-contained `XNote.exe` — no .NET install
-required on whatever machine runs it, no console window, just double-click
-and go.
+## Get an actual .exe
 
 ```powershell
 cd XNote
 dotnet publish -c Release -r win-x64 --self-contained true
 ```
 
-Your `.exe` will show up at:
-
+The exe lands here:
 ```
 XNote\bin\Release\net8.0\win-x64\publish\XNote.exe
 ```
 
-Copy that one file (it's ~60-80MB because the whole .NET runtime is bundled
-inside it) anywhere you like — Desktop, a Programs folder, wherever — and
-make a shortcut to it. Double-click runs the app directly.
+That's the file to put on your desktop / make a shortcut to. It's ~60-80MB since the .NET runtime is bundled inside — runs on any Windows machine with no install needed.
 
-> If you built this on Linux/WSL/Mac and want a Windows exe, the `-r win-x64`
-> flag above already handles that — .NET publish is cross-targeting, so
-> running that same command from any OS produces a Windows binary. You just
-> need to actually run/test it on Windows.
+## Using it
 
-## Using the app
+- `+` — new note
+- click a note in the list — opens it in the editor
+- `Task` toggle — makes it a task instead of a note
+- `Done` toggle — shows up on tasks, marks complete
+- tags field — comma separated
+- search box — filters as you type
+- `✕` — delete current note
+- saves automatically, no save button
 
-- **`+`** in the sidebar — new note
-- Click a note in the list to open it in the editor on the right
-- **Task** toggle — marks the note as a task instead of a plain note
-- **Done** toggle — appears once a note is a task; marks it complete
-  (dims it in the list)
-- Tags field — comma-separated, saved automatically
-- Search box — filters by title, body, and tags as you type
-- **✕** — deletes the currently open note
-- Everything saves automatically as you type — there's no separate save
-  button/shortcut needed
+## Where data is stored
 
-## Where your data lives
+`%APPDATA%\XNote\notes.json` — plain JSON, readable in any text editor.
 
-`%APPDATA%\XNote\notes.json` — plain JSON, human-readable, easy to back up
-or inspect. Saves are atomic (write to a temp file, then swap), so an
-interrupted save can't corrupt your existing notes.
-
-## Project structure
+## Structure
 
 ```
 XNote/
-├── XNote.csproj          # project file, Avalonia package references
-├── app.manifest           # Windows DPI-awareness manifest
-├── Program.cs              # entry point
-├── App.axaml(.cs)          # app startup, global theme/colors
-├── Models/
-│   └── Note.cs              # plain data model (no UI/framework code)
-├── Services/
-│   └── NoteStore.cs          # JSON load/save, atomic writes
+├── XNote.csproj
+├── Program.cs
+├── App.axaml(.cs)
+├── Models/Note.cs
+├── Services/NoteStore.cs
 ├── ViewModels/
-│   ├── ViewModelBase.cs       # small hand-rolled INotifyPropertyChanged base
-│   ├── RelayCommand.cs         # ICommand for button bindings
-│   ├── NoteViewModel.cs         # wraps Note for UI-bindable properties
-│   ├── MainViewModel.cs          # note list, search, add/delete, persistence
-│   └── Converters.cs              # XAML value converters
+│   ├── ViewModelBase.cs
+│   ├── RelayCommand.cs
+│   ├── NoteViewModel.cs
+│   ├── MainViewModel.cs
+│   └── Converters.cs
 └── Views/
-    ├── SplashWindow.axaml(.cs)     # intro screen with fade in/out
-    └── MainWindow.axaml(.cs)        # sidebar + editor layout
+    ├── SplashWindow.axaml(.cs)
+    └── MainWindow.axaml(.cs)
 ```
 
-## Design notes
-
-- **MVVM architecture**: Views are dumb XAML bound to ViewModels;
-  ViewModels hold no UI framework types (except `Converters.cs`, which by
-  nature has to talk to `IBrush`); Models are plain data. This is the
-  standard shape of a real Avalonia/WPF app, not a toy structure.
-- **No external MVVM framework** — `ViewModelBase`/`RelayCommand` are
-  hand-written (a dozen lines each) rather than pulling in
-  CommunityToolkit.Mvvm, to keep the dependency list to just Avalonia
-  itself.
-- **Storage is plain JSON**, not a database — appropriate for a
-  single-user local notes app, and it means you can open `notes.json` in
-  any text editor if you're curious what's in it.
-- **The splash screen** is a second, borderless `Window` (not a control
-  inside the main window) so it can appear instantly and independently
-  fade before the (heavier) main window's controls are constructed.
+MVVM: Views are XAML bound to ViewModels, ViewModels don't touch UI types (except Converters.cs), Models are plain data. No MVVM framework dependency — ViewModelBase/RelayCommand are hand-written instead of pulling in CommunityToolkit.Mvvm.
 
 ## Testing
 
-The core logic (models, storage, view models) was tested via a standalone
-console harness during development — 35 checks covering save/load
-roundtrips, atomic writes, corrupted-file recovery, tag parsing/dedup, and
-full add/search/delete flows through `MainViewModel`, all passing. That
-harness isn't included in this package (it lived outside the app project),
-but the logic it covered is unchanged in `Models/`, `Services/`, and
-`ViewModels/`.
-
-The Avalonia UI layer itself (XAML, animations, rendering) needs an actual
-.NET+Avalonia environment to run, which isn't available in the environment
-this was written in — so please treat the visual side as reviewed
-carefully by hand rather than verified by an automated build. If
-`dotnet run` throws anything on your machine, send me the error and I'll
-fix it immediately.
+Core logic (models, storage, viewmodels) was tested separately during development — 35 checks, all passing, covering save/load, atomic writes, corrupted-file handling, tags, add/search/delete. The Avalonia UI itself couldn't be build-tested in the environment this was written in, so if `dotnet run` throws an error, send it over and it'll get fixed.
