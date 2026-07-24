@@ -4,11 +4,6 @@ using XNote.Models;
 
 namespace XNote.ViewModels;
 
-/// <summary>
-/// Wraps a <see cref="Note"/> for display: exposes UI-only derived
-/// properties (tags as an editable comma string, a human-readable meta
-/// label) while the underlying model stays a plain persisted data shape.
-/// </summary>
 public class NoteViewModel : ViewModelBase
 {
     public Note Model { get; }
@@ -68,7 +63,6 @@ public class NoteViewModel : ViewModelBase
 
     public string Preview => Model.Preview;
 
-    /// <summary>Comma-separated editable view of the tag list.</summary>
     public string TagsText
     {
         get => string.Join(", ", Model.Tags);

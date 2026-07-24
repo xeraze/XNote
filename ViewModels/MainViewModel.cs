@@ -74,10 +74,6 @@ public class MainViewModel : ViewModelBase
         ConfirmDeleteCommand = new RelayCommand(DeleteSelected);
         CancelDeleteCommand = new RelayCommand(() => IsConfirmingDelete = false);
 
-        // Typing triggers PropertyChanged on every keystroke; writing to
-        // disk that often is wasted work and is what made the app feel like
-        // it was hanging on fast input. Coalesce rapid edits into a single
-        // write ~250ms after typing pauses.
         _saveDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _saveDebounceTimer.Tick += (_, _) =>
         {
@@ -88,14 +84,6 @@ public class MainViewModel : ViewModelBase
         LoadFromDisk();
     }
 
-    /// <summary>
-    /// Every NoteViewModel gets exactly one subscription, created once when
-    /// the wrapper is first constructed. This is the only place that should
-    /// ever attach to NoteViewModel.PropertyChanged — do not add more
-    /// subscriptions elsewhere (e.g. reacting to SelectedNote changing),
-    /// or edits will re-trigger saves/filtering multiple times over and the
-    /// app will progressively slow down the more you type.
-    /// </summary>
     private NoteViewModel WrapAndSubscribe(Note note)
     {
         var vm = new NoteViewModel(note);
@@ -104,9 +92,6 @@ public class MainViewModel : ViewModelBase
             _saveDebounceTimer.Stop();
             _saveDebounceTimer.Start();
 
-            // Re-filtering here keeps the sidebar preview/title in sync as
-            // you type. Guard against re-entrancy: ApplyFilter can reassign
-            // SelectedNote, which must NOT cascade into more filtering.
             if (!_isApplyingFilter)
             {
                 ApplyFilter();

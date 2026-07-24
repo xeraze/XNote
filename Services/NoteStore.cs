@@ -7,11 +7,6 @@ using XNote.Models;
 
 namespace XNote.Services;
 
-/// <summary>
-/// Persists notes to a JSON file in the user's local app data folder.
-/// Writes are atomic (temp file + replace) so a crash mid-save can never
-/// corrupt existing data.
-/// </summary>
 public class NoteStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -50,9 +45,6 @@ public class NoteStore
         }
         catch (Exception)
         {
-            // Corrupted or unreadable file: don't crash the app on startup,
-            // just start fresh. The broken file is left on disk untouched
-            // in case the user wants to inspect/recover it manually.
             return new List<Note>();
         }
     }

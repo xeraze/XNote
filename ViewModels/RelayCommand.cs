@@ -3,11 +3,6 @@ using System.Windows.Input;
 
 namespace XNote.ViewModels;
 
-/// <summary>
-/// Small ICommand implementation for button/gesture bindings. No parameter
-/// overload is needed anywhere in this app, so this stays intentionally
-/// simple rather than generic.
-/// </summary>
 public class RelayCommand : ICommand
 {
     private readonly Action _execute;

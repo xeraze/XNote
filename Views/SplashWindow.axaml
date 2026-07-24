@@ -26,8 +26,6 @@
 
     <Grid RowDefinitions="*,Auto,*,Auto">
 
-      <!-- Emblem: a simple monochrome mark built from primitives, no image
-           asset required. A square notepad glyph with a corner fold. -->
       <Viewbox Grid.Row="1" Width="88" Height="88" HorizontalAlignment="Center">
         <Canvas Width="100" Height="100">
           <Path Fill="Transparent"
