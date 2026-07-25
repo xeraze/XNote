@@ -76,6 +76,7 @@ public class MainViewModel : ViewModelBase
                 OnPropertyChanged(nameof(HasSelection));
                 IsConfirmingDelete = false;
                 RequestDeleteCommand.RaiseCanExecuteChanged();
+                SaveNoteCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -92,6 +93,7 @@ public class MainViewModel : ViewModelBase
     }
 
     public RelayCommand AddNoteCommand { get; }
+    public RelayCommand SaveNoteCommand { get; }
     public RelayCommand RequestDeleteCommand { get; }
     public RelayCommand ConfirmDeleteCommand { get; }
     public RelayCommand CancelDeleteCommand { get; }
@@ -109,6 +111,7 @@ public class MainViewModel : ViewModelBase
     {
         _store = store;
         AddNoteCommand = new RelayCommand(AddNote);
+        SaveNoteCommand = new RelayCommand(() => SelectedNote?.MarkSaved(), () => SelectedNote is not null);
         RequestDeleteCommand = new RelayCommand(() => IsConfirmingDelete = true, () => SelectedNote is not null);
         ConfirmDeleteCommand = new RelayCommand(DeleteSelected);
         CancelDeleteCommand = new RelayCommand(() => IsConfirmingDelete = false);
@@ -118,7 +121,7 @@ public class MainViewModel : ViewModelBase
         SetFilterOpenCommand = new RelayCommand(() => FilterMode = NoteFilterMode.TasksOpen);
         SetFilterDoneCommand = new RelayCommand(() => FilterMode = NoteFilterMode.TasksDone);
 
-        _saveDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+        _saveDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _saveDebounceTimer.Tick += (_, _) =>
         {
             _saveDebounceTimer.Stop();
@@ -128,17 +131,36 @@ public class MainViewModel : ViewModelBase
         LoadFromDisk();
     }
 
-    private NoteViewModel WrapAndSubscribe(Note note)
+    public void ForceSave()
     {
-        var vm = new NoteViewModel(note);
-        vm.PropertyChanged += (_, _) =>
-        {
-            _saveDebounceTimer.Stop();
-            _saveDebounceTimer.Start();
+        _saveDebounceTimer.Stop();
+        SaveToDisk();
+    }
 
-            if (!_isApplyingFilter)
+    private NoteViewModel WrapAndSubscribe(Note note, bool hasBeenSaved)
+    {
+        var vm = new NoteViewModel(note, hasBeenSaved);
+        vm.PropertyChanged += (sender, e) =>
+        {
+            if (e.PropertyName is nameof(NoteViewModel.Title)
+                or nameof(NoteViewModel.Body)
+                or nameof(NoteViewModel.IsTask)
+                or nameof(NoteViewModel.IsDone)
+                or nameof(NoteViewModel.TagsText))
             {
-                ApplyFilter();
+                if (vm.HasBeenSaved)
+                {
+                    _saveDebounceTimer.Stop();
+                    _saveDebounceTimer.Start();
+                }
+            }
+
+            if (e.PropertyName == nameof(NoteViewModel.IsTask) || e.PropertyName == nameof(NoteViewModel.IsDone))
+            {
+                if (!_isApplyingFilter)
+                {
+                    ApplyFilter();
+                }
             }
         };
         return vm;
@@ -150,7 +172,7 @@ public class MainViewModel : ViewModelBase
         _allNotes.Clear();
         foreach (var note in notes.OrderByDescending(n => n.CreatedUtc))
         {
-            _allNotes.Add(WrapAndSubscribe(note));
+            _allNotes.Add(WrapAndSubscribe(note, hasBeenSaved: true));
         }
 
         _nextId = _allNotes.Count == 0 ? 1 : _allNotes.Max(n => n.Id) + 1;
@@ -161,8 +183,9 @@ public class MainViewModel : ViewModelBase
 
     private void SaveToDisk()
     {
-        _store.Save(_allNotes.Select(vm => vm.Model).ToList());
-        foreach (var vm in _allNotes)
+        var toPersist = _allNotes.Where(vm => vm.HasBeenSaved).Select(vm => vm.Model).ToList();
+        _store.Save(toPersist);
+        foreach (var vm in _allNotes.Where(vm => vm.HasBeenSaved))
         {
             vm.MarkSaved();
         }
@@ -205,7 +228,11 @@ public class MainViewModel : ViewModelBase
 
             if (previouslySelectedId is not null)
             {
-                SelectedNote = FilteredNotes.FirstOrDefault(n => n.Id == previouslySelectedId);
+                var newSelection = FilteredNotes.FirstOrDefault(n => n.Id == previouslySelectedId);
+                if (!ReferenceEquals(SelectedNote, newSelection))
+                {
+                    SelectedNote = newSelection;
+                }
             }
         }
         finally
@@ -223,10 +250,9 @@ public class MainViewModel : ViewModelBase
             Body = string.Empty,
         };
 
-        var vm = WrapAndSubscribe(note);
+        var vm = WrapAndSubscribe(note, hasBeenSaved: false);
 
         _allNotes.Insert(0, vm);
-        SaveToDisk();
         ApplyFilter();
         OnPropertyChanged(nameof(TotalCountLabel));
 
@@ -237,10 +263,14 @@ public class MainViewModel : ViewModelBase
     {
         if (SelectedNote is null) return;
 
+        var wasSaved = SelectedNote.HasBeenSaved;
         _allNotes.Remove(SelectedNote);
         SelectedNote = null;
         IsConfirmingDelete = false;
-        SaveToDisk();
+        if (wasSaved)
+        {
+            SaveToDisk();
+        }
         ApplyFilter();
         OnPropertyChanged(nameof(TotalCountLabel));
     }

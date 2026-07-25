@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Avalonia.Threading;
 using XNote.Models;
 
 namespace XNote.ViewModels;
@@ -22,18 +23,42 @@ public class NoteViewModel : ViewModelBase
         private set => SetField(ref _isDirty, value);
     }
 
-    public NoteViewModel(Note model)
+    private bool _hasBeenSaved;
+    public bool HasBeenSaved
     {
-        Model = model;
+        get => _hasBeenSaved;
+        private set => SetField(ref _hasBeenSaved, value);
     }
 
-    public void MarkSaved() => IsDirty = false;
+    public bool IsDraft => !HasBeenSaved;
+
+    private readonly DispatcherTimer _touchDebounce;
+
+    public NoteViewModel(Note model, bool hasBeenSaved)
+    {
+        Model = model;
+        _hasBeenSaved = hasBeenSaved;
+        _touchDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
+        _touchDebounce.Tick += (_, _) =>
+        {
+            _touchDebounce.Stop();
+            OnPropertyChanged(nameof(MetaLabel));
+        };
+    }
+
+    public void MarkSaved()
+    {
+        IsDirty = false;
+        HasBeenSaved = true;
+        OnPropertyChanged(nameof(IsDraft));
+    }
 
     private void Touch()
     {
         Model.ModifiedUtc = DateTime.UtcNow;
         IsDirty = true;
-        OnPropertyChanged(nameof(MetaLabel));
+        _touchDebounce.Stop();
+        _touchDebounce.Start();
     }
 
     public int Id => Model.Id;
