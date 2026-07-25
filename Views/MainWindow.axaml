@@ -3,6 +3,7 @@
         xmlns:vm="using:XNote.ViewModels"
         x:Class="XNote.Views.MainWindow"
         x:DataType="vm:MainViewModel"
+        Icon="avares://XNote/Assets/xnote.ico"
         Title="XNote"
         Width="980" Height="640"
         MinWidth="720" MinHeight="480"
@@ -16,6 +17,8 @@
     <StreamGeometry x:Key="IconTrash">M 5,7 L 19,7 M 9,7 L 9,5 L 15,5 L 15,7 M 7,7 L 7,20 L 17,20 L 17,7 M 10,11 L 10,16 M 14,11 L 14,16</StreamGeometry>
     <StreamGeometry x:Key="IconClose">M 6,6 L 18,18 M 18,6 L 6,18</StreamGeometry>
     <StreamGeometry x:Key="IconCheck">M 5,13 L 10,18 L 19,7</StreamGeometry>
+
+    <StreamGeometry x:Key="IconDot">M 10,6 L 14,10 L 10,14 L 6,10 Z</StreamGeometry>
   </Window.Resources>
 
   <Window.Styles>
@@ -71,6 +74,25 @@
       <Setter Property="Height" Value="16" />
     </Style>
 
+    <Style Selector="Button.filtertab">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{StaticResource XnBorderSubtleBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="Padding" Value="12,5" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.filtertab:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+    <Style Selector="Button.filtertab.active">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="BorderBrush" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+    </Style>
+
     <Style Selector="TextBox">
       <Setter Property="Background" Value="{StaticResource XnPanelBrush}" />
       <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
@@ -94,7 +116,7 @@
 
   <Grid ColumnDefinitions="300,1,*">
 
-    <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*,Auto" Background="{StaticResource XnBlackBrush}">
+    <Grid Grid.Column="0" RowDefinitions="Auto,Auto,Auto,*,Auto" Background="{StaticResource XnBlackBrush}">
 
       <TextBlock Grid.Row="0" Text="XNOTE"
                  Foreground="{StaticResource XnAccentBrush}"
@@ -121,7 +143,17 @@
         </Button>
       </Grid>
 
-      <ScrollViewer Grid.Row="2">
+      <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="16,0,16,10">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Button Classes="filtertab" Classes.active="{Binding IsFilterAll}" Content="All" Command="{Binding SetFilterAllCommand}" />
+          <Button Classes="filtertab" Classes.active="{Binding IsFilterNotes}" Content="Notes" Command="{Binding SetFilterNotesCommand}" />
+          <Button Classes="filtertab" Classes.active="{Binding IsFilterTasks}" Content="Tasks" Command="{Binding SetFilterTasksCommand}" />
+          <Button Classes="filtertab" Classes.active="{Binding IsFilterOpen}" Content="Open" Command="{Binding SetFilterOpenCommand}" />
+          <Button Classes="filtertab" Classes.active="{Binding IsFilterDone}" Content="Done" Command="{Binding SetFilterDoneCommand}" />
+        </StackPanel>
+      </ScrollViewer>
+
+      <ScrollViewer Grid.Row="3">
         <ListBox ItemsSource="{Binding FilteredNotes}"
                  SelectedItem="{Binding SelectedNote}"
                  Background="Transparent"
@@ -129,9 +161,22 @@
           <ListBox.ItemTemplate>
             <DataTemplate DataType="vm:NoteViewModel">
               <Grid ColumnDefinitions="Auto,*" Margin="10,8">
-                <Ellipse Grid.Column="0" Width="7" Height="7" Margin="0,5,10,0"
-                         VerticalAlignment="Top"
-                         Fill="{Binding IsDone, Converter={x:Static vm:Converters.DoneToBrush}}" />
+                <Grid Grid.Column="0" Width="14" Height="14" Margin="0,3,10,0" VerticalAlignment="Top">
+                  <PathIcon Data="{StaticResource IconDot}" Width="10" Height="10"
+                            Foreground="{StaticResource XnTextDimBrush}"
+                            IsVisible="{Binding !IsTask}" />
+
+                  <Border IsVisible="{Binding IsTask}"
+                          Width="14" Height="14" CornerRadius="3"
+                          BorderThickness="1.4"
+                          BorderBrush="{Binding IsDone, Converter={x:Static vm:Converters.DoneToBrush}}"
+                          Background="{Binding IsDone, Converter={x:Static vm:Converters.DoneToBrush}}">
+                    <PathIcon Data="{StaticResource IconCheck}"
+                              Width="9" Height="9"
+                              Foreground="{StaticResource XnBlackBrush}"
+                              IsVisible="{Binding IsDone}" />
+                  </Border>
+                </Grid>
                 <StackPanel Grid.Column="1" Spacing="3">
                   <TextBlock Text="{Binding Title}"
                              Foreground="{StaticResource XnTextBrush}"
@@ -148,7 +193,7 @@
         </ListBox>
       </ScrollViewer>
 
-      <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="20,10,20,16" Spacing="16">
+      <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="20,10,20,16" Spacing="16">
         <TextBlock Text="{Binding TotalCountLabel}"
                    Foreground="{StaticResource XnTextFaintBrush}" FontSize="11" />
       </StackPanel>
@@ -159,24 +204,30 @@
     <Grid Grid.Column="2" Background="{StaticResource XnBlackBrush}" IsVisible="{Binding HasSelection}">
       <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="32,28,32,24">
 
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto">
-          <TextBox Grid.Column="0"
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+          <Ellipse Grid.Column="0" Width="7" Height="7" Margin="0,0,10,0"
+                   VerticalAlignment="Center"
+                   Fill="{StaticResource XnTextFaintBrush}"
+                   IsVisible="{Binding SelectedNote.IsDirty}"
+                   ToolTip.Tip="Unsaved changes — saves automatically in a moment" />
+
+          <TextBox Grid.Column="1"
                     Text="{Binding SelectedNote.Title, Mode=TwoWay}"
                     FontSize="20" FontWeight="Medium"
                     BorderThickness="0" Background="Transparent"
                     Padding="0" Watermark="Untitled" />
 
-          <ToggleButton Grid.Column="1" Classes="flat" Margin="6,0,0,0"
+          <ToggleButton Grid.Column="2" Classes="flat" Margin="6,0,0,0"
                         IsChecked="{Binding SelectedNote.IsTask, Mode=TwoWay}"
                         ToolTip.Tip="Mark as a task with a done/not-done state"
                         Content="Task" />
-          <ToggleButton Grid.Column="2" Classes="flat" Margin="6,0,0,0"
+          <ToggleButton Grid.Column="3" Classes="flat" Margin="6,0,0,0"
                         IsChecked="{Binding SelectedNote.IsDone, Mode=TwoWay}"
                         IsVisible="{Binding SelectedNote.IsTask}"
                         ToolTip.Tip="Mark this task as done"
                         Content="Done" />
 
-          <Grid Grid.Column="3" Margin="10,0,0,0">
+          <Grid Grid.Column="4" Margin="10,0,0,0">
             <Button Classes="iconbtn deletebtn"
                     Command="{Binding RequestDeleteCommand}"
                     IsVisible="{Binding !IsConfirmingDelete}"

@@ -12,6 +12,7 @@ public class Note
     public bool IsDone { get; set; }
     public List<string> Tags { get; set; } = new();
     public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
+    public DateTime ModifiedUtc { get; set; } = DateTime.UtcNow;
     public DateTime? DueUtc { get; set; }
 
     public string Preview

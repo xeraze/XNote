@@ -4,13 +4,36 @@ using XNote.Models;
 
 namespace XNote.ViewModels;
 
+public enum NoteStatusIcon
+{
+    Note,
+    TaskOpen,
+    TaskDone,
+}
+
 public class NoteViewModel : ViewModelBase
 {
     public Note Model { get; }
 
+    private bool _isDirty;
+    public bool IsDirty
+    {
+        get => _isDirty;
+        private set => SetField(ref _isDirty, value);
+    }
+
     public NoteViewModel(Note model)
     {
         Model = model;
+    }
+
+    public void MarkSaved() => IsDirty = false;
+
+    private void Touch()
+    {
+        Model.ModifiedUtc = DateTime.UtcNow;
+        IsDirty = true;
+        OnPropertyChanged(nameof(MetaLabel));
     }
 
     public int Id => Model.Id;
@@ -22,8 +45,8 @@ public class NoteViewModel : ViewModelBase
         {
             if (Model.Title == value) return;
             Model.Title = value;
-            OnPropertyChanged();
             OnPropertyChanged(nameof(Preview));
+            Touch();
         }
     }
 
@@ -34,8 +57,8 @@ public class NoteViewModel : ViewModelBase
         {
             if (Model.Body == value) return;
             Model.Body = value;
-            OnPropertyChanged();
             OnPropertyChanged(nameof(Preview));
+            Touch();
         }
     }
 
@@ -47,6 +70,8 @@ public class NoteViewModel : ViewModelBase
             if (Model.IsTask == value) return;
             Model.IsTask = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(StatusIconKind));
+            Touch();
         }
     }
 
@@ -58,8 +83,15 @@ public class NoteViewModel : ViewModelBase
             if (Model.IsDone == value) return;
             Model.IsDone = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(StatusIconKind));
+            Touch();
         }
     }
+
+    public NoteStatusIcon StatusIconKind =>
+        !IsTask ? NoteStatusIcon.Note
+        : IsDone ? NoteStatusIcon.TaskDone
+        : NoteStatusIcon.TaskOpen;
 
     public string Preview => Model.Preview;
 
@@ -74,11 +106,25 @@ public class NoteViewModel : ViewModelBase
                 .Distinct()
                 .ToList();
 
+            if (parsed.SequenceEqual(Model.Tags)) return;
+
             Model.Tags = parsed;
             OnPropertyChanged();
+            Touch();
         }
     }
 
-    public string MetaLabel =>
-        $"Created {Model.CreatedUtc.ToLocalTime():dd MMM yyyy, HH:mm}";
+    public string MetaLabel
+    {
+        get
+        {
+            var created = Model.CreatedUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm");
+            if ((Model.ModifiedUtc - Model.CreatedUtc).TotalMinutes < 1)
+            {
+                return $"Created {created}";
+            }
+            var modified = Model.ModifiedUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm");
+            return $"Created {created}  ·  Edited {modified}";
+        }
+    }
 }

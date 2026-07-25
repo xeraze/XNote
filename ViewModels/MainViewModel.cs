@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Threading;
@@ -6,6 +7,15 @@ using XNote.Models;
 using XNote.Services;
 
 namespace XNote.ViewModels;
+
+public enum NoteFilterMode
+{
+    All,
+    Notes,
+    Tasks,
+    TasksDone,
+    TasksOpen,
+}
 
 public class MainViewModel : ViewModelBase
 {
@@ -17,6 +27,7 @@ public class MainViewModel : ViewModelBase
     private NoteViewModel? _selectedNote;
     private int _nextId = 1;
     private bool _isApplyingFilter;
+    private NoteFilterMode _filterMode = NoteFilterMode.All;
 
     public ObservableCollection<NoteViewModel> FilteredNotes { get; } = new();
 
@@ -31,6 +42,29 @@ public class MainViewModel : ViewModelBase
             }
         }
     }
+
+    public NoteFilterMode FilterMode
+    {
+        get => _filterMode;
+        set
+        {
+            if (SetField(ref _filterMode, value))
+            {
+                ApplyFilter();
+                OnPropertyChanged(nameof(IsFilterAll));
+                OnPropertyChanged(nameof(IsFilterNotes));
+                OnPropertyChanged(nameof(IsFilterTasks));
+                OnPropertyChanged(nameof(IsFilterOpen));
+                OnPropertyChanged(nameof(IsFilterDone));
+            }
+        }
+    }
+
+    public bool IsFilterAll => FilterMode == NoteFilterMode.All;
+    public bool IsFilterNotes => FilterMode == NoteFilterMode.Notes;
+    public bool IsFilterTasks => FilterMode == NoteFilterMode.Tasks;
+    public bool IsFilterOpen => FilterMode == NoteFilterMode.TasksOpen;
+    public bool IsFilterDone => FilterMode == NoteFilterMode.TasksDone;
 
     public NoteViewModel? SelectedNote
     {
@@ -61,6 +95,11 @@ public class MainViewModel : ViewModelBase
     public RelayCommand RequestDeleteCommand { get; }
     public RelayCommand ConfirmDeleteCommand { get; }
     public RelayCommand CancelDeleteCommand { get; }
+    public RelayCommand SetFilterAllCommand { get; }
+    public RelayCommand SetFilterNotesCommand { get; }
+    public RelayCommand SetFilterTasksCommand { get; }
+    public RelayCommand SetFilterOpenCommand { get; }
+    public RelayCommand SetFilterDoneCommand { get; }
 
     public MainViewModel() : this(new NoteStore())
     {
@@ -73,6 +112,11 @@ public class MainViewModel : ViewModelBase
         RequestDeleteCommand = new RelayCommand(() => IsConfirmingDelete = true, () => SelectedNote is not null);
         ConfirmDeleteCommand = new RelayCommand(DeleteSelected);
         CancelDeleteCommand = new RelayCommand(() => IsConfirmingDelete = false);
+        SetFilterAllCommand = new RelayCommand(() => FilterMode = NoteFilterMode.All);
+        SetFilterNotesCommand = new RelayCommand(() => FilterMode = NoteFilterMode.Notes);
+        SetFilterTasksCommand = new RelayCommand(() => FilterMode = NoteFilterMode.Tasks);
+        SetFilterOpenCommand = new RelayCommand(() => FilterMode = NoteFilterMode.TasksOpen);
+        SetFilterDoneCommand = new RelayCommand(() => FilterMode = NoteFilterMode.TasksDone);
 
         _saveDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _saveDebounceTimer.Tick += (_, _) =>
@@ -118,6 +162,10 @@ public class MainViewModel : ViewModelBase
     private void SaveToDisk()
     {
         _store.Save(_allNotes.Select(vm => vm.Model).ToList());
+        foreach (var vm in _allNotes)
+        {
+            vm.MarkSaved();
+        }
     }
 
     private void ApplyFilter()
@@ -128,12 +176,24 @@ public class MainViewModel : ViewModelBase
         {
             var query = SearchText.Trim().ToLowerInvariant();
 
-            var matches = string.IsNullOrEmpty(query)
-                ? _allNotes
-                : _allNotes.Where(n =>
+            IEnumerable<NoteViewModel> matches = _allNotes;
+
+            matches = FilterMode switch
+            {
+                NoteFilterMode.Notes => matches.Where(n => !n.IsTask),
+                NoteFilterMode.Tasks => matches.Where(n => n.IsTask),
+                NoteFilterMode.TasksDone => matches.Where(n => n.IsTask && n.IsDone),
+                NoteFilterMode.TasksOpen => matches.Where(n => n.IsTask && !n.IsDone),
+                _ => matches,
+            };
+
+            if (!string.IsNullOrEmpty(query))
+            {
+                matches = matches.Where(n =>
                     n.Title.ToLowerInvariant().Contains(query) ||
                     n.Body.ToLowerInvariant().Contains(query) ||
                     n.TagsText.ToLowerInvariant().Contains(query));
+            }
 
             var previouslySelectedId = SelectedNote?.Id;
 
