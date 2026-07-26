@@ -62,13 +62,21 @@ public partial class MainWindow : Window
 
     private NoteViewModel? SelectedNote => (DataContext as MainViewModel)?.SelectedNote;
 
-    private void Bold_Click(object? sender, RoutedEventArgs e) { }
+    private void Bold_Click(object? sender, RoutedEventArgs e) => _bodyEditor?.ApplyBold();
 
-    private void Italic_Click(object? sender, RoutedEventArgs e) { }
+    private void Italic_Click(object? sender, RoutedEventArgs e) => _bodyEditor?.ApplyItalic();
 
-    private void Heading1_Click(object? sender, RoutedEventArgs e) { }
+    private void Heading1_Click(object? sender, RoutedEventArgs e) => _bodyEditor?.ToggleHeading(1);
 
-    private void Heading2_Click(object? sender, RoutedEventArgs e) { }
+    private void Heading2_Click(object? sender, RoutedEventArgs e) => _bodyEditor?.ToggleHeading(2);
+
+    private void SizeSmall_Click(object? sender, RoutedEventArgs e) => _bodyEditor?.ApplySize(Models.TextSize.Small);
+
+    private void SizeNormal_Click(object? sender, RoutedEventArgs e) => _bodyEditor?.ApplySize(Models.TextSize.Normal);
+
+    private void SizeLarge_Click(object? sender, RoutedEventArgs e) => _bodyEditor?.ApplySize(Models.TextSize.Large);
+
+    private void SizeExtraLarge_Click(object? sender, RoutedEventArgs e) => _bodyEditor?.ApplySize(Models.TextSize.ExtraLarge);
 
     private RichTextEditor? _bodyEditor;
 

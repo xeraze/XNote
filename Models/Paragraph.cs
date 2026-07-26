@@ -3,11 +3,20 @@ using System.Linq;
 
 namespace XNote.Models;
 
+public enum TextSize
+{
+    Small,
+    Normal,
+    Large,
+    ExtraLarge,
+}
+
 public class TextRun
 {
     public string Text { get; set; } = string.Empty;
     public bool IsBold { get; set; }
     public bool IsItalic { get; set; }
+    public TextSize Size { get; set; } = TextSize.Normal;
 }
 
 public class Paragraph

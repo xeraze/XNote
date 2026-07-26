@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -32,10 +33,37 @@ public class RichTextEditor : TemplatedControl
     private static readonly IBrush CaretBrush = Brushes.White;
     private static readonly IBrush TextBrush = Brushes.White;
 
+    private static double SizeToFontSize(TextSize size) => size switch
+    {
+        TextSize.Small => 12,
+        TextSize.Large => 18,
+        TextSize.ExtraLarge => 22,
+        _ => EditorFontSize,
+    };
+
+    private static double HeadingFontSize(int headingLevel) => headingLevel switch
+    {
+        1 => 22,
+        2 => 18,
+        _ => EditorFontSize,
+    };
+
+    private static double ParagraphLineHeight(Paragraph para)
+    {
+        var baseSize = para.HeadingLevel > 0
+            ? HeadingFontSize(para.HeadingLevel)
+            : (para.Runs.Count > 0 ? para.Runs.Max(r => SizeToFontSize(r.Size)) : EditorFontSize);
+        return Math.Max(LineHeight, baseSize * 1.5);
+    }
+
     private int _caretParagraph;
     private int _caretOffset;
     private bool _caretVisible = true;
     private DispatcherTimer? _caretTimer;
+
+    private bool _hasSelection;
+    private int _selAnchorParagraph;
+    private int _selAnchorOffset;
 
     static RichTextEditor()
     {
@@ -97,6 +125,26 @@ public class RichTextEditor : TemplatedControl
         return Paragraphs;
     }
 
+    private bool TryGetSelection(out int paragraph, out int start, out int end)
+    {
+        if (_hasSelection && _selAnchorParagraph == _caretParagraph && _selAnchorOffset != _caretOffset)
+        {
+            paragraph = _caretParagraph;
+            start = Math.Min(_selAnchorOffset, _caretOffset);
+            end = Math.Max(_selAnchorOffset, _caretOffset);
+            return true;
+        }
+        paragraph = 0;
+        start = 0;
+        end = 0;
+        return false;
+    }
+
+    private void ClearSelection()
+    {
+        _hasSelection = false;
+    }
+
     private void RaiseContentChanged()
     {
         ContentChanged?.Invoke(this, EventArgs.Empty);
@@ -104,8 +152,92 @@ public class RichTextEditor : TemplatedControl
         InvalidateMeasure();
     }
 
+    private void ApplyToSelection(Action<ModelTextRun> transform)
+    {
+        if (!TryGetSelection(out var paraIndex, out var start, out var end)) return;
+
+        var paras = EnsureParagraphs();
+        var para = paras[paraIndex];
+        var result = new List<ModelTextRun>();
+        int pos = 0;
+
+        foreach (var run in para.Runs)
+        {
+            var runStart = pos;
+            var runEnd = pos + run.Text.Length;
+            pos = runEnd;
+
+            var overlapStart = Math.Max(start, runStart);
+            var overlapEnd = Math.Min(end, runEnd);
+
+            if (overlapEnd <= overlapStart)
+            {
+                result.Add(run);
+                continue;
+            }
+
+            var before = run.Text[..(overlapStart - runStart)];
+            var middle = run.Text[(overlapStart - runStart)..(overlapEnd - runStart)];
+            var after = run.Text[(overlapEnd - runStart)..];
+
+            if (before.Length > 0)
+            {
+                result.Add(new ModelTextRun { Text = before, IsBold = run.IsBold, IsItalic = run.IsItalic, Size = run.Size });
+            }
+            if (middle.Length > 0)
+            {
+                var middleRun = new ModelTextRun { Text = middle, IsBold = run.IsBold, IsItalic = run.IsItalic, Size = run.Size };
+                transform(middleRun);
+                result.Add(middleRun);
+            }
+            if (after.Length > 0)
+            {
+                result.Add(new ModelTextRun { Text = after, IsBold = run.IsBold, IsItalic = run.IsItalic, Size = run.Size });
+            }
+        }
+
+        para.Runs = result.Count > 0 ? result : new List<ModelTextRun> { new ModelTextRun() };
+        RaiseContentChanged();
+        InvalidateVisual();
+    }
+
+    public void ApplyBold()
+    {
+        ApplyToSelection(r => r.IsBold = !r.IsBold);
+    }
+
+    public void ApplyItalic()
+    {
+        ApplyToSelection(r => r.IsItalic = !r.IsItalic);
+    }
+
+    public void ApplySize(TextSize size)
+    {
+        ApplyToSelection(r => r.Size = size);
+    }
+
+    public void ToggleHeading(int level)
+    {
+        var paras = EnsureParagraphs();
+        var para = paras[_caretParagraph];
+        para.HeadingLevel = para.HeadingLevel == level ? 0 : level;
+        RaiseContentChanged();
+        InvalidateVisual();
+        InvalidateMeasure();
+    }
+
     private void InsertText(string text)
     {
+        if (TryGetSelection(out var selPara, out var selStart, out var selEnd))
+        {
+            var paras0 = EnsureParagraphs();
+            var para0 = paras0[selPara];
+            RemoveRange(para0, selStart, selEnd - selStart);
+            _caretParagraph = selPara;
+            _caretOffset = selStart;
+            ClearSelection();
+        }
+
         var paras = EnsureParagraphs();
         var para = paras[_caretParagraph];
         var plain = para.PlainText;
@@ -152,9 +284,9 @@ public class RichTextEditor : TemplatedControl
                 var after = run.Text[(insertAt - runStart)..];
                 var insertedText = newPlainText.Substring(insertAt, insertLength);
 
-                if (before.Length > 0) result.Add(new ModelTextRun { Text = before, IsBold = run.IsBold, IsItalic = run.IsItalic });
-                if (insertLength > 0) result.Add(new ModelTextRun { Text = insertedText, IsBold = styleSource.IsBold, IsItalic = styleSource.IsItalic });
-                if (after.Length > 0) result.Add(new ModelTextRun { Text = after, IsBold = run.IsBold, IsItalic = run.IsItalic });
+                if (before.Length > 0) result.Add(new ModelTextRun { Text = before, IsBold = run.IsBold, IsItalic = run.IsItalic, Size = run.Size });
+                if (insertLength > 0) result.Add(new ModelTextRun { Text = insertedText, IsBold = styleSource.IsBold, IsItalic = styleSource.IsItalic, Size = styleSource.Size });
+                if (after.Length > 0) result.Add(new ModelTextRun { Text = after, IsBold = run.IsBold, IsItalic = run.IsItalic, Size = run.Size });
                 inserted = true;
             }
             else
@@ -165,7 +297,7 @@ public class RichTextEditor : TemplatedControl
 
         if (!inserted && insertLength > 0)
         {
-            result.Add(new ModelTextRun { Text = newPlainText.Substring(insertAt, insertLength), IsBold = styleSource.IsBold, IsItalic = styleSource.IsItalic });
+            result.Add(new ModelTextRun { Text = newPlainText.Substring(insertAt, insertLength), IsBold = styleSource.IsBold, IsItalic = styleSource.IsItalic, Size = styleSource.Size });
         }
 
         para.Runs = result.Count > 0 ? result : new List<ModelTextRun> { new ModelTextRun() };
@@ -196,7 +328,7 @@ public class RichTextEditor : TemplatedControl
             var remaining = keepBefore + keepAfter;
             if (remaining.Length > 0)
             {
-                result.Add(new ModelTextRun { Text = remaining, IsBold = run.IsBold, IsItalic = run.IsItalic });
+                result.Add(new ModelTextRun { Text = remaining, IsBold = run.IsBold, IsItalic = run.IsItalic, Size = run.Size });
             }
         }
         para.Runs = result.Count > 0 ? result : new List<ModelTextRun> { new ModelTextRun() };
@@ -204,6 +336,17 @@ public class RichTextEditor : TemplatedControl
 
     private void Backspace()
     {
+        if (TryGetSelection(out var selPara, out var selStart, out var selEnd))
+        {
+            var paras0 = EnsureParagraphs();
+            RemoveRange(paras0[selPara], selStart, selEnd - selStart);
+            _caretParagraph = selPara;
+            _caretOffset = selStart;
+            ClearSelection();
+            RaiseContentChanged();
+            return;
+        }
+
         var paras = EnsureParagraphs();
         if (_caretOffset > 0)
         {
@@ -227,6 +370,17 @@ public class RichTextEditor : TemplatedControl
 
     private void Delete()
     {
+        if (TryGetSelection(out var selPara, out var selStart, out var selEnd))
+        {
+            var paras0 = EnsureParagraphs();
+            RemoveRange(paras0[selPara], selStart, selEnd - selStart);
+            _caretParagraph = selPara;
+            _caretOffset = selStart;
+            ClearSelection();
+            RaiseContentChanged();
+            return;
+        }
+
         var paras = EnsureParagraphs();
         var para = paras[_caretParagraph];
         if (_caretOffset < para.PlainText.Length)
@@ -273,8 +427,8 @@ public class RichTextEditor : TemplatedControl
             else
             {
                 var splitAt = _caretOffset - runStart;
-                beforeRuns.Add(new ModelTextRun { Text = run.Text[..splitAt], IsBold = run.IsBold, IsItalic = run.IsItalic });
-                afterRuns.Add(new ModelTextRun { Text = run.Text[splitAt..], IsBold = run.IsBold, IsItalic = run.IsItalic });
+                beforeRuns.Add(new ModelTextRun { Text = run.Text[..splitAt], IsBold = run.IsBold, IsItalic = run.IsItalic, Size = run.Size });
+                afterRuns.Add(new ModelTextRun { Text = run.Text[splitAt..], IsBold = run.IsBold, IsItalic = run.IsItalic, Size = run.Size });
             }
         }
 
@@ -304,6 +458,19 @@ public class RichTextEditor : TemplatedControl
         _caretParagraph = Math.Clamp(_caretParagraph, 0, paras.Count - 1);
         _caretOffset = Math.Clamp(_caretOffset, 0, paras[_caretParagraph].PlainText.Length);
 
+        var isShift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        var isNavigationKey = e.Key is Key.Left or Key.Right or Key.Up or Key.Down or Key.Home or Key.End;
+
+        if (isShift && isNavigationKey && !_hasSelection)
+        {
+            _selAnchorParagraph = _caretParagraph;
+            _selAnchorOffset = _caretOffset;
+        }
+        else if (!isShift && isNavigationKey)
+        {
+            ClearSelection();
+        }
+
         switch (e.Key)
         {
             case Key.Back:
@@ -315,6 +482,7 @@ public class RichTextEditor : TemplatedControl
                 e.Handled = true;
                 break;
             case Key.Enter:
+                ClearSelection();
                 SplitParagraphAtCaret();
                 e.Handled = true;
                 break;
@@ -360,6 +528,11 @@ public class RichTextEditor : TemplatedControl
                 break;
         }
 
+        if (isShift && isNavigationKey)
+        {
+            _hasSelection = _caretParagraph == _selAnchorParagraph && _caretOffset != _selAnchorOffset;
+        }
+
         InvalidateVisual();
     }
 
@@ -370,37 +543,79 @@ public class RichTextEditor : TemplatedControl
         _caretTimer?.Start();
     }
 
+    private bool _isSelecting;
+
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
         Focus();
         var point = e.GetPosition(this);
         (_caretParagraph, _caretOffset) = HitTest(point);
+        _selAnchorParagraph = _caretParagraph;
+        _selAnchorOffset = _caretOffset;
+        _hasSelection = false;
+        _isSelecting = true;
         ResetCaretBlink();
         InvalidateVisual();
         e.Handled = true;
     }
 
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        if (!_isSelecting) return;
+
+        var point = e.GetPosition(this);
+        (_caretParagraph, _caretOffset) = HitTest(point);
+        _hasSelection = _caretParagraph == _selAnchorParagraph && _caretOffset != _selAnchorOffset;
+        InvalidateVisual();
+        e.Handled = true;
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        _isSelecting = false;
+    }
+
     private (int paragraph, int offset) HitTest(Point point)
     {
         var paras = EnsureParagraphs();
-        var lineIndex = Math.Clamp((int)((point.Y - PaddingTop) / LineHeight), 0, paras.Count - 1);
+
+        double y = PaddingTop;
+        int lineIndex = paras.Count - 1;
+        for (int i = 0; i < paras.Count; i++)
+        {
+            var h = ParagraphLineHeight(paras[i]);
+            if (point.Y < y + h)
+            {
+                lineIndex = i;
+                break;
+            }
+            y += h;
+        }
+
         var para = paras[lineIndex];
         var text = para.PlainText;
-
         if (text.Length == 0) return (lineIndex, 0);
 
-        var formatted = new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture,
-            FlowDirection.LeftToRight, Typeface.Default, EditorFontSize, TextBrush);
+        var typeface = new Typeface(FontFamily.Default);
+        var fontSize = para.HeadingLevel > 0 ? HeadingFontSize(para.HeadingLevel) : EditorFontSize;
 
         double bestDist = double.MaxValue;
         int bestOffset = 0;
+        double x = PaddingLeft;
         for (int i = 0; i <= text.Length; i++)
         {
-            var sub = new FormattedText(text[..i], System.Globalization.CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight, Typeface.Default, EditorFontSize, TextBrush);
-            var x = sub.Width;
-            var dist = Math.Abs(x - (point.X - PaddingLeft));
+            if (i > 0)
+            {
+                var runFontSize = para.HeadingLevel > 0 ? fontSize : RunSizeAt(para, i - 1);
+                var glyph = new FormattedText(text[(i - 1)..i], System.Globalization.CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight, typeface, runFontSize, TextBrush);
+                x += glyph.Width;
+            }
+
+            var dist = Math.Abs(x - point.X);
             if (dist < bestDist)
             {
                 bestDist = dist;
@@ -411,46 +626,131 @@ public class RichTextEditor : TemplatedControl
         return (lineIndex, bestOffset);
     }
 
+    private static double RunSizeAt(Paragraph para, int charIndex)
+    {
+        int pos = 0;
+        foreach (var run in para.Runs)
+        {
+            if (charIndex < pos + run.Text.Length) return SizeToFontSize(run.Size);
+            pos += run.Text.Length;
+        }
+        return EditorFontSize;
+    }
+
     public override void Render(DrawingContext context)
     {
         base.Render(context);
         var paras = EnsureParagraphs();
 
+        TryGetSelection(out var selPara, out var selStart, out var selEnd);
+
         double y = PaddingTop;
         for (int i = 0; i < paras.Count; i++)
         {
-            var text = paras[i].PlainText;
-            var typeface = Typeface.Default;
+            var para = paras[i];
+            var text = para.PlainText;
+            var lineHeight = ParagraphLineHeight(para);
+            var isHeading = para.HeadingLevel > 0;
+            var headingSize = isHeading ? HeadingFontSize(para.HeadingLevel) : EditorFontSize;
 
-            if (text.Length > 0)
+            if (i == selPara && selEnd > selStart)
             {
-                var formatted = new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture,
-                    FlowDirection.LeftToRight, typeface, EditorFontSize, TextBrush);
-                context.DrawText(formatted, new Point(PaddingLeft, y));
+                var beforeSel = text[..Math.Min(selStart, text.Length)];
+                var selectedText = text[Math.Min(selStart, text.Length)..Math.Min(selEnd, text.Length)];
+                var xStart = PaddingLeft + MeasureRunSpan(para, 0, selStart, isHeading, headingSize);
+                var selWidth = MeasureRunSpan(para, selStart, selEnd, isHeading, headingSize);
+                context.FillRectangle(new SolidColorBrush(Color.FromArgb(80, 255, 255, 255)),
+                    new Rect(xStart, y, Math.Max(selWidth, 2), lineHeight * 0.85));
+            }
+
+            double x = PaddingLeft;
+            if (isHeading)
+            {
+                if (text.Length > 0)
+                {
+                    var typeface = new Typeface(FontFamily.Default, weight: FontWeight.Bold);
+                    var formatted = new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight, typeface, headingSize, TextBrush);
+                    context.DrawText(formatted, new Point(x, y));
+                }
+            }
+            else
+            {
+                int pos = 0;
+                foreach (var run in para.Runs)
+                {
+                    if (run.Text.Length == 0) { continue; }
+                    var style = run.IsItalic ? FontStyle.Italic : FontStyle.Normal;
+                    var weight = run.IsBold ? FontWeight.Bold : FontWeight.Normal;
+                    var typeface = new Typeface(FontFamily.Default, style, weight);
+                    var formatted = new FormattedText(run.Text, System.Globalization.CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight, typeface, SizeToFontSize(run.Size), TextBrush);
+                    context.DrawText(formatted, new Point(x, y));
+                    x += formatted.Width;
+                    pos += run.Text.Length;
+                }
             }
 
             if (IsFocused && _caretVisible && i == _caretParagraph)
             {
                 var safeOffset = Math.Clamp(_caretOffset, 0, text.Length);
-                var beforeCaret = text[..safeOffset];
-                double caretX = PaddingLeft;
-                if (beforeCaret.Length > 0)
-                {
-                    var measured = new FormattedText(beforeCaret, System.Globalization.CultureInfo.CurrentCulture,
-                        FlowDirection.LeftToRight, typeface, EditorFontSize, TextBrush);
-                    caretX += measured.Width;
-                }
-                context.DrawLine(new Pen(CaretBrush, 1.2), new Point(caretX, y), new Point(caretX, y + EditorFontSize + 2));
+                double caretX = PaddingLeft + MeasureRunSpan(para, 0, safeOffset, isHeading, headingSize);
+                context.DrawLine(new Pen(CaretBrush, 1.2), new Point(caretX, y), new Point(caretX, y + lineHeight * 0.85));
             }
 
-            y += LineHeight;
+            y += lineHeight;
         }
+    }
+
+    private double MeasureRunSpan(Paragraph para, int start, int end, bool isHeading, double headingSize)
+    {
+        if (end <= start) return 0;
+        var text = para.PlainText;
+        start = Math.Clamp(start, 0, text.Length);
+        end = Math.Clamp(end, 0, text.Length);
+        if (end <= start) return 0;
+
+        if (isHeading)
+        {
+            var typeface = new Typeface(FontFamily.Default, weight: FontWeight.Bold);
+            var formatted = new FormattedText(text[start..end], System.Globalization.CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight, typeface, headingSize, TextBrush);
+            return formatted.Width;
+        }
+
+        double width = 0;
+        int pos = 0;
+        foreach (var run in para.Runs)
+        {
+            var runStart = pos;
+            var runEnd = pos + run.Text.Length;
+            pos = runEnd;
+
+            var overlapStart = Math.Max(start, runStart);
+            var overlapEnd = Math.Min(end, runEnd);
+            if (overlapEnd <= overlapStart) continue;
+
+            var slice = run.Text[(overlapStart - runStart)..(overlapEnd - runStart)];
+            if (slice.Length == 0) continue;
+
+            var style = run.IsItalic ? FontStyle.Italic : FontStyle.Normal;
+            var weight = run.IsBold ? FontWeight.Bold : FontWeight.Normal;
+            var typeface = new Typeface(FontFamily.Default, style, weight);
+            var formatted = new FormattedText(slice, System.Globalization.CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight, typeface, SizeToFontSize(run.Size), TextBrush);
+            width += formatted.Width;
+        }
+        return width;
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
         var paras = EnsureParagraphs();
-        var height = Math.Max(LineHeight, paras.Count * LineHeight) + PaddingTop;
-        return new Size(availableSize.Width, height);
+        double height = PaddingTop;
+        foreach (var para in paras)
+        {
+            height += ParagraphLineHeight(para);
+        }
+        return new Size(availableSize.Width, Math.Max(ParagraphLineHeight(paras[0]), height));
     }
 }
