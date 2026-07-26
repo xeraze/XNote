@@ -40,12 +40,28 @@ public class NoteStore
         try
         {
             var json = File.ReadAllText(FilePath);
-            var notes = JsonSerializer.Deserialize<List<Note>>(json, JsonOptions);
-            return notes ?? new List<Note>();
+            var notes = JsonSerializer.Deserialize<List<Note>>(json, JsonOptions) ?? new List<Note>();
+            foreach (var note in notes)
+            {
+                MigrateLegacyBody(note);
+            }
+            return notes;
         }
         catch (Exception)
         {
             return new List<Note>();
+        }
+    }
+
+    private static void MigrateLegacyBody(Note note)
+    {
+        if (note.Paragraphs.Count == 0 && !string.IsNullOrEmpty(note.Body))
+        {
+            foreach (var line in note.Body.Replace("\r\n", "\n").Split('\n'))
+            {
+                note.Paragraphs.Add(Paragraph.FromPlainText(line));
+            }
+            note.Body = null;
         }
     }
 

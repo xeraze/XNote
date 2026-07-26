@@ -121,6 +121,21 @@
       <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
     </Style>
 
+    <Style Selector="Button.formatbtn">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{StaticResource XnBorderSubtleBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Padding" Value="10,5" />
+      <Setter Property="MinWidth" Value="30" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.formatbtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+
     <Style Selector="TextBox">
       <Setter Property="Background" Value="{StaticResource XnPanelBrush}" />
       <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
@@ -266,7 +281,7 @@
 
     <Grid Grid.Column="2" Background="{StaticResource XnBlackBrush}" IsVisible="{Binding HasSelection}">
       <Grid DataContext="{Binding SelectedNote}" x:DataType="vm:NoteViewModel"
-            RowDefinitions="32,Auto,Auto,*,Auto">
+            RowDefinitions="32,Auto,Auto,Auto,*,Auto">
         <Border Grid.Row="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed" />
         
         <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" Margin="32,10,32,0">
@@ -333,15 +348,38 @@
                  Watermark="Add tags, separated by commas…"
                  FontSize="12" Height="30" />
 
-        <TextBox Grid.Row="3" Margin="32,14,32,0"
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="4" Margin="32,14,32,0">
+          <Button Classes="formatbtn" Focusable="False" Click="Bold_Click" ToolTip.Tip="Bold selection">
+            <TextBlock Text="B" FontWeight="Bold" FontSize="13" />
+          </Button>
+          <Button Classes="formatbtn" Focusable="False" Click="Italic_Click" ToolTip.Tip="Italicize selection">
+            <TextBlock Text="I" FontStyle="Italic" FontSize="13" />
+          </Button>
+          <Border Width="1" Background="{StaticResource XnBorderSubtleBrush}" Margin="4,4" />
+          <Button Classes="formatbtn" Focusable="False" Click="Heading1_Click" ToolTip.Tip="Heading">
+            <TextBlock Text="H1" FontSize="12" />
+          </Button>
+          <Button Classes="formatbtn" Focusable="False" Click="Heading2_Click" ToolTip.Tip="Subheading">
+            <TextBlock Text="H2" FontSize="12" />
+          </Button>
+        </StackPanel>
+
+        <TextBox Name="BodyTextBox" Grid.Row="4" Margin="32,10,32,0"
                  Text="{Binding Body, Mode=TwoWay}"
                  AcceptsReturn="True" TextWrapping="Wrap"
                  VerticalContentAlignment="Top"
                  BorderThickness="0" Background="Transparent"
                  Padding="0" FontSize="14" LineHeight="22"
+                 LostFocus="BodyTextBox_LostFocus"
                  Watermark="Write something…" />
 
-        <TextBlock Grid.Row="4" Margin="32,8,32,24" Text="{Binding MetaLabel}"
+        <SelectableTextBlock Name="BodyPreview" Grid.Row="4" Margin="32,10,32,0"
+                              TextWrapping="Wrap" FontSize="14" LineHeight="22"
+                              Foreground="{StaticResource XnTextBrush}"
+                              IsVisible="False"
+                              Tapped="BodyPreview_Tapped" />
+
+        <TextBlock Grid.Row="5" Margin="32,8,32,24" Text="{Binding MetaLabel}"
                    Foreground="{StaticResource XnTextFaintBrush}" FontSize="11" />
       </Grid>
     </Grid>
@@ -366,13 +404,13 @@
                 HorizontalAlignment="Right" VerticalAlignment="Top"
                 Margin="0,5,10,0">
       <Button Classes="titlebtn" Click="Minimize_Click" ToolTip.Tip="Minimize">
-        <Path Data="M 4,8 L 12,8" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="1.3" />
+        <Path Data="M 3,8 L 13,8" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="1.3" StrokeLineCap="Round" />
       </Button>
       <Button Classes="titlebtn" Click="MaximizeRestore_Click" ToolTip.Tip="Maximize">
-        <Path Data="M 4,4 L 12,4 L 12,12 L 4,12 Z" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="1.3" />
+        <Path Data="M 3,3 L 13,3 L 13,13 L 3,13 Z" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="1.3" />
       </Button>
       <Button Classes="titlebtn titlebtn-close" Click="Close_Click" ToolTip.Tip="Close">
-        <Path Data="M 4,4 L 12,12 M 12,4 L 4,12" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="1.3" />
+        <Path Data="M 3,3 L 13,13 M 13,3 L 3,13" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="1.3" StrokeLineCap="Round" />
       </Button>
     </StackPanel>
   </Panel>
