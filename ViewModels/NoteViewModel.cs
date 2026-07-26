@@ -199,6 +199,15 @@ public class NoteViewModel : ViewModelBase
         _touchDebounce.Start();
     }
 
+    public void NotifyBodyEdited()
+{
+    Model.Paragraphs = Editor.Paragraphs;
+    Model.Body = null;
+    OnPropertyChanged(nameof(Body));
+    OnPropertyChanged(nameof(Preview));
+    Touch();
+}
+
     public int Id => Model.Id;
 
     public string Title
