@@ -214,7 +214,7 @@ public class MainViewModel : ViewModelBase
             {
                 matches = matches.Where(n =>
                     n.Title.ToLowerInvariant().Contains(query) ||
-                    n.Body.ToLowerInvariant().Contains(query) ||
+                    n.Model.PlainText.ToLowerInvariant().Contains(query) ||
                     n.TagsText.ToLowerInvariant().Contains(query));
             }
 

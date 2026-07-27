@@ -55,14 +55,12 @@ public class NoteStore
 
     private static void MigrateLegacyBody(Note note)
     {
-        if (note.Paragraphs.Count == 0 && !string.IsNullOrEmpty(note.Body))
-        {
-            foreach (var line in note.Body.Replace("\r\n", "\n").Split('\n'))
-            {
-                note.Paragraphs.Add(Paragraph.FromPlainText(line));
-            }
-            note.Body = null;
-        }
+        if (string.IsNullOrEmpty(note.Body)) return;
+        if (note.Body.TrimStart().StartsWith("<")) return;
+
+        var escaped = System.Net.WebUtility.HtmlEncode(note.Body);
+        var paragraphs = escaped.Replace("\r\n", "\n").Split('\n');
+        note.Body = string.Concat(Array.ConvertAll(paragraphs, p => $"<p>{p}</p>"));
     }
 
     public void Save(List<Note> notes)

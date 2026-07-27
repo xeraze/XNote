@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:XNote.ViewModels"
         xmlns:views="using:XNote.Views"
+        xmlns:rtb="using:AvaloniaRichEditor.Controls"
         x:Class="XNote.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="avares://XNote/Assets/xnote.ico"
@@ -11,7 +12,7 @@
         Background="{StaticResource XnBlackBrush}"
         WindowStartupLocation="CenterScreen"
         ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
+        WindowDecorations="BorderOnly"
         ExtendClientAreaTitleBarHeightHint="32">
 
   <Window.Resources>
@@ -203,7 +204,7 @@
 
       <Grid Grid.Row="2" Margin="16,0,16,12" ColumnDefinitions="*,Auto">
         <Grid Grid.Column="0">
-          <TextBox Watermark="Search notes…"
+          <TextBox PlaceholderText="Search notes…"
                    Text="{Binding SearchText}"
                    Height="34"
                    Padding="34,0,10,0"
@@ -299,7 +300,7 @@
                     Text="{Binding Title, Mode=TwoWay}"
                     FontSize="20" FontWeight="Medium"
                     BorderThickness="0" Background="Transparent"
-                    Padding="0" Watermark="Untitled" />
+                    Padding="0" PlaceholderText="Untitled" />
 
           <Button Grid.Column="2" Classes="flat" Margin="6,0,0,0"
                   Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SaveNoteCommand}"
@@ -346,45 +347,12 @@
 
         <TextBox Grid.Row="2" Margin="32,10,32,0"
                  Text="{Binding TagsText, Mode=TwoWay}"
-                 Watermark="Add tags, separated by commas…"
+                 PlaceholderText="Add tags, separated by commas…"
                  FontSize="12" Height="30" />
 
-        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="4" Margin="32,14,32,0">
-          <Button Classes="formatbtn" Focusable="False" Click="Bold_Click" ToolTip.Tip="Bold selection">
-            <TextBlock Text="B" FontWeight="Bold" FontSize="13" />
-          </Button>
-          <Button Classes="formatbtn" Focusable="False" Click="Italic_Click" ToolTip.Tip="Italicize selection">
-            <TextBlock Text="I" FontStyle="Italic" FontSize="13" />
-          </Button>
-          <Border Width="1" Background="{StaticResource XnBorderSubtleBrush}" Margin="4,4" />
-          <Button Classes="formatbtn" Focusable="False" Click="Heading1_Click" ToolTip.Tip="Heading">
-            <TextBlock Text="H1" FontSize="12" />
-          </Button>
-          <Button Classes="formatbtn" Focusable="False" Click="Heading2_Click" ToolTip.Tip="Subheading">
-            <TextBlock Text="H2" FontSize="12" />
-          </Button>
-          <Border Width="1" Background="{StaticResource XnBorderSubtleBrush}" Margin="4,4" />
-          <Button Classes="formatbtn" Focusable="False" Click="SizeSmall_Click" ToolTip.Tip="Small text (selection)">
-            <TextBlock Text="S" FontSize="11" />
-          </Button>
-          <Button Classes="formatbtn" Focusable="False" Click="SizeNormal_Click" ToolTip.Tip="Normal text (selection)">
-            <TextBlock Text="M" FontSize="13" />
-          </Button>
-          <Button Classes="formatbtn" Focusable="False" Click="SizeLarge_Click" ToolTip.Tip="Large text (selection)">
-            <TextBlock Text="L" FontSize="15" />
-          </Button>
-          <Button Classes="formatbtn" Focusable="False" Click="SizeExtraLarge_Click" ToolTip.Tip="Extra large text (selection)">
-            <TextBlock Text="XL" FontSize="15" />
-          </Button>
-        </StackPanel>
-
-        <views:RichTextEditor Name="BodyEditor" Grid.Row="4" Margin="32,10,32,0"
-                              VerticalAlignment="Top" />
-
-        <TextBlock Name="BodyWatermark" Grid.Row="4" Margin="32,10,32,0"
-                   Text="Write something…" FontSize="14"
-                   Foreground="{StaticResource XnTextDimBrush}"
-                   IsHitTestVisible="False" IsVisible="False" />
+        <rtb:RichEditorView Name="BodyEditorView" Grid.Row="3" Grid.RowSpan="2" Margin="32,10,32,0"
+                            Background="Transparent"
+                            BorderThickness="0" />
 
         <TextBlock Grid.Row="5" Margin="32,8,32,24" Text="{Binding MetaLabel}"
                    Foreground="{StaticResource XnTextFaintBrush}" FontSize="11" />
