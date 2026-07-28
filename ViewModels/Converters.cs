@@ -5,8 +5,8 @@ namespace XNote.ViewModels;
 
 public static class Converters
 {
-    private static readonly IBrush DoneBrush = new SolidColorBrush(Color.Parse("#6E6E6E"));
-    private static readonly IBrush OpenBrush = new SolidColorBrush(Color.Parse("#5A5A5A"));
+    private static readonly IBrush DoneBrush = new SolidColorBrush(Color.Parse("#A3A3A3"));
+    private static readonly IBrush OpenBrush = new SolidColorBrush(Color.Parse("#3A3A3A"));
 
     public static readonly IValueConverter DoneToBrush =
         new FuncValueConverter<bool, IBrush>(isDone => isDone ? DoneBrush : OpenBrush);

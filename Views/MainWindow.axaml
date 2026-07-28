@@ -51,6 +51,9 @@
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="FontSize" Value="13" />
     </Style>
+    <Style Selector="ToggleButton.flat /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
     <Style Selector="ToggleButton.flat:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
     </Style>
@@ -58,18 +61,21 @@
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
       <Setter Property="BorderBrush" Value="{StaticResource XnTextDimBrush}" />
     </Style>
+    <Style Selector="ToggleButton.flat:checked">
+      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+    </Style>
 
     <Style Selector="Button.danger">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderBrush" Value="#5A3030" />
+      <Setter Property="BorderBrush" Value="#D9A3A3" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Foreground" Value="#E08080" />
+      <Setter Property="Foreground" Value="#B33030" />
       <Setter Property="Padding" Value="14,8" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
     </Style>
     <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#2A1616" />
+      <Setter Property="Background" Value="#FBEAEA" />
     </Style>
 
     <Style Selector="Button.iconbtn">
@@ -87,10 +93,10 @@
     </Style>
 
     <Style Selector="Button.iconbtn.deletebtn:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#2A1616" />
+      <Setter Property="Background" Value="#FBEAEA" />
     </Style>
     <Style Selector="Button.iconbtn.deletebtn:pointerover Path">
-      <Setter Property="Stroke" Value="#E08080" />
+      <Setter Property="Stroke" Value="#B33030" />
     </Style>
 
     <Style Selector="PathIcon">
@@ -143,7 +149,7 @@
       <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
       <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
       <Setter Property="CaretBrush" Value="{StaticResource XnAccentBrush}" />
-      <Setter Property="SelectionBrush" Value="#33FFFFFF" />
+      <Setter Property="SelectionBrush" Value="#332A2A2A" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
     <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
@@ -162,7 +168,7 @@
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
     </Style>
     <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#141414" />
+      <Setter Property="Background" Value="#EFEFEF" />
     </Style>
 
     <Style Selector="Button.titlebtn">
@@ -175,18 +181,19 @@
       <Setter Property="Cursor" Value="Hand" />
     </Style>
     <Style Selector="Button.titlebtn Path">
-      <Setter Property="Width" Value="11" />
-      <Setter Property="Height" Value="11" />
-      <Setter Property="Stretch" Value="Uniform" />
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style Selector="Button.titlebtn:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
     </Style>
     <Style Selector="Button.titlebtn-close:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#5A2020" />
+      <Setter Property="Background" Value="#F5C6C6" />
     </Style>
     <Style Selector="Button.titlebtn-close:pointerover Path">
-      <Setter Property="Stroke" Value="#F0A0A0" />
+      <Setter Property="Stroke" Value="#8A2020" />
     </Style>
   </Window.Styles>
 
@@ -334,7 +341,7 @@
               <Button Classes="danger" Padding="10,6"
                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ConfirmDeleteCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                  <Path Classes="line-icon" Data="{StaticResource IconCheck}" Width="12" Height="12" Stretch="Uniform" Stroke="#E08080" />
+                  <Path Classes="line-icon" Data="{StaticResource IconCheck}" Width="12" Height="12" Stretch="Uniform" Stroke="#B33030" />
                   <TextBlock Text="Delete" FontSize="12" />
                 </StackPanel>
               </Button>
@@ -350,9 +357,15 @@
                  PlaceholderText="Add tags, separated by commas…"
                  FontSize="12" Height="30" />
 
-        <rtb:RichEditorView Name="BodyEditorView" Grid.Row="3" Grid.RowSpan="2" Margin="32,10,32,0"
-                            Background="Transparent"
-                            BorderThickness="0" />
+        <Border Grid.Row="3" Grid.RowSpan="2" Margin="32,10,32,0"
+                Background="{StaticResource XnPanelBrush}"
+                BorderBrush="{StaticResource XnBorderBrush}"
+                BorderThickness="1" CornerRadius="8"
+                ClipToBounds="True">
+          <Border Padding="16,12">
+            <rtb:RichEditorView Name="BodyEditorView" Background="Transparent" BorderThickness="0" />
+          </Border>
+        </Border>
 
         <TextBlock Grid.Row="5" Margin="32,8,32,24" Text="{Binding MetaLabel}"
                    Foreground="{StaticResource XnTextFaintBrush}" FontSize="11" />

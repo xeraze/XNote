@@ -47,7 +47,7 @@
         <TextBlock Text="XNOTE"
                    Foreground="{StaticResource XnAccentBrush}"
                    FontSize="26"
-                   FontWeight="Light"
+                   FontWeight="Bold"
                    LetterSpacing="6"
                    HorizontalAlignment="Center" />
         <TextBlock Name="StatusText"
