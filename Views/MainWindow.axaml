@@ -19,9 +19,14 @@
     <SolidColorBrush x:Key="DotOpen" Color="{StaticResource XnTextFaintColor}" />
 
     <StreamGeometry x:Key="IconPlus">M 12,5 L 12,19 M 5,12 L 19,12</StreamGeometry>
+    <StreamGeometry x:Key="IconImport">M 12,3 L 12,15 M 8,11 L 12,15 L 16,11 M 4,17 L 4,19 L 20,19 L 20,17</StreamGeometry>
+    <StreamGeometry x:Key="IconExport">M 12,15 L 12,3 M 8,7 L 12,3 L 16,7 M 4,17 L 4,19 L 20,19 L 20,17</StreamGeometry>
     <StreamGeometry x:Key="IconTrash">M 5,7 L 19,7 M 9,7 L 9,5 L 15,5 L 15,7 M 7,7 L 7,20 L 17,20 L 17,7 M 10,11 L 10,16 M 14,11 L 14,16</StreamGeometry>
-    <StreamGeometry x:Key="IconClose">M 6,6 L 18,18 M 18,6 L 6,18</StreamGeometry>
     <StreamGeometry x:Key="IconCheck">M 5,13 L 10,18 L 19,7</StreamGeometry>
+
+    <StreamGeometry x:Key="IconWinMinimize">M 3,11 L 13,11</StreamGeometry>
+    <StreamGeometry x:Key="IconWinMaximize">M 3.5,3.5 L 12.5,3.5 L 12.5,12.5 L 3.5,12.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconWinClose">M 4,4 L 12,12 M 12,4 L 4,12</StreamGeometry>
 
     <StreamGeometry x:Key="IconDot">M 10,6 L 14,10 L 10,14 L 6,10 Z</StreamGeometry>
   </Window.Resources>
@@ -32,7 +37,7 @@
       <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
-      <Setter Property="Padding" Value="14,8" />
+      <Setter Property="Padding" Value="12,6" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="FontSize" Value="13" />
@@ -46,10 +51,12 @@
       <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
-      <Setter Property="Padding" Value="14,8" />
+      <Setter Property="Padding" Value="12,6" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="FontSize" Value="13" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
     <Style Selector="ToggleButton.flat /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
@@ -59,7 +66,7 @@
     </Style>
     <Style Selector="ToggleButton.flat:checked /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
     </Style>
     <Style Selector="ToggleButton.flat:checked">
       <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
@@ -70,7 +77,7 @@
       <Setter Property="BorderBrush" Value="#D9A3A3" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="Foreground" Value="#B33030" />
-      <Setter Property="Padding" Value="14,8" />
+      <Setter Property="Padding" Value="12,6" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
     </Style>
@@ -90,6 +97,9 @@
     </Style>
     <Style Selector="Button.iconbtn:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+    <Style Selector="Button.iconbtn:disabled /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="0.3" />
     </Style>
 
     <Style Selector="Button.iconbtn.deletebtn:pointerover /template/ ContentPresenter">
@@ -129,21 +139,6 @@
       <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
     </Style>
 
-    <Style Selector="Button.formatbtn">
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnBorderSubtleBrush}" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
-      <Setter Property="Padding" Value="10,5" />
-      <Setter Property="MinWidth" Value="30" />
-      <Setter Property="CornerRadius" Value="5" />
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="HorizontalContentAlignment" Value="Center" />
-    </Style>
-    <Style Selector="Button.formatbtn:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
-    </Style>
-
     <Style Selector="TextBox">
       <Setter Property="Background" Value="{StaticResource XnPanelBrush}" />
       <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
@@ -152,23 +147,24 @@
       <Setter Property="SelectionBrush" Value="#332A2A2A" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
-    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-      <Setter Property="BorderBrush" Value="{StaticResource XnTextFaintBrush}" />
-    </Style>
-    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-      <Setter Property="BorderBrush" Value="{StaticResource XnTextDimBrush}" />
-    </Style>
 
     <Style Selector="ListBoxItem">
       <Setter Property="Padding" Value="0" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Margin" Value="0,0,0,4" />
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBoxItem /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelBrush}" />
     </Style>
     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
     </Style>
-    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#EFEFEF" />
+    <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
     </Style>
 
     <Style Selector="Button.titlebtn">
@@ -181,19 +177,10 @@
       <Setter Property="Cursor" Value="Hand" />
     </Style>
     <Style Selector="Button.titlebtn Path">
-      <Setter Property="Width" Value="16" />
-      <Setter Property="Height" Value="16" />
+      <Setter Property="Width" Value="14" />
+      <Setter Property="Height" Value="14" />
       <Setter Property="HorizontalAlignment" Value="Center" />
       <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
-    <Style Selector="Button.titlebtn:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
-    </Style>
-    <Style Selector="Button.titlebtn-close:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="#F5C6C6" />
-    </Style>
-    <Style Selector="Button.titlebtn-close:pointerover Path">
-      <Setter Property="Stroke" Value="#8A2020" />
     </Style>
   </Window.Styles>
 
@@ -204,10 +191,11 @@
 
       <Border Grid.Row="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed" />
 
-      <TextBlock Grid.Row="1" Text="XNOTE"
-                 Foreground="{StaticResource XnAccentBrush}"
-                 FontSize="15" FontWeight="Medium" LetterSpacing="4"
-                 Margin="20,10,20,16" />
+      <TextBlock Grid.Row="1" Text="XNote"
+                 FontFamily="Segoe UI, sans-serif"
+                 Foreground="{StaticResource XnTextBrush}"
+                 FontSize="18" FontWeight="SemiBold"
+                 Margin="20,12,20,16" />
 
       <Grid Grid.Row="2" Margin="16,0,16,12" ColumnDefinitions="*,Auto">
         <Grid Grid.Column="0">
@@ -224,11 +212,18 @@
                   Stroke="{StaticResource XnTextFaintBrush}" StrokeThickness="1.5" />
           </Canvas>
         </Grid>
-        <Button Grid.Column="1" Classes="iconbtn" Margin="6,0,0,0"
-                Command="{Binding AddNoteCommand}"
-                ToolTip.Tip="New note (Ctrl+N)">
-          <Path Classes="line-icon" Data="{StaticResource IconPlus}" Stroke="{StaticResource XnTextBrush}" Width="16" Height="16" Stretch="Uniform" />
-        </Button>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="4,0,0,0">
+          <Button Classes="iconbtn"
+                  Click="ImportDirect_Click"
+                  ToolTip.Tip="Import .txt as new note">
+            <Path Classes="line-icon" Data="{StaticResource IconImport}" Stroke="{StaticResource XnTextBrush}" Width="16" Height="16" Stretch="Uniform" />
+          </Button>
+          <Button Classes="iconbtn"
+                  Command="{Binding AddNoteCommand}"
+                  ToolTip.Tip="New note (Ctrl+N)">
+            <Path Classes="line-icon" Data="{StaticResource IconPlus}" Stroke="{StaticResource XnTextBrush}" Width="16" Height="16" Stretch="Uniform" />
+          </Button>
+        </StackPanel>
       </Grid>
 
       <WrapPanel Grid.Row="3" Orientation="Horizontal" Margin="16,0,20,10">
@@ -290,11 +285,12 @@
 
     <Grid Grid.Column="2" Background="{StaticResource XnBlackBrush}" IsVisible="{Binding HasSelection}">
       <Grid DataContext="{Binding SelectedNote}" x:DataType="vm:NoteViewModel"
-            RowDefinitions="32,Auto,Auto,Auto,*,Auto">
+            RowDefinitions="32,Auto,Auto,*,Auto">
         <Border Grid.Row="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed" />
         
-        <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" Margin="32,10,32,0">
-          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" Margin="0,0,10,0"
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Margin="32,10,32,0">
+          
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" Margin="0,0,12,0"
                       VerticalAlignment="Center" IsVisible="{Binding IsDraft}">
             <Ellipse Width="7" Height="7" VerticalAlignment="Center"
                      Fill="{StaticResource XnTextFaintBrush}" />
@@ -304,52 +300,70 @@
           </StackPanel>
 
           <TextBox Grid.Column="1"
-                    Text="{Binding Title, Mode=TwoWay}"
-                    FontSize="20" FontWeight="Medium"
-                    BorderThickness="0" Background="Transparent"
-                    Padding="0" PlaceholderText="Untitled" />
+                   Text="{Binding Title, Mode=TwoWay}"
+                   FontSize="20" FontWeight="Medium"
+                   BorderThickness="0" Background="Transparent"
+                   Padding="0" PlaceholderText="Untitled"
+                   VerticalAlignment="Center" />
 
-          <Button Grid.Column="2" Classes="flat" Margin="6,0,0,0"
-                  Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SaveNoteCommand}"
-                  IsVisible="{Binding IsDraft}"
-                  ToolTip.Tip="Save this note"
-                  Content="Save" />
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            
+            <Button Classes="flat"
+                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SaveNoteCommand}"
+                    IsVisible="{Binding IsDraft}"
+                    ToolTip.Tip="Save this note"
+                    Content="Save" />
 
-          <ToggleButton Grid.Column="3" Classes="flat" Margin="6,0,0,0"
-                        IsChecked="{Binding IsTask, Mode=TwoWay}"
-                        ToolTip.Tip="Mark as a task with a done/not-done state"
-                        Content="Task" />
-          <ToggleButton Grid.Column="4" Classes="flat" Margin="6,0,0,0"
-                        IsChecked="{Binding IsDone, Mode=TwoWay}"
-                        IsVisible="{Binding IsTask}"
-                        ToolTip.Tip="Mark this task as done"
-                        Content="Done" />
+            <ToggleButton Classes="flat"
+                          IsChecked="{Binding IsTask, Mode=TwoWay}"
+                          ToolTip.Tip="Mark as a task"
+                          Content="Task" />
+          
+            <ToggleButton Classes="flat"
+                          IsChecked="{Binding IsDone, Mode=TwoWay}"
+                          IsVisible="{Binding IsTask}"
+                          ToolTip.Tip="Mark task as done"
+                          Content="Done" />
 
-          <Grid Grid.Column="5" Margin="10,0,0,0">
-            <Button Classes="iconbtn deletebtn"
-                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).RequestDeleteCommand}"
-                    IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).IsConfirmingDelete}"
-                    ToolTip.Tip="Delete this note">
-              <Path Classes="line-icon" Data="{StaticResource IconTrash}" Stroke="{StaticResource XnTextDimBrush}" Width="16" Height="16" Stretch="Uniform" />
+            <Button Classes="iconbtn"
+                    Click="ImportTxt_Click"
+                    IsEnabled="{Binding !IsDraft}"
+                    ToolTip.Tip="Import .txt into note">
+              <Path Classes="line-icon" Data="{StaticResource IconImport}" Stroke="{StaticResource XnTextBrush}" Width="16" Height="16" Stretch="Uniform" />
             </Button>
 
-            <StackPanel Orientation="Horizontal" Spacing="6"
-                        IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).IsConfirmingDelete}">
-              <TextBlock Text="Delete this note?"
-                         Foreground="{StaticResource XnTextDimBrush}"
-                         FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
-              <Button Classes="danger" Padding="10,6"
-                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ConfirmDeleteCommand}">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                  <Path Classes="line-icon" Data="{StaticResource IconCheck}" Width="12" Height="12" Stretch="Uniform" Stroke="#B33030" />
-                  <TextBlock Text="Delete" FontSize="12" />
-                </StackPanel>
+            <Button Classes="iconbtn"
+                    Click="ExportTxt_Click"
+                    IsEnabled="{Binding !IsDraft}"
+                    ToolTip.Tip="Export note to .txt">
+              <Path Classes="line-icon" Data="{StaticResource IconExport}" Stroke="{StaticResource XnTextBrush}" Width="16" Height="16" Stretch="Uniform" />
+            </Button>
+
+            <Panel Margin="4,0,0,0">
+              <Button Classes="iconbtn deletebtn"
+                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).RequestDeleteCommand}"
+                      IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).IsConfirmingDelete}"
+                      ToolTip.Tip="Delete this note">
+                <Path Classes="line-icon" Data="{StaticResource IconTrash}" Stroke="{StaticResource XnTextDimBrush}" Width="16" Height="16" Stretch="Uniform" />
               </Button>
-              <Button Classes="flat" Padding="10,6"
-                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CancelDeleteCommand}"
-                      Content="Cancel" FontSize="12" />
-            </StackPanel>
-          </Grid>
+
+              <StackPanel Orientation="Horizontal" Spacing="6"
+                          IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).IsConfirmingDelete}">
+                <TextBlock Text="Delete this note?"
+                           Foreground="{StaticResource XnTextDimBrush}"
+                           FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
+              
+                <Button Classes="danger" Padding="10,6"
+                        Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ConfirmDeleteCommand}">
+                  <TextBlock Text="Delete" FontSize="12" />
+                </Button>
+
+                <Button Classes="flat" Padding="10,6"
+                        Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CancelDeleteCommand}"
+                        Content="Cancel" FontSize="12" />
+              </StackPanel>
+            </Panel>
+          </StackPanel>
         </Grid>
 
         <TextBox Grid.Row="2" Margin="32,10,32,0"
@@ -357,17 +371,17 @@
                  PlaceholderText="Add tags, separated by commas…"
                  FontSize="12" Height="30" />
 
-        <Border Grid.Row="3" Grid.RowSpan="2" Margin="32,10,32,0"
+        <Border Grid.Row="3" Margin="32,10,32,0"
                 Background="{StaticResource XnPanelBrush}"
                 BorderBrush="{StaticResource XnBorderBrush}"
                 BorderThickness="1" CornerRadius="8"
                 ClipToBounds="True">
           <Border Padding="16,12">
-            <rtb:RichEditorView Name="BodyEditorView" Background="Transparent" BorderThickness="0" />
+            <rtb:RichEditorView Name="BodyEditorView" Background="Transparent" BorderThickness="0" ShowFileActions="False" ShowStatusBar="False" />
           </Border>
         </Border>
 
-        <TextBlock Grid.Row="5" Margin="32,8,32,24" Text="{Binding MetaLabel}"
+        <TextBlock Grid.Row="4" Margin="32,8,32,24" Text="{Binding MetaLabel}"
                    Foreground="{StaticResource XnTextFaintBrush}" FontSize="11" />
       </Grid>
     </Grid>
@@ -392,13 +406,13 @@
                 HorizontalAlignment="Right" VerticalAlignment="Top"
                 Margin="0,5,10,0">
       <Button Classes="titlebtn" Click="Minimize_Click" ToolTip.Tip="Minimize">
-        <Path Data="M 3,8 L 13,8" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="1.3" StrokeLineCap="Round" />
+        <Path Classes="line-icon" Data="{StaticResource IconWinMinimize}" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" />
       </Button>
       <Button Classes="titlebtn" Click="MaximizeRestore_Click" ToolTip.Tip="Maximize">
-        <Path Data="M 3,3 L 13,3 L 13,13 L 3,13 Z" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="1.3" />
+        <Path Classes="line-icon" Data="{StaticResource IconWinMaximize}" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" />
       </Button>
       <Button Classes="titlebtn titlebtn-close" Click="Close_Click" ToolTip.Tip="Close">
-        <Path Data="M 3,3 L 13,13 M 13,3 L 3,13" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="1.3" StrokeLineCap="Round" />
+        <Path Classes="line-icon" Data="{StaticResource IconWinClose}" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" />
       </Button>
     </StackPanel>
   </Panel>
