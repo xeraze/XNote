@@ -29,13 +29,11 @@ public class MainViewModel : ViewModelBase
     private bool _isApplyingFilter;
     private NoteFilterMode _filterMode = NoteFilterMode.All;
 
-    // Undo delete
     private Note? _undoNote;
     private string _undoTitle = string.Empty;
     private bool _isShowingUndo;
     private DispatcherTimer? _undoTimer;
 
-    // Save status
     private string _saveStatusText = string.Empty;
     private DispatcherTimer? _saveStatusClearTimer;
 
@@ -329,7 +327,7 @@ public class MainViewModel : ViewModelBase
         ApplyFilter();
         OnPropertyChanged(nameof(TotalCountLabel));
 
-        // Show undo toast for 10 seconds
+
         if (wasSaved)
         {
             _undoNote = deletedNote;
