@@ -7,6 +7,20 @@
     <FluentTheme />
   </Application.Styles>
 
+  <TrayIcon.Icons>
+    <TrayIcons>
+      <TrayIcon Icon="avares://XNote/Assets/xnote.ico" ToolTipText="XNote" Clicked="TrayIcon_Clicked">
+        <TrayIcon.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Restore XNote" Click="TrayRestore_Click" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Exit" Click="TrayExit_Click" />
+          </NativeMenu>
+        </TrayIcon.Menu>
+      </TrayIcon>
+    </TrayIcons>
+  </TrayIcon.Icons>
+
   <Application.Resources>
     <Color x:Key="XnBlackColor">#FFFFFF</Color>
     <Color x:Key="XnPanelColor">#F5F5F5</Color>

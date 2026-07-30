@@ -18,17 +18,17 @@
   <Window.Resources>
     <SolidColorBrush x:Key="DotOpen" Color="{StaticResource XnTextFaintColor}" />
 
-    <StreamGeometry x:Key="IconPlus">M 12,5 L 12,19 M 5,12 L 19,12</StreamGeometry>
-    <StreamGeometry x:Key="IconImport">M 12,3 L 12,15 M 8,11 L 12,15 L 16,11 M 4,17 L 4,19 L 20,19 L 20,17</StreamGeometry>
-    <StreamGeometry x:Key="IconExport">M 12,15 L 12,3 M 8,7 L 12,3 L 16,7 M 4,17 L 4,19 L 20,19 L 20,17</StreamGeometry>
-    <StreamGeometry x:Key="IconTrash">M 5,7 L 19,7 M 9,7 L 9,5 L 15,5 L 15,7 M 7,7 L 7,20 L 17,20 L 17,7 M 10,11 L 10,16 M 14,11 L 14,16</StreamGeometry>
-    <StreamGeometry x:Key="IconCheck">M 5,13 L 10,18 L 19,7</StreamGeometry>
+    <StreamGeometry x:Key="IconPlus">M 7,7 V 0.5 H 9 V 7 H 15.5 V 9 H 9 V 15.5 H 7 V 9 H 0.5 V 7 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconImport">M 9,7.826 V 1 H 7 V 7.826 L 4.392,5.59 L 3.09,7.108 L 8,11.318 L 12.91,7.108 L 11.608,5.59 Z M 3,13 V 10 H 1 V 13 A 2,2 0 0 0 3,15 H 13 A 2,2 0 0 0 15,13 V 10 H 13 V 13 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconExport">M 7,4.174 V 11 H 9 V 4.174 L 11.608,6.41 L 12.91,4.892 L 8,0.682 L 3.09,4.892 L 4.392,6.41 Z M 3,13 V 10 H 1 V 13 A 2,2 0 0 0 3,15 H 13 A 2,2 0 0 0 15,13 V 10 H 13 V 13 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconTrash">M 7,7 V 12 H 9 V 7 Z M 11,0 H 5 V 3 H 0 V 5 H 1.165 L 2.718,13.537 A 3,3 0 0 0 5.669,16 H 10.331 A 3,3 0 0 0 13.283,13.537 L 14.835,5 H 16 V 3 H 11 Z M 9,3 H 7 V 2 H 9 Z M 4.685,13.179 L 3.198,5 H 12.802 L 11.315,13.179 A 1,1 0 0 1 10.331,14 H 5.669 A 1,1 0 0 1 4.685,13.179 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconCheck">M 14.914,4 L 5.444,13.47 L 1.09,8.393 L 2.608,7.09 L 5.556,10.53 L 13.5,2.585 Z</StreamGeometry>
 
-    <StreamGeometry x:Key="IconWinMinimize">M 3,11 L 13,11</StreamGeometry>
-    <StreamGeometry x:Key="IconWinMaximize">M 3.5,3.5 L 12.5,3.5 L 12.5,12.5 L 3.5,12.5 Z</StreamGeometry>
-    <StreamGeometry x:Key="IconWinClose">M 4,4 L 12,12 M 12,4 L 4,12</StreamGeometry>
+    <StreamGeometry x:Key="IconWinMinimize">M 15,9 H 1 V 7 H 15 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconWinMaximize">M 11.586,3 L 8.586,6 L 10,7.414 L 13,4.414 V 7 H 15 V 1 H 9 V 3 Z M 4.414,13 L 7.414,10 L 6,8.586 L 3,11.586 V 9 H 1 V 15 H 7 V 13 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconWinClose">M 3.5,2.086 L 8,6.586 L 12.5,2.086 L 13.914,3.5 L 9.414,8 L 13.914,12.5 L 12.5,13.914 L 8,9.414 L 3.5,13.914 L 2.086,12.5 L 6.586,8 L 2.086,3.5 Z</StreamGeometry>
 
-    <StreamGeometry x:Key="IconDot">M 10,6 L 14,10 L 10,14 L 6,10 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconDot">M 8,2 A 6,6 0 1 0 8,14 A 6,6 0 0 0 8,2 M 0,8 A 8,8 0 1 1 16,8 A 8,8 0 0 1 0,8</StreamGeometry>
   </Window.Resources>
 
   <Window.Styles>
@@ -129,6 +129,11 @@
       <Setter Property="Height" Value="16" />
     </Style>
     
+    <Style Selector="PathIcon.rivet">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+    </Style>
+
     <Style Selector="Path.line-icon">
       <Setter Property="StrokeThickness" Value="1.5" />
       <Setter Property="StrokeLineCap" Value="Round" />
@@ -192,21 +197,30 @@
     <Style Selector="Button.titlebtn">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Width" Value="24" />
+      <Setter Property="Width" Value="26" />
       <Setter Property="Height" Value="22" />
       <Setter Property="Padding" Value="0" />
       <Setter Property="CornerRadius" Value="4" />
       <Setter Property="Cursor" Value="Hand" />
     </Style>
-    <Style Selector="Button.titlebtn Path">
-      <Setter Property="Width" Value="14" />
-      <Setter Property="Height" Value="14" />
+    <Style Selector="Button.titlebtn PathIcon">
+      <Setter Property="Width" Value="13" />
+      <Setter Property="Height" Value="13" />
       <Setter Property="HorizontalAlignment" Value="Center" />
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
+    <Style Selector="Button.titlebtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+    <Style Selector="Button.titlebtn-close:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#FBEAEA" />
+    </Style>
+    <Style Selector="Button.titlebtn-close:pointerover PathIcon">
+      <Setter Property="Foreground" Value="#B33030" />
+    </Style>
   </Window.Styles>
 
-  <Panel>
+  <Panel Name="RootPanel" PointerPressed="RootPanel_PointerPressed">
     <Grid ColumnDefinitions="300,1,*">
 
     <Grid Grid.Column="0" RowDefinitions="32,Auto,Auto,Auto,*,Auto" Background="{StaticResource XnBlackBrush}">
@@ -216,8 +230,8 @@
       <TextBlock Grid.Row="1" Text="XNote"
                  FontFamily="avares://XNote/Assets/Fonts/Battley.otf#Battley"
                  Foreground="{StaticResource XnTextBrush}"
-                 FontSize="24"
-                 Margin="20,12,20,16" />
+                 FontSize="72"
+                 Margin="20,8,20,12" />
 
       <Grid Grid.Row="2" Margin="16,0,16,12" ColumnDefinitions="*,Auto">
         <Grid Grid.Column="0">
@@ -238,12 +252,12 @@
           <Button Classes="iconbtn"
                   Click="ImportDirect_Click"
                   ToolTip.Tip="Import .txt as new note">
-            <Path Classes="line-icon" Data="{StaticResource IconImport}" Stroke="{StaticResource XnTextBrush}" Width="16" Height="16" Stretch="Uniform" />
+            <PathIcon Classes="rivet" Data="{StaticResource IconImport}" Foreground="{StaticResource XnTextBrush}" />
           </Button>
           <Button Classes="iconbtn"
                   Command="{Binding AddNoteCommand}"
                   ToolTip.Tip="New note (Ctrl+N)">
-            <Path Classes="line-icon" Data="{StaticResource IconPlus}" Stroke="{StaticResource XnTextBrush}" Width="16" Height="16" Stretch="Uniform" />
+            <PathIcon Classes="rivet" Data="{StaticResource IconPlus}" Foreground="{StaticResource XnTextBrush}" />
           </Button>
         </StackPanel>
       </Grid>
@@ -267,7 +281,7 @@
             <DataTemplate DataType="vm:NoteViewModel">
               <Grid ColumnDefinitions="Auto,*" Margin="10,8">
                 <Grid Grid.Column="0" Width="14" Height="14" Margin="0,3,10,0" VerticalAlignment="Top">
-                  <PathIcon Data="{StaticResource IconDot}" Width="10" Height="10"
+                  <PathIcon Classes="rivet" Data="{StaticResource IconDot}" Width="8" Height="8"
                             Foreground="{StaticResource XnTextDimBrush}"
                             IsVisible="{Binding !IsTask}" />
 
@@ -276,10 +290,10 @@
                           BorderThickness="1.4"
                           BorderBrush="{Binding IsDone, Converter={x:Static vm:Converters.DoneToBrush}}"
                           Background="{Binding IsDone, Converter={x:Static vm:Converters.DoneToBrush}}">
-                    <Path Classes="line-icon" Data="{StaticResource IconCheck}"
-                          Width="9" Height="9" Stretch="Uniform"
-                          Stroke="{StaticResource XnBlackBrush}"
-                          IsVisible="{Binding IsDone}" />
+                    <PathIcon Classes="rivet" Data="{StaticResource IconCheck}"
+                              Width="9" Height="9"
+                              Foreground="{StaticResource XnBlackBrush}"
+                              IsVisible="{Binding IsDone}" />
                   </Border>
                 </Grid>
                 <StackPanel Grid.Column="1" Spacing="3">
@@ -303,10 +317,45 @@
           </ListBox.ItemTemplate>
       </ListBox>
 
-      <StackPanel Grid.Row="5" Orientation="Horizontal" Margin="20,10,20,16" Spacing="16">
-        <TextBlock Text="{Binding TotalCountLabel}"
-                   Foreground="{StaticResource XnTextFaintBrush}" FontSize="11" />
-      </StackPanel>
+      <Grid Grid.Row="5">
+        <StackPanel Orientation="Horizontal" Margin="20,10,20,16" Spacing="8"
+                    IsVisible="{Binding !IsShowingUndo}" VerticalAlignment="Center">
+          <TextBlock Text="{Binding TotalCountLabel}"
+                     Foreground="{StaticResource XnTextFaintBrush}" FontSize="11"
+                     VerticalAlignment="Center" />
+          <TextBlock Text="·" Foreground="{StaticResource XnTextFaintBrush}" FontSize="11"
+                     VerticalAlignment="Center" IsVisible="{Binding HasSaveStatus}" />
+          <TextBlock Text="{Binding SaveStatusText}" FontSize="11"
+                     Foreground="{StaticResource XnTextDimBrush}" VerticalAlignment="Center"
+                     IsVisible="{Binding HasSaveStatus}" />
+        </StackPanel>
+
+        <Border IsVisible="{Binding IsShowingUndo}"
+                Background="{StaticResource XnPanelBrush}"
+                BorderBrush="{StaticResource XnBorderSubtleBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="14,10,10,14">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="Note deleted" FontSize="10"
+                         Foreground="{StaticResource XnTextFaintBrush}" />
+              <TextBlock Text="{Binding UndoTitle}" FontSize="12" FontWeight="Medium"
+                         Foreground="{StaticResource XnTextBrush}"
+                         TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+              <Button Classes="flat" Padding="10,5" FontSize="12"
+                      Command="{Binding UndoDeleteCommand}" Content="Undo" />
+              <Button Classes="iconbtn" Width="28" Height="28"
+                      Command="{Binding DismissUndoCommand}"
+                      ToolTip.Tip="Dismiss">
+                <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}"
+                          Width="10" Height="10" Foreground="{StaticResource XnTextDimBrush}" />
+              </Button>
+            </StackPanel>
+          </Grid>
+        </Border>
+      </Grid>
     </Grid>
 
     <Border Grid.Column="1" Background="{StaticResource XnBorderSubtleBrush}" />
@@ -356,15 +405,15 @@
             <Button Classes="iconbtn"
                     Click="ImportTxt_Click"
                     IsEnabled="{Binding !IsDraft}"
-                    ToolTip.Tip="Import .txt into note (save the note first)">
-              <Path Classes="line-icon" Data="{StaticResource IconImport}" Stroke="{StaticResource XnTextBrush}" Width="16" Height="16" Stretch="Uniform" />
+                    ToolTip.Tip="Import">
+              <PathIcon Classes="rivet" Data="{StaticResource IconImport}" Foreground="{StaticResource XnTextBrush}" />
             </Button>
 
             <Button Classes="iconbtn"
                     Click="ExportTxt_Click"
                     IsEnabled="{Binding !IsDraft}"
-                    ToolTip.Tip="Export note to .txt (save the note first)">
-              <Path Classes="line-icon" Data="{StaticResource IconExport}" Stroke="{StaticResource XnTextBrush}" Width="16" Height="16" Stretch="Uniform" />
+                    ToolTip.Tip="Export">
+              <PathIcon Classes="rivet" Data="{StaticResource IconExport}" Foreground="{StaticResource XnTextBrush}" />
             </Button>
 
             <Panel Margin="4,0,0,0">
@@ -372,7 +421,7 @@
                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).RequestDeleteCommand}"
                       IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).IsConfirmingDelete}"
                       ToolTip.Tip="Delete this note">
-                <Path Classes="line-icon" Data="{StaticResource IconTrash}" Stroke="{StaticResource XnTextDimBrush}" Width="16" Height="16" Stretch="Uniform" />
+                <PathIcon Classes="rivet" Data="{StaticResource IconTrash}" Foreground="{StaticResource XnTextDimBrush}" />
               </Button>
 
               <StackPanel Orientation="Horizontal" Spacing="6"
@@ -416,8 +465,8 @@
 
     <Grid Grid.Column="2" Background="{StaticResource XnBlackBrush}" IsVisible="{Binding !HasSelection}">
       <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
-        <Path Classes="line-icon" Data="{StaticResource IconPlus}" Width="28" Height="28" Stretch="Uniform"
-                   Stroke="{StaticResource XnTextFaintBrush}"
+        <PathIcon Classes="rivet" Data="{StaticResource IconPlus}" Width="28" Height="28"
+                   Foreground="{StaticResource XnTextFaintBrush}"
                    HorizontalAlignment="Center" />
         <TextBlock Text="No note selected" Foreground="{StaticResource XnTextDimBrush}"
                    FontSize="14" HorizontalAlignment="Center" />
@@ -434,13 +483,13 @@
                 HorizontalAlignment="Right" VerticalAlignment="Top"
                 Margin="0,5,10,0">
       <Button Classes="titlebtn" Click="Minimize_Click" ToolTip.Tip="Minimize">
-        <Path Classes="line-icon" Data="{StaticResource IconWinMinimize}" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" />
+        <PathIcon Classes="rivet" Data="{StaticResource IconWinMinimize}" Foreground="{StaticResource XnTextDimBrush}" />
       </Button>
       <Button Classes="titlebtn" Click="MaximizeRestore_Click" ToolTip.Tip="Maximize">
-        <Path Classes="line-icon" Data="{StaticResource IconWinMaximize}" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" />
+        <PathIcon Classes="rivet" Data="{StaticResource IconWinMaximize}" Foreground="{StaticResource XnTextDimBrush}" />
       </Button>
       <Button Classes="titlebtn titlebtn-close" Click="Close_Click" ToolTip.Tip="Close">
-        <Path Classes="line-icon" Data="{StaticResource IconWinClose}" Stretch="Uniform" Stroke="{StaticResource XnTextDimBrush}" />
+        <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}" Foreground="{StaticResource XnTextDimBrush}" />
       </Button>
     </StackPanel>
   </Panel>

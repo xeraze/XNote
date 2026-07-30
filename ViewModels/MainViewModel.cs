@@ -29,6 +29,16 @@ public class MainViewModel : ViewModelBase
     private bool _isApplyingFilter;
     private NoteFilterMode _filterMode = NoteFilterMode.All;
 
+    // Undo delete
+    private Note? _undoNote;
+    private string _undoTitle = string.Empty;
+    private bool _isShowingUndo;
+    private DispatcherTimer? _undoTimer;
+
+    // Save status
+    private string _saveStatusText = string.Empty;
+    private DispatcherTimer? _saveStatusClearTimer;
+
     public ObservableCollection<NoteViewModel> FilteredNotes { get; } = new();
 
     public string SearchText
@@ -83,7 +93,17 @@ public class MainViewModel : ViewModelBase
 
     public bool HasSelection => SelectedNote is not null;
 
-    public string TotalCountLabel => _allNotes.Count == 1 ? "1 note" : $"{_allNotes.Count} notes";
+    public string TotalCountLabel
+    {
+        get
+        {
+            var total = _allNotes.Count;
+            var filtered = FilteredNotes.Count;
+            bool isFiltered = FilterMode != NoteFilterMode.All || !string.IsNullOrWhiteSpace(SearchText);
+            string totalStr = total == 1 ? "1 note" : $"{total} notes";
+            return isFiltered ? $"{filtered} of {totalStr}" : totalStr;
+        }
+    }
 
     private bool _isConfirmingDelete;
     public bool IsConfirmingDelete
@@ -91,6 +111,30 @@ public class MainViewModel : ViewModelBase
         get => _isConfirmingDelete;
         set => SetField(ref _isConfirmingDelete, value);
     }
+
+    public bool IsShowingUndo
+    {
+        get => _isShowingUndo;
+        private set => SetField(ref _isShowingUndo, value);
+    }
+
+    public string UndoTitle
+    {
+        get => _undoTitle;
+        private set => SetField(ref _undoTitle, value);
+    }
+
+    public string SaveStatusText
+    {
+        get => _saveStatusText;
+        private set
+        {
+            if (SetField(ref _saveStatusText, value))
+                OnPropertyChanged(nameof(HasSaveStatus));
+        }
+    }
+
+    public bool HasSaveStatus => !string.IsNullOrEmpty(_saveStatusText);
 
     public RelayCommand AddNoteCommand { get; }
     public RelayCommand SaveNoteCommand { get; }
@@ -102,6 +146,8 @@ public class MainViewModel : ViewModelBase
     public RelayCommand SetFilterTasksCommand { get; }
     public RelayCommand SetFilterOpenCommand { get; }
     public RelayCommand SetFilterDoneCommand { get; }
+    public RelayCommand UndoDeleteCommand { get; }
+    public RelayCommand DismissUndoCommand { get; }
 
     public MainViewModel() : this(new NoteStore())
     {
@@ -120,12 +166,15 @@ public class MainViewModel : ViewModelBase
         SetFilterTasksCommand = new RelayCommand(() => FilterMode = NoteFilterMode.Tasks);
         SetFilterOpenCommand = new RelayCommand(() => FilterMode = NoteFilterMode.TasksOpen);
         SetFilterDoneCommand = new RelayCommand(() => FilterMode = NoteFilterMode.TasksDone);
+        UndoDeleteCommand = new RelayCommand(UndoDelete);
+        DismissUndoCommand = new RelayCommand(DismissUndo);
 
         _saveDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _saveDebounceTimer.Tick += (_, _) =>
         {
             _saveDebounceTimer.Stop();
             SaveToDisk();
+            ShowSaveStatus("Saved \u2713");
         };
 
         LoadFromDisk();
@@ -238,6 +287,7 @@ public class MainViewModel : ViewModelBase
         finally
         {
             _isApplyingFilter = false;
+            OnPropertyChanged(nameof(TotalCountLabel));
         }
     }
 
@@ -264,14 +314,75 @@ public class MainViewModel : ViewModelBase
         if (SelectedNote is null) return;
 
         var wasSaved = SelectedNote.HasBeenSaved;
+        var deletedNote = SelectedNote.Model;
+        var deletedTitle = string.IsNullOrWhiteSpace(SelectedNote.Title) ? "Untitled" : SelectedNote.Title;
+
         _allNotes.Remove(SelectedNote);
         SelectedNote = null;
         IsConfirmingDelete = false;
+
         if (wasSaved)
         {
             SaveToDisk();
         }
+
         ApplyFilter();
         OnPropertyChanged(nameof(TotalCountLabel));
+
+        // Show undo toast for 10 seconds
+        if (wasSaved)
+        {
+            _undoNote = deletedNote;
+            UndoTitle = deletedTitle;
+            IsShowingUndo = true;
+
+            _undoTimer?.Stop();
+            _undoTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
+            _undoTimer.Tick += (_, _) => DismissUndo();
+            _undoTimer.Start();
+        }
+    }
+
+    private void UndoDelete()
+    {
+        if (_undoNote is null) return;
+
+        _undoTimer?.Stop();
+        _undoTimer = null;
+
+        var restored = _undoNote;
+        _undoNote = null;
+        IsShowingUndo = false;
+
+        var vm = WrapAndSubscribe(restored, hasBeenSaved: true);
+        _allNotes.Insert(0, vm);
+
+        ApplyFilter();
+        OnPropertyChanged(nameof(TotalCountLabel));
+
+        SelectedNote = FilteredNotes.FirstOrDefault(n => n.Id == vm.Id);
+        SaveToDisk();
+    }
+
+    private void DismissUndo()
+    {
+        _undoTimer?.Stop();
+        _undoTimer = null;
+        _undoNote = null;
+        IsShowingUndo = false;
+    }
+
+    private void ShowSaveStatus(string text)
+    {
+        SaveStatusText = text;
+        _saveStatusClearTimer?.Stop();
+        _saveStatusClearTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        _saveStatusClearTimer.Tick += (_, _) =>
+        {
+            _saveStatusClearTimer?.Stop();
+            _saveStatusClearTimer = null;
+            SaveStatusText = string.Empty;
+        };
+        _saveStatusClearTimer.Start();
     }
 }

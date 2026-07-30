@@ -47,7 +47,7 @@
         <TextBlock Text="XNote"
                    Foreground="{StaticResource XnAccentBrush}"
                    FontFamily="avares://XNote/Assets/Fonts/Battley.otf#Battley"
-                   FontSize="34"
+                   FontSize="100"
                    HorizontalAlignment="Center" />
         <TextBlock Name="StatusText"
                    Text="loading"

@@ -49,7 +49,38 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Minimize_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => WindowState = WindowState.Minimized;
+    private void RootPanel_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+
+        var pos = e.GetPosition(this);
+        if (pos.Y > 32) return;
+
+        if (e.Source is Avalonia.Controls.Control src)
+        {
+            var hit = src;
+            while (hit is not null)
+            {
+                if (hit is Button) return;
+                hit = hit.Parent as Avalonia.Controls.Control;
+            }
+        }
+
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
+            return;
+        }
+
+        BeginMoveDrag(e);
+    }
+
+    private void Minimize_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        Hide();
+    }
 
     private void MaximizeRestore_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
@@ -58,7 +89,10 @@ public partial class MainWindow : Window
             : WindowState.Maximized;
     }
 
-    private void Close_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Close();
+    private void Close_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        Hide();
+    }
 
     private NoteViewModel? SelectedNote => (DataContext as MainViewModel)?.SelectedNote;
 
