@@ -89,6 +89,20 @@ public partial class MainWindow : Window
             : WindowState.Maximized;
     }
 
+    protected override void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == WindowStateProperty)
+        {
+            var icon = this.FindControl<Avalonia.Controls.PathIcon>("MaxRestoreIcon");
+            if (icon != null)
+            {
+                var isMaximized = WindowState == WindowState.Maximized;
+                icon.Data = (Avalonia.Media.Geometry)this.FindResource(isMaximized ? "IconWinRestore" : "IconWinMaximize")!;
+            }
+        }
+    }
+
     private void Close_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Hide();

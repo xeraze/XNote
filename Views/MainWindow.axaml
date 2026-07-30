@@ -26,7 +26,9 @@
 
     <StreamGeometry x:Key="IconWinMinimize">M 15,9 H 1 V 7 H 15 Z</StreamGeometry>
     <StreamGeometry x:Key="IconWinMaximize">M 11.586,3 L 8.586,6 L 10,7.414 L 13,4.414 V 7 H 15 V 1 H 9 V 3 Z M 4.414,13 L 7.414,10 L 6,8.586 L 3,11.586 V 9 H 1 V 15 H 7 V 13 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconWinRestore">M 0.586,14 L 3.586,11 H 1 V 9 H 7 V 15 H 5 V 12.414 L 2,15.414 Z M 15.414,2 L 12.414,5 H 15 V 7 H 9 V 1 H 11 V 3.586 L 14,0.586 Z</StreamGeometry>
     <StreamGeometry x:Key="IconWinClose">M 3.5,2.086 L 8,6.586 L 12.5,2.086 L 13.914,3.5 L 9.414,8 L 13.914,12.5 L 12.5,13.914 L 8,9.414 L 3.5,13.914 L 2.086,12.5 L 6.586,8 L 2.086,3.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconSettings">M 4,0 V 7.268 A 2,2 0 1 1 2,7.268 V 0 Z M 4,12 V 16 H 2 V 12 Z M 9,2.268 V 0 H 7 V 2.268 A 2,2 0 1 0 9,2.268 M 9,16 V 7 H 7 V 16 Z M 14,7.268 V 0 H 12 V 7.268 A 2,2 0 1 0 14,7.268 M 14,16 V 12 H 12 V 16 Z</StreamGeometry>
 
     <StreamGeometry x:Key="IconDot">M 8,2 A 6,6 0 1 0 8,14 A 6,6 0 0 0 8,2 M 0,8 A 8,8 0 1 1 16,8 A 8,8 0 0 1 0,8</StreamGeometry>
   </Window.Resources>
@@ -250,6 +252,11 @@
         </Grid>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="4,0,0,0">
           <Button Classes="iconbtn"
+                  Command="{Binding ToggleSettingsCommand}"
+                  ToolTip.Tip="Settings">
+            <PathIcon Classes="rivet" Data="{StaticResource IconSettings}" Foreground="{StaticResource XnTextBrush}" />
+          </Button>
+          <Button Classes="iconbtn"
                   Click="ImportDirect_Click"
                   ToolTip.Tip="Import .txt as new note">
             <PathIcon Classes="rivet" Data="{StaticResource IconImport}" Foreground="{StaticResource XnTextBrush}" />
@@ -318,18 +325,15 @@
       </ListBox>
 
       <Grid Grid.Row="5">
+        <!-- Normal footer: count -->
         <StackPanel Orientation="Horizontal" Margin="20,10,20,16" Spacing="8"
                     IsVisible="{Binding !IsShowingUndo}" VerticalAlignment="Center">
           <TextBlock Text="{Binding TotalCountLabel}"
                      Foreground="{StaticResource XnTextFaintBrush}" FontSize="11"
                      VerticalAlignment="Center" />
-          <TextBlock Text="·" Foreground="{StaticResource XnTextFaintBrush}" FontSize="11"
-                     VerticalAlignment="Center" IsVisible="{Binding HasSaveStatus}" />
-          <TextBlock Text="{Binding SaveStatusText}" FontSize="11"
-                     Foreground="{StaticResource XnTextDimBrush}" VerticalAlignment="Center"
-                     IsVisible="{Binding HasSaveStatus}" />
         </StackPanel>
 
+        <!-- Undo toast -->
         <Border IsVisible="{Binding IsShowingUndo}"
                 Background="{StaticResource XnPanelBrush}"
                 BorderBrush="{StaticResource XnBorderSubtleBrush}"
@@ -458,8 +462,13 @@
           </Border>
         </Border>
 
-        <TextBlock Grid.Row="4" Margin="32,8,32,24" Text="{Binding MetaLabel}"
-                   Foreground="{StaticResource XnTextFaintBrush}" FontSize="11" />
+        <StackPanel Grid.Row="4" Margin="32,8,32,24" Orientation="Horizontal" Spacing="16">
+          <TextBlock Text="{Binding MetaLabel}"
+                     Foreground="{StaticResource XnTextFaintBrush}" FontSize="11" />
+          <TextBlock Text="{Binding $parent[Window].((vm:MainViewModel)DataContext).SaveStatusText}"
+                     Foreground="{StaticResource XnTextDimBrush}" FontSize="11"
+                     IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).HasSaveStatus}" />
+        </StackPanel>
       </Grid>
     </Grid>
 
@@ -479,14 +488,72 @@
 
     </Grid>
 
+    <!-- Settings Overlay -->
+    <Border Background="#66000000" IsVisible="{Binding IsSettingsOpen}" IsHitTestVisible="True">
+      <Border Background="{StaticResource XnPanelBrush}"
+              Width="420" Height="280"
+              CornerRadius="8"
+              BorderBrush="{StaticResource XnBorderBrush}"
+              BorderThickness="1"
+              BoxShadow="0 8 32 0 #40000000"
+              HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid RowDefinitions="Auto,Auto,*">
+          <Grid Grid.Row="0" Margin="20,16,20,16">
+            <TextBlock Text="Settings" FontSize="16" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" VerticalAlignment="Center" />
+            <Button Classes="iconbtn" HorizontalAlignment="Right" Command="{Binding ToggleSettingsCommand}">
+              <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}" Foreground="{StaticResource XnTextDimBrush}" />
+            </Button>
+          </Grid>
+          <Border Grid.Row="1" Height="1" Background="{StaticResource XnBorderSubtleBrush}" />
+          
+          <StackPanel Grid.Row="2" Margin="20" Spacing="16">
+            <StackPanel Spacing="4">
+              <TextBlock Text="About" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" />
+              <TextBlock Text="XNote v1.0. Developed by You." Foreground="{StaticResource XnTextDimBrush}" FontSize="13" />
+            </StackPanel>
+            
+            <StackPanel Spacing="12">
+              <TextBlock Text="Hotkeys" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" Margin="0,8,0,0" />
+              
+              <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*" Margin="4,0,0,0">
+                <!-- Left column -->
+                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                  <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + B" FontSize="11" FontWeight="Medium" /></Border>
+                  <TextBlock Text="Bold" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                  <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + I" FontSize="11" FontWeight="Medium" /></Border>
+                  <TextBlock Text="Italic" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                </StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                  <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + U" FontSize="11" FontWeight="Medium" /></Border>
+                  <TextBlock Text="Underline" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                </StackPanel>
+
+                <!-- Right column -->
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                  <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + Z" FontSize="11" FontWeight="Medium" /></Border>
+                  <TextBlock Text="Undo" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                  <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + Y" FontSize="11" FontWeight="Medium" /></Border>
+                  <TextBlock Text="Redo" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Border>
+
     <StackPanel Orientation="Horizontal" Spacing="2"
                 HorizontalAlignment="Right" VerticalAlignment="Top"
                 Margin="0,5,10,0">
       <Button Classes="titlebtn" Click="Minimize_Click" ToolTip.Tip="Minimize">
         <PathIcon Classes="rivet" Data="{StaticResource IconWinMinimize}" Foreground="{StaticResource XnTextDimBrush}" />
       </Button>
-      <Button Classes="titlebtn" Click="MaximizeRestore_Click" ToolTip.Tip="Maximize">
-        <PathIcon Classes="rivet" Data="{StaticResource IconWinMaximize}" Foreground="{StaticResource XnTextDimBrush}" />
+      <Button Classes="titlebtn" Click="MaximizeRestore_Click" ToolTip.Tip="Maximize / Restore">
+        <PathIcon x:Name="MaxRestoreIcon" Classes="rivet" Data="{StaticResource IconWinMaximize}" Foreground="{StaticResource XnTextDimBrush}" />
       </Button>
       <Button Classes="titlebtn titlebtn-close" Click="Close_Click" ToolTip.Tip="Close">
         <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}" Foreground="{StaticResource XnTextDimBrush}" />

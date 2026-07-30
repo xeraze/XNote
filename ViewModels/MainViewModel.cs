@@ -36,6 +36,15 @@ public class MainViewModel : ViewModelBase
 
     private string _saveStatusText = string.Empty;
     private DispatcherTimer? _saveStatusClearTimer;
+    private DispatcherTimer? _savingAnimationTimer;
+    private int _savingDots = 0;
+
+    private bool _isSettingsOpen;
+    public bool IsSettingsOpen
+    {
+        get => _isSettingsOpen;
+        set => SetField(ref _isSettingsOpen, value);
+    }
 
     public ObservableCollection<NoteViewModel> FilteredNotes { get; } = new();
 
@@ -146,6 +155,7 @@ public class MainViewModel : ViewModelBase
     public RelayCommand SetFilterDoneCommand { get; }
     public RelayCommand UndoDeleteCommand { get; }
     public RelayCommand DismissUndoCommand { get; }
+    public RelayCommand ToggleSettingsCommand { get; }
 
     public MainViewModel() : this(new NoteStore())
     {
@@ -166,8 +176,9 @@ public class MainViewModel : ViewModelBase
         SetFilterDoneCommand = new RelayCommand(() => FilterMode = NoteFilterMode.TasksDone);
         UndoDeleteCommand = new RelayCommand(UndoDelete);
         DismissUndoCommand = new RelayCommand(DismissUndo);
+        ToggleSettingsCommand = new RelayCommand(() => IsSettingsOpen = !IsSettingsOpen);
 
-        _saveDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        _saveDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _saveDebounceTimer.Tick += (_, _) =>
         {
             _saveDebounceTimer.Stop();
@@ -199,6 +210,7 @@ public class MainViewModel : ViewModelBase
                 {
                     _saveDebounceTimer.Stop();
                     _saveDebounceTimer.Start();
+                    StartSavingAnimation();
                 }
             }
 
@@ -370,8 +382,24 @@ public class MainViewModel : ViewModelBase
         IsShowingUndo = false;
     }
 
+    private void StartSavingAnimation()
+    {
+        if (_savingAnimationTimer == null)
+        {
+            _savingAnimationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
+            _savingAnimationTimer.Tick += (_, _) =>
+            {
+                _savingDots = (_savingDots + 1) % 4;
+                SaveStatusText = "saving" + new string('.', _savingDots);
+            };
+        }
+        SaveStatusText = "saving...";
+        _savingAnimationTimer.Start();
+    }
+
     private void ShowSaveStatus(string text)
     {
+        _savingAnimationTimer?.Stop();
         SaveStatusText = text;
         _saveStatusClearTimer?.Stop();
         _saveStatusClearTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
