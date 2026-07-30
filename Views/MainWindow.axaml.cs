@@ -1,5 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
@@ -65,6 +64,7 @@ public partial class MainWindow : Window
 
     private RichEditorView? _bodyEditorView;
     private bool _suppressTextChanged;
+    private NoteViewModel? _loadedNote;
 
     private async void SelectedNoteChanged()
     {
@@ -79,14 +79,15 @@ public partial class MainWindow : Window
             _bodyEditorView.Editor.ShowPageBoundaries = false;
         }
 
+        var note = SelectedNote;
+
+        if (ReferenceEquals(note, _loadedNote)) return;
+        _loadedNote = note;
+
         _bodyEditorView.Editor.TextChanged -= BodyEditor_TextChanged;
 
-        var note = SelectedNote;
         _suppressTextChanged = true;
-
         string bodyText = note?.Body ?? string.Empty;
-        bodyText = CleanRawText(bodyText);
-
         await _bodyEditorView.Editor.LoadHtmlAsync(bodyText);
         _suppressTextChanged = false;
 
@@ -99,30 +100,7 @@ public partial class MainWindow : Window
         var note = SelectedNote;
         if (note is null || _bodyEditorView is null) return;
 
-        string html = _bodyEditorView.Editor.ToHtml();
-        note.NotifyBodyEdited(html);
-    }
-
-    private static string CleanRawText(string raw)
-    {
-        if (string.IsNullOrWhiteSpace(raw))
-            return string.Empty;
-
-        string cleaned = raw.Replace("&lt;", "<").Replace("&gt;", ">");
-        
-        cleaned = Regex.Replace(cleaned, @"(<p\b[^>]*>)+", "<p>", RegexOptions.IgnoreCase);
-        cleaned = Regex.Replace(cleaned, @"(</p>\s*)+", "</p>", RegexOptions.IgnoreCase);
-
-        while (cleaned.Contains("<p><p>"))
-        {
-            cleaned = cleaned.Replace("<p><p>", "<p>");
-        }
-        while (cleaned.Contains("</p></p>"))
-        {
-            cleaned = cleaned.Replace("</p></p>", "</p>");
-        }
-
-        return cleaned.Trim();
+        note.NotifyBodyEdited(_bodyEditorView.Editor.ToHtml());
     }
 
     private async void ImportDirect_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -166,73 +144,66 @@ public partial class MainWindow : Window
             }
         }
     }
-
     private async void ImportTxt_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (SelectedNote == null || SelectedNote.IsDraft) return;
+        if (SelectedNote is null || SelectedNote.IsDraft || _bodyEditorView is null) return;
 
         var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel == null) return;
+        if (topLevel is null) return;
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Import Note",
+            Title = "Import .txt into note",
             AllowMultiple = false,
-            FileTypeFilter = new[] { FilePickerFileTypes.TextPlain }
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("Text file") { Patterns = new[] { "*.txt" } },
+            },
         });
 
-        if (files.Count > 0)
-        {
-            await using var stream = await files[0].OpenReadAsync();
-            using var reader = new System.IO.StreamReader(stream);
-            string text = await reader.ReadToEndAsync();
+        if (files.Count == 0) return;
 
-            if (_bodyEditorView != null && SelectedNote != null)
-            {
-                string escaped = System.Net.WebUtility.HtmlEncode(text);
-                string htmlContent = $"<p>{escaped.Replace("\n", "<br/>")}</p>";
-                await _bodyEditorView.Editor.LoadHtmlAsync(htmlContent);
-                SelectedNote.NotifyBodyEdited(htmlContent);
-            }
-        }
+        await using var stream = await files[0].OpenReadAsync();
+        using var reader = new System.IO.StreamReader(stream);
+        string text = await reader.ReadToEndAsync();
+
+        string escaped = System.Net.WebUtility.HtmlEncode(text);
+        string htmlContent = $"<p>{escaped.Replace("\n", "<br/>")}</p>";
+
+        await _bodyEditorView.Editor.LoadHtmlAsync(htmlContent);
+        SelectedNote.NotifyBodyEdited(htmlContent);
     }
 
     private async void ExportTxt_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (SelectedNote == null || SelectedNote.IsDraft) return;
+        if (SelectedNote is null || SelectedNote.IsDraft) return;
 
         var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel == null) return;
+        if (topLevel is null) return;
 
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Export Note",
+            Title = "Export note as .txt",
             DefaultExtension = "txt",
             SuggestedFileName = $"{SelectedNote.Title}.txt",
-            FileTypeChoices = new[] { FilePickerFileTypes.TextPlain }
+            FileTypeChoices = new[]
+            {
+                new FilePickerFileType("Text file") { Patterns = new[] { "*.txt" } },
+            },
         });
 
-        if (file != null)
-        {
-            await using var stream = await file.OpenWriteAsync();
-            using var writer = new System.IO.StreamWriter(stream);
+        if (file is null) return;
 
-            string rawHtml = string.Empty;
-            if (_bodyEditorView?.Editor != null)
-            {
-                rawHtml = _bodyEditorView.Editor.ToHtml();
-            }
-            if (string.IsNullOrWhiteSpace(rawHtml))
-            {
-                rawHtml = SelectedNote.Body ?? string.Empty;
-            }
-            
-            string plainText = Regex.Replace(rawHtml, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
-            plainText = Regex.Replace(plainText, @"</p>", "\n", RegexOptions.IgnoreCase);
-            plainText = Regex.Replace(plainText, "<.*?>", string.Empty);
-            plainText = System.Net.WebUtility.HtmlDecode(plainText).Trim();
+        string rawHtml = _bodyEditorView?.Editor.ToHtml() ?? SelectedNote.Body ?? string.Empty;
 
-            await writer.WriteAsync(plainText);
-        }
+        string plainText = System.Text.RegularExpressions.Regex.Replace(rawHtml, @"<br\s*/?>", "\n", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        plainText = System.Text.RegularExpressions.Regex.Replace(plainText, "</p>", "\n", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        plainText = System.Text.RegularExpressions.Regex.Replace(plainText, "<.*?>", string.Empty);
+        plainText = System.Net.WebUtility.HtmlDecode(plainText).Trim();
+
+        await using var stream = await file.OpenWriteAsync();
+        using var writer = new System.IO.StreamWriter(stream);
+        await writer.WriteAsync(plainText);
     }
+
 }

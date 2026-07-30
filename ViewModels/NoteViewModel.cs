@@ -79,6 +79,7 @@ public class NoteViewModel : ViewModelBase
         {
             if (Model.Title == value) return;
             Model.Title = value;
+            OnPropertyChanged();
             OnPropertyChanged(nameof(Preview));
             Touch();
         }

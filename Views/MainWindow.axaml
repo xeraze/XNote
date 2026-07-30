@@ -58,19 +58,34 @@
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
+    <Style Selector="ToggleButton.flat:unchecked">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+    </Style>
     <Style Selector="ToggleButton.flat /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="TextBlock.Foreground" Value="{StaticResource XnTextBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.flat:unchecked /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="TextBlock.Foreground" Value="{StaticResource XnTextBrush}" />
     </Style>
     <Style Selector="ToggleButton.flat:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="TextBlock.Foreground" Value="{StaticResource XnTextBrush}" />
     </Style>
     <Style Selector="ToggleButton.flat:checked /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
       <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="TextBlock.Foreground" Value="{StaticResource XnTextBrush}" />
     </Style>
     <Style Selector="ToggleButton.flat:checked">
+      <Setter Property="Background" Value="Transparent" />
       <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
     </Style>
+
 
     <Style Selector="Button.danger">
       <Setter Property="Background" Value="Transparent" />
@@ -153,18 +168,25 @@
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Margin" Value="0,0,0,4" />
       <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Transitions">
+        <Transitions />
+      </Setter>
     </Style>
     <Style Selector="ListBoxItem /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelBrush}" />
+      <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Opacity" Value="1" />
     </Style>
 
     <Style Selector="Button.titlebtn">
@@ -192,9 +214,9 @@
       <Border Grid.Row="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed" />
 
       <TextBlock Grid.Row="1" Text="XNote"
-                 FontFamily="Segoe UI, sans-serif"
+                 FontFamily="avares://XNote/Assets/Fonts/Battley.otf#Battley"
                  Foreground="{StaticResource XnTextBrush}"
-                 FontSize="18" FontWeight="SemiBold"
+                 FontSize="24"
                  Margin="20,12,20,16" />
 
       <Grid Grid.Row="2" Margin="16,0,16,12" ColumnDefinitions="*,Auto">
@@ -261,10 +283,16 @@
                   </Border>
                 </Grid>
                 <StackPanel Grid.Column="1" Spacing="3">
-                  <TextBlock Text="{Binding Title}"
-                             Foreground="{StaticResource XnTextBrush}"
-                             FontSize="14" FontWeight="Medium"
-                             TextTrimming="CharacterEllipsis" />
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="{Binding Title}"
+                               Foreground="{StaticResource XnTextBrush}"
+                               FontSize="14" FontWeight="Medium"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="Draft" FontSize="10"
+                               Foreground="{StaticResource XnTextFaintBrush}"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding IsDraft}" />
+                  </StackPanel>
                   <TextBlock Text="{Binding Preview}"
                              Foreground="{StaticResource XnTextDimBrush}"
                              FontSize="12"
@@ -328,14 +356,14 @@
             <Button Classes="iconbtn"
                     Click="ImportTxt_Click"
                     IsEnabled="{Binding !IsDraft}"
-                    ToolTip.Tip="Import .txt into note">
+                    ToolTip.Tip="Import .txt into note (save the note first)">
               <Path Classes="line-icon" Data="{StaticResource IconImport}" Stroke="{StaticResource XnTextBrush}" Width="16" Height="16" Stretch="Uniform" />
             </Button>
 
             <Button Classes="iconbtn"
                     Click="ExportTxt_Click"
                     IsEnabled="{Binding !IsDraft}"
-                    ToolTip.Tip="Export note to .txt">
+                    ToolTip.Tip="Export note to .txt (save the note first)">
               <Path Classes="line-icon" Data="{StaticResource IconExport}" Stroke="{StaticResource XnTextBrush}" Width="16" Height="16" Stretch="Uniform" />
             </Button>
 

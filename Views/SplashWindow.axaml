@@ -44,11 +44,10 @@
       </Viewbox>
 
       <StackPanel Grid.Row="3" HorizontalAlignment="Center" Margin="0,28,0,40" Spacing="10">
-        <TextBlock Text="XNOTE"
+        <TextBlock Text="XNote"
                    Foreground="{StaticResource XnAccentBrush}"
-                   FontSize="26"
-                   FontWeight="Bold"
-                   LetterSpacing="6"
+                   FontFamily="avares://XNote/Assets/Fonts/Battley.otf#Battley"
+                   FontSize="34"
                    HorizontalAlignment="Center" />
         <TextBlock Name="StatusText"
                    Text="loading"
