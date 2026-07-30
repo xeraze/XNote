@@ -325,7 +325,6 @@
       </ListBox>
 
       <Grid Grid.Row="5">
-        <!-- Normal footer: count -->
         <StackPanel Orientation="Horizontal" Margin="20,10,20,16" Spacing="8"
                     IsVisible="{Binding !IsShowingUndo}" VerticalAlignment="Center">
           <TextBlock Text="{Binding TotalCountLabel}"
@@ -333,7 +332,6 @@
                      VerticalAlignment="Center" />
         </StackPanel>
 
-        <!-- Undo toast -->
         <Border IsVisible="{Binding IsShowingUndo}"
                 Background="{StaticResource XnPanelBrush}"
                 BorderBrush="{StaticResource XnBorderSubtleBrush}"
@@ -488,7 +486,6 @@
 
     </Grid>
 
-    <!-- Settings Overlay -->
     <Border Background="#66000000" IsVisible="{Binding IsSettingsOpen}" IsHitTestVisible="True">
       <Border Background="{StaticResource XnPanelBrush}"
               Width="420" Height="280"
@@ -509,7 +506,7 @@
           <StackPanel Grid.Row="2" Margin="20" Spacing="16">
             <StackPanel Spacing="4">
               <TextBlock Text="About" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" />
-              <TextBlock Text="XNote v1.0. Developed by You." Foreground="{StaticResource XnTextDimBrush}" FontSize="13" />
+              <TextBlock Text="XNote v0.4. Developed by xeraze." Foreground="{StaticResource XnTextDimBrush}" FontSize="13" />
             </StackPanel>
             
             <StackPanel Spacing="12">
