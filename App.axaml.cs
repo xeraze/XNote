@@ -27,9 +27,14 @@ public partial class App : Application
         RestoreMainWindow();
     }
 
-    private void TrayRestore_Click(object? sender, System.EventArgs e)
+    private void TrayNewNote_Click(object? sender, System.EventArgs e)
     {
         RestoreMainWindow();
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow?.DataContext is ViewModels.MainViewModel vm)
+        {
+            vm.AddNoteCommand.Execute(null);
+        }
     }
 
     private void TrayExit_Click(object? sender, System.EventArgs e)

@@ -1,0 +1,34 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="XNote.Views.NotificationWindow"
+        xmlns:vm="using:XNote.ViewModels"
+        x:DataType="vm:NoteViewModel"
+        Title="Reminder" Width="320" Height="120"
+        SystemDecorations="None" Topmost="True" ShowInTaskbar="False"
+        WindowStartupLocation="Manual" Background="Transparent">
+  
+  <Window.Resources>
+    <StreamGeometry x:Key="IconBell">M10 14h5.5v-2h-1.382l-.366-.733a2.9 2.9 0 0 1-.298-1.12l-.234-4.209A5.23 5.23 0 0 0 9 1.096V0H7v1.096a5.23 5.23 0 0 0-4.22 4.842l-.234 4.209a2.9 2.9 0 0 1-.298 1.12L1.882 12H.5v2H6a2 2 0 1 0 4 0m1.886-2H4.114a4.9 4.9 0 0 0 .429-1.742l.234-4.209a3.228 3.228 0 0 1 6.446 0l.234 4.209A4.9 4.9 0 0 0 11.886 12</StreamGeometry>
+  </Window.Resources>
+
+  <Border Background="{StaticResource XnPanelBrush}"
+          BorderBrush="{StaticResource XnBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="8"
+          BoxShadow="0 4 20 0 #40000000"
+          Margin="10">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="16,12">
+      <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
+        <PathIcon Classes="rivet" Data="{StaticResource IconBell}" Width="12" Height="12" Foreground="{StaticResource XnTextDimBrush}" />
+        <TextBlock Text="Reminder" FontSize="11" Foreground="{StaticResource XnTextFaintBrush}" FontWeight="Medium" />
+      </StackPanel>
+      
+      <TextBlock Grid.Row="1" Text="{Binding Title}" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" TextTrimming="CharacterEllipsis" />
+      
+      <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,8,0,0">
+        <Button Classes="flat" Content="Dismiss" FontSize="12" Padding="12,6" Click="Dismiss_Click" />
+        <Button Content="Open Note" FontSize="12" Padding="12,6" Click="OpenNote_Click" Background="{StaticResource XnTextBrush}" Foreground="{StaticResource XnBlackBrush}" CornerRadius="4" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>

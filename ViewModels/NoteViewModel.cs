@@ -113,6 +113,56 @@ public class NoteViewModel : ViewModelBase
         }
     }
 
+    public DateTime? RemindAt
+    {
+        get => Model.RemindAtUtc?.ToLocalTime();
+        set
+        {
+            var utc = value?.ToUniversalTime();
+            if (Model.RemindAtUtc == utc) return;
+            Model.RemindAtUtc = utc;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(RemindAtText));
+            OnPropertyChanged(nameof(HasReminder));
+            Touch();
+        }
+    }
+
+    public bool HasReminder => Model.RemindAtUtc.HasValue;
+
+    private DateTimeOffset? _pendingReminderDate;
+    public DateTimeOffset? PendingReminderDate
+    {
+        get => _pendingReminderDate ??= DateTimeOffset.Now;
+        set => SetField(ref _pendingReminderDate, value);
+    }
+
+    private TimeSpan? _pendingReminderTime;
+    public TimeSpan? PendingReminderTime
+    {
+        get => _pendingReminderTime ??= DateTime.Now.TimeOfDay;
+        set => SetField(ref _pendingReminderTime, value);
+    }
+
+    public void ApplyPendingReminder()
+    {
+        if (PendingReminderDate is not { } date) return;
+        RemindAt = date.Date + (PendingReminderTime ?? TimeSpan.Zero);
+    }
+
+    public string RemindAtText
+    {
+        get
+        {
+            if (!Model.RemindAtUtc.HasValue) return "No reminder";
+            var local = Model.RemindAtUtc.Value.ToLocalTime();
+            
+            if (local.Date == DateTime.Now.Date) return $"Today, {local:HH:mm}";
+            if (local.Date == DateTime.Now.Date.AddDays(1)) return $"Tomorrow, {local:HH:mm}";
+            return local.ToString("dd MMM, HH:mm");
+        }
+    }
+
     public NoteStatusIcon StatusIconKind =>
         !IsTask ? NoteStatusIcon.Note
         : IsDone ? NoteStatusIcon.TaskDone

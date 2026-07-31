@@ -22,7 +22,28 @@ public partial class MainWindow : Window
             }
         };
 
+        vm.OnShowNotification += ShowReminderNotification;
+
         Opened += (_, _) => SelectedNoteChanged();
+    }
+
+    private void ShowReminderNotification(NoteViewModel note)
+    {
+        var notification = new NotificationWindow { DataContext = note };
+        notification.OnOpenNote += OpenNoteFromNotification;
+        notification.Show();
+    }
+
+    private void OpenNoteFromNotification(NoteViewModel note)
+    {
+        WindowState = WindowState.Normal;
+        Show();
+        Activate();
+
+        if (DataContext is MainViewModel vm)
+        {
+            vm.SelectedNote = note;
+        }
     }
 
     protected override void OnClosing(WindowClosingEventArgs e)
@@ -254,4 +275,24 @@ public partial class MainWindow : Window
         await writer.WriteAsync(plainText);
     }
 
+    private void SetReminder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        SelectedNote?.ApplyPendingReminder();
+
+        if (sender is Control control)
+        {
+            (Avalonia.Controls.Primitives.FlyoutBase.GetAttachedFlyout(control) as Flyout)?.Hide();
+        }
+    }
+
+    private void ClearReminder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (SelectedNote is null) return;
+        SelectedNote.RemindAt = null;
+
+        if (sender is Control control)
+        {
+            (Avalonia.Controls.Primitives.FlyoutBase.GetAttachedFlyout(control) as Flyout)?.Hide();
+        }
+    }
 }

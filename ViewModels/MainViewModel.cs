@@ -37,6 +37,7 @@ public class MainViewModel : ViewModelBase
     private string _saveStatusText = string.Empty;
     private DispatcherTimer? _saveStatusClearTimer;
     private DispatcherTimer? _savingAnimationTimer;
+    private DispatcherTimer _reminderTimer;
     private int _savingDots = 0;
 
     private bool _isSettingsOpen;
@@ -45,6 +46,8 @@ public class MainViewModel : ViewModelBase
         get => _isSettingsOpen;
         set => SetField(ref _isSettingsOpen, value);
     }
+
+    public event Action<NoteViewModel>? OnShowNotification;
 
     public ObservableCollection<NoteViewModel> FilteredNotes { get; } = new();
 
@@ -186,7 +189,25 @@ public class MainViewModel : ViewModelBase
             ShowSaveStatus("Saved \u2713");
         };
 
+        _reminderTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+        _reminderTimer.Tick += (_, _) => CheckReminders();
+        _reminderTimer.Start();
+
         LoadFromDisk();
+    }
+
+    private void CheckReminders()
+    {
+        var now = DateTime.UtcNow;
+        foreach (var note in _allNotes.ToList())
+        {
+            if (note.Model.RemindAtUtc.HasValue && note.Model.RemindAtUtc.Value <= now)
+            {
+                note.RemindAt = null;
+                SaveToDisk();
+                OnShowNotification?.Invoke(note);
+            }
+        }
     }
 
     public void ForceSave()

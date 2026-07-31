@@ -19,6 +19,7 @@ public class Note
     public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
     public DateTime ModifiedUtc { get; set; } = DateTime.UtcNow;
     public DateTime? DueUtc { get; set; }
+    public DateTime? RemindAtUtc { get; set; }
 
     private static readonly Regex BlockTagRegex = new(
         "</(p|div|h1|h2|h3|h4|h5|h6|li|tr|blockquote)>|<br\\s*/?>", RegexOptions.IgnoreCase);

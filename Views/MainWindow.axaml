@@ -21,6 +21,7 @@
     <StreamGeometry x:Key="IconPlus">M 7,7 V 0.5 H 9 V 7 H 15.5 V 9 H 9 V 15.5 H 7 V 9 H 0.5 V 7 Z</StreamGeometry>
     <StreamGeometry x:Key="IconImport">M 9,7.826 V 1 H 7 V 7.826 L 4.392,5.59 L 3.09,7.108 L 8,11.318 L 12.91,7.108 L 11.608,5.59 Z M 3,13 V 10 H 1 V 13 A 2,2 0 0 0 3,15 H 13 A 2,2 0 0 0 15,13 V 10 H 13 V 13 Z</StreamGeometry>
     <StreamGeometry x:Key="IconExport">M 7,4.174 V 11 H 9 V 4.174 L 11.608,6.41 L 12.91,4.892 L 8,0.682 L 3.09,4.892 L 4.392,6.41 Z M 3,13 V 10 H 1 V 13 A 2,2 0 0 0 3,15 H 13 A 2,2 0 0 0 15,13 V 10 H 13 V 13 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconBell">M10 14h5.5v-2h-1.382l-.366-.733a2.9 2.9 0 0 1-.298-1.12l-.234-4.209A5.23 5.23 0 0 0 9 1.096V0H7v1.096a5.23 5.23 0 0 0-4.22 4.842l-.234 4.209a2.9 2.9 0 0 1-.298 1.12L1.882 12H.5v2H6a2 2 0 1 0 4 0m1.886-2H4.114a4.9 4.9 0 0 0 .429-1.742l.234-4.209a3.228 3.228 0 0 1 6.446 0l.234 4.209A4.9 4.9 0 0 0 11.886 12</StreamGeometry>
     <StreamGeometry x:Key="IconTrash">M 7,7 V 12 H 9 V 7 Z M 11,0 H 5 V 3 H 0 V 5 H 1.165 L 2.718,13.537 A 3,3 0 0 0 5.669,16 H 10.331 A 3,3 0 0 0 13.283,13.537 L 14.835,5 H 16 V 3 H 11 Z M 9,3 H 7 V 2 H 9 Z M 4.685,13.179 L 3.198,5 H 12.802 L 11.315,13.179 A 1,1 0 0 1 10.331,14 H 5.669 A 1,1 0 0 1 4.685,13.179 Z</StreamGeometry>
     <StreamGeometry x:Key="IconCheck">M 14.914,4 L 5.444,13.47 L 1.09,8.393 L 2.608,7.09 L 5.556,10.53 L 13.5,2.585 Z</StreamGeometry>
 
@@ -404,6 +405,41 @@
                           ToolTip.Tip="Mark task as done"
                           Content="Done" />
 
+            <Button Classes="iconbtn" IsEnabled="{Binding !IsDraft}">
+              <Button.Flyout>
+                <Flyout Placement="BottomEdgeAlignedRight">
+                  <StackPanel Width="220" Spacing="10">
+                    <TextBlock Text="Remind me" FontSize="13" FontWeight="Medium"
+                               Foreground="{StaticResource XnTextBrush}" />
+
+                    <DatePicker SelectedDate="{Binding PendingReminderDate, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                    <TimePicker SelectedTime="{Binding PendingReminderTime, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                      <Button Classes="flat" Content="Clear"
+                              IsVisible="{Binding HasReminder}"
+                              Click="ClearReminder_Click" />
+                      <Button Content="Set" Click="SetReminder_Click"
+                              Background="{StaticResource XnTextBrush}"
+                              Foreground="{StaticResource XnBlackBrush}"
+                              CornerRadius="4" Padding="12,6" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding RemindAtText}" FontSize="11"
+                               Foreground="{StaticResource XnTextDimBrush}"
+                               IsVisible="{Binding HasReminder}" />
+                  </StackPanel>
+                </Flyout>
+              </Button.Flyout>
+              <Panel>
+                <PathIcon Classes="rivet" Data="{StaticResource IconBell}" Foreground="{StaticResource XnTextBrush}" />
+                <Ellipse Width="6" Height="6" Fill="{StaticResource XnAccentBrush}"
+                         HorizontalAlignment="Right" VerticalAlignment="Top"
+                         Margin="0,-2,-2,0"
+                         IsVisible="{Binding HasReminder}" />
+              </Panel>
+            </Button>
+
             <Button Classes="iconbtn"
                     Click="ImportTxt_Click"
                     IsEnabled="{Binding !IsDraft}"
@@ -506,14 +542,13 @@
           <StackPanel Grid.Row="2" Margin="20" Spacing="16">
             <StackPanel Spacing="4">
               <TextBlock Text="About" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" />
-              <TextBlock Text="XNote v0.4. Developed by xeraze." Foreground="{StaticResource XnTextDimBrush}" FontSize="13" />
+              <TextBlock Text="XNote v0.5. Developed by xeraze." Foreground="{StaticResource XnTextDimBrush}" FontSize="13" />
             </StackPanel>
             
             <StackPanel Spacing="12">
               <TextBlock Text="Hotkeys" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" Margin="0,8,0,0" />
               
               <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*" Margin="4,0,0,0">
-                <!-- Left column -->
                 <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
                   <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + B" FontSize="11" FontWeight="Medium" /></Border>
                   <TextBlock Text="Bold" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
@@ -527,7 +562,6 @@
                   <TextBlock Text="Underline" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
                 </StackPanel>
 
-                <!-- Right column -->
                 <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
                   <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + Z" FontSize="11" FontWeight="Medium" /></Border>
                   <TextBlock Text="Undo" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
