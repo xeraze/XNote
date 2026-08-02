@@ -15,6 +15,10 @@
         WindowDecorations="BorderOnly"
         ExtendClientAreaTitleBarHeightHint="32">
 
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+N" Command="{Binding AddNoteCommand}" />
+  </Window.KeyBindings>
+
   <Window.Resources>
     <SolidColorBrush x:Key="DotOpen" Color="{StaticResource XnTextFaintColor}" />
 
@@ -22,6 +26,7 @@
     <StreamGeometry x:Key="IconImport">M 9,7.826 V 1 H 7 V 7.826 L 4.392,5.59 L 3.09,7.108 L 8,11.318 L 12.91,7.108 L 11.608,5.59 Z M 3,13 V 10 H 1 V 13 A 2,2 0 0 0 3,15 H 13 A 2,2 0 0 0 15,13 V 10 H 13 V 13 Z</StreamGeometry>
     <StreamGeometry x:Key="IconExport">M 7,4.174 V 11 H 9 V 4.174 L 11.608,6.41 L 12.91,4.892 L 8,0.682 L 3.09,4.892 L 4.392,6.41 Z M 3,13 V 10 H 1 V 13 A 2,2 0 0 0 3,15 H 13 A 2,2 0 0 0 15,13 V 10 H 13 V 13 Z</StreamGeometry>
     <StreamGeometry x:Key="IconBell">M10 14h5.5v-2h-1.382l-.366-.733a2.9 2.9 0 0 1-.298-1.12l-.234-4.209A5.23 5.23 0 0 0 9 1.096V0H7v1.096a5.23 5.23 0 0 0-4.22 4.842l-.234 4.209a2.9 2.9 0 0 1-.298 1.12L1.882 12H.5v2H6a2 2 0 1 0 4 0m1.886-2H4.114a4.9 4.9 0 0 0 .429-1.742l.234-4.209a3.228 3.228 0 0 1 6.446 0l.234 4.209A4.9 4.9 0 0 0 11.886 12</StreamGeometry>
+    <StreamGeometry x:Key="IconHourglass">M3,0 H13 V2.2 L9.2,6.5 V9.5 L13,13.8 V16 H3 V13.8 L6.8,9.5 V6.5 L3,2.2 Z M4.6,1.4 V1.9 L7.3,5.2 H8.7 L11.4,1.9 V1.4 Z M4.6,14.6 H11.4 V14.1 L8.7,10.8 H7.3 L4.6,14.1 Z</StreamGeometry>
     <StreamGeometry x:Key="IconTrash">M 7,7 V 12 H 9 V 7 Z M 11,0 H 5 V 3 H 0 V 5 H 1.165 L 2.718,13.537 A 3,3 0 0 0 5.669,16 H 10.331 A 3,3 0 0 0 13.283,13.537 L 14.835,5 H 16 V 3 H 11 Z M 9,3 H 7 V 2 H 9 Z M 4.685,13.179 L 3.198,5 H 12.802 L 11.315,13.179 A 1,1 0 0 1 10.331,14 H 5.669 A 1,1 0 0 1 4.685,13.179 Z</StreamGeometry>
     <StreamGeometry x:Key="IconCheck">M 14.914,4 L 5.444,13.47 L 1.09,8.393 L 2.608,7.09 L 5.556,10.53 L 13.5,2.585 Z</StreamGeometry>
 
@@ -47,6 +52,11 @@
     </Style>
     <Style Selector="Button.flat:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+
+    <Style Selector="CalendarDatePicker /template/ TextBox#PART_TextBox">
+      <Setter Property="IsReadOnly" Value="True" />
+      <Setter Property="Focusable" Value="False" />
     </Style>
 
     <Style Selector="ToggleButton.flat">
@@ -238,7 +248,7 @@
 
       <Grid Grid.Row="2" Margin="16,0,16,12" ColumnDefinitions="*,Auto">
         <Grid Grid.Column="0">
-          <TextBox PlaceholderText="Search notes…"
+          <TextBox PlaceholderText="{Binding Ui.SearchPlaceholder}"
                    Text="{Binding SearchText}"
                    Height="34"
                    Padding="34,0,10,0"
@@ -254,28 +264,45 @@
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="4,0,0,0">
           <Button Classes="iconbtn"
                   Command="{Binding ToggleSettingsCommand}"
-                  ToolTip.Tip="Settings">
+                  ToolTip.Tip="{Binding Ui.TipSettings}">
             <PathIcon Classes="rivet" Data="{StaticResource IconSettings}" Foreground="{StaticResource XnTextBrush}" />
           </Button>
           <Button Classes="iconbtn"
                   Click="ImportDirect_Click"
-                  ToolTip.Tip="Import .txt as new note">
+                  ToolTip.Tip="{Binding Ui.TipImportDirect}">
             <PathIcon Classes="rivet" Data="{StaticResource IconImport}" Foreground="{StaticResource XnTextBrush}" />
           </Button>
-          <Button Classes="iconbtn"
-                  Command="{Binding AddNoteCommand}"
-                  ToolTip.Tip="New note (Ctrl+N)">
+          <Button x:Name="NewNoteButton" Classes="iconbtn"
+                  ToolTip.Tip="{Binding Ui.TipNewNote}">
+            <Button.Flyout>
+              <Flyout Placement="BottomEdgeAlignedRight">
+                <StackPanel Width="220" Spacing="8">
+                  <Button Classes="flat" HorizontalAlignment="Stretch" Click="RegularNoteFlyout_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <PathIcon Classes="rivet" Data="{StaticResource IconDot}" Width="14" Height="14" Foreground="{StaticResource XnTextBrush}" />
+                      <TextBlock Text="{Binding Ui.RegularNote}" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+                  <Button Classes="flat" HorizontalAlignment="Stretch" Click="TimedNoteFlyout_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <PathIcon Classes="rivet" Data="{StaticResource IconHourglass}" Width="14" Height="14" Foreground="{StaticResource XnTextBrush}" />
+                      <TextBlock Text="{Binding Ui.TimedNote}" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+                </StackPanel>
+              </Flyout>
+            </Button.Flyout>
             <PathIcon Classes="rivet" Data="{StaticResource IconPlus}" Foreground="{StaticResource XnTextBrush}" />
           </Button>
         </StackPanel>
       </Grid>
 
       <WrapPanel Grid.Row="3" Orientation="Horizontal" Margin="16,0,20,10">
-        <Button Classes="filtertab" Margin="0,0,6,6" Classes.active="{Binding IsFilterAll}" Content="All" Command="{Binding SetFilterAllCommand}" />
-        <Button Classes="filtertab" Margin="0,0,6,6" Classes.active="{Binding IsFilterNotes}" Content="Notes" Command="{Binding SetFilterNotesCommand}" />
-        <Button Classes="filtertab" Margin="0,0,6,6" Classes.active="{Binding IsFilterTasks}" Content="Tasks" Command="{Binding SetFilterTasksCommand}" />
-        <Button Classes="filtertab" Margin="0,0,6,6" Classes.active="{Binding IsFilterOpen}" Content="Open" Command="{Binding SetFilterOpenCommand}" />
-        <Button Classes="filtertab" Margin="0,0,6,6" Classes.active="{Binding IsFilterDone}" Content="Done" Command="{Binding SetFilterDoneCommand}" />
+        <Button Classes="filtertab" Margin="0,0,6,6" Classes.active="{Binding IsFilterAll}" Content="{Binding Ui.FilterAll}" Command="{Binding SetFilterAllCommand}" />
+        <Button Classes="filtertab" Margin="0,0,6,6" Classes.active="{Binding IsFilterNotes}" Content="{Binding Ui.FilterNotes}" Command="{Binding SetFilterNotesCommand}" />
+        <Button Classes="filtertab" Margin="0,0,6,6" Classes.active="{Binding IsFilterTasks}" Content="{Binding Ui.FilterTasks}" Command="{Binding SetFilterTasksCommand}" />
+        <Button Classes="filtertab" Margin="0,0,6,6" Classes.active="{Binding IsFilterOpen}" Content="{Binding Ui.FilterOpen}" Command="{Binding SetFilterOpenCommand}" />
+        <Button Classes="filtertab" Margin="0,0,6,6" Classes.active="{Binding IsFilterDone}" Content="{Binding Ui.FilterDone}" Command="{Binding SetFilterDoneCommand}" />
       </WrapPanel>
 
       <ListBox Grid.Row="4"
@@ -310,10 +337,14 @@
                                Foreground="{StaticResource XnTextBrush}"
                                FontSize="14" FontWeight="Medium"
                                TextTrimming="CharacterEllipsis" />
-                    <TextBlock Text="Draft" FontSize="10"
+                    <TextBlock Text="{Binding $parent[Window].((vm:MainViewModel)DataContext).Ui.Draft}" FontSize="10"
                                Foreground="{StaticResource XnTextFaintBrush}"
                                VerticalAlignment="Center"
-                               IsVisible="{Binding IsDraft}" />
+                               IsVisible="{Binding ShowDraftBadge}" />
+                    <TextBlock Text="{Binding $parent[Window].((vm:MainViewModel)DataContext).Ui.Timed}" FontSize="10"
+                               Foreground="{StaticResource XnTextFaintBrush}"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding ShowTimedBadge}" />
                   </StackPanel>
                   <TextBlock Text="{Binding Preview}"
                              Foreground="{StaticResource XnTextDimBrush}"
@@ -340,7 +371,7 @@
                 Padding="14,10,10,14">
           <Grid ColumnDefinitions="*,Auto">
             <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2" VerticalAlignment="Center">
-              <TextBlock Text="Note deleted" FontSize="10"
+              <TextBlock Text="{Binding UndoStatusText}" FontSize="10"
                          Foreground="{StaticResource XnTextFaintBrush}" />
               <TextBlock Text="{Binding UndoTitle}" FontSize="12" FontWeight="Medium"
                          Foreground="{StaticResource XnTextBrush}"
@@ -348,10 +379,10 @@
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
               <Button Classes="flat" Padding="10,5" FontSize="12"
-                      Command="{Binding UndoDeleteCommand}" Content="Undo" />
+                      Command="{Binding UndoDeleteCommand}" Content="{Binding Ui.Undo}" />
               <Button Classes="iconbtn" Width="28" Height="28"
                       Command="{Binding DismissUndoCommand}"
-                      ToolTip.Tip="Dismiss">
+                      ToolTip.Tip="{Binding Ui.Dismiss}">
                 <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}"
                           Width="10" Height="10" Foreground="{StaticResource XnTextDimBrush}" />
               </Button>
@@ -368,66 +399,107 @@
             RowDefinitions="32,Auto,Auto,*,Auto">
         <Border Grid.Row="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed" />
         
-        <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Margin="32,10,32,0">
-          
-          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" Margin="0,0,12,0"
-                      VerticalAlignment="Center" IsVisible="{Binding IsDraft}">
-            <Ellipse Width="7" Height="7" VerticalAlignment="Center"
-                     Fill="{StaticResource XnTextFaintBrush}" />
-            <TextBlock Text="Draft" FontSize="11"
-                       Foreground="{StaticResource XnTextFaintBrush}"
-                       VerticalAlignment="Center" />
-          </StackPanel>
+        <Grid Grid.Row="1" Margin="32,10,32,0" RowDefinitions="Auto,Auto">
+          <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ClipToBounds="True">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).IsConfirmingDelete}">
+              <StackPanel Orientation="Horizontal" Spacing="6"
+                          IsVisible="{Binding ShowDraftBadge}">
+                <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                         Fill="{StaticResource XnTextFaintBrush}" />
+                <TextBlock Text="{Binding Ui.Draft}" FontSize="11"
+                           Foreground="{StaticResource XnTextFaintBrush}"
+                           VerticalAlignment="Center" />
+              </StackPanel>
 
-          <TextBox Grid.Column="1"
-                   Text="{Binding Title, Mode=TwoWay}"
-                   FontSize="20" FontWeight="Medium"
-                   BorderThickness="0" Background="Transparent"
-                   Padding="0" PlaceholderText="Untitled"
-                   VerticalAlignment="Center" />
+              <StackPanel Orientation="Horizontal" Spacing="6"
+                          IsVisible="{Binding ShowTimedBadge}">
+                <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                         Fill="{StaticResource XnTextFaintBrush}" />
+                <TextBlock Text="{Binding Ui.Timed}" FontSize="11"
+                           Foreground="{StaticResource XnTextFaintBrush}"
+                           VerticalAlignment="Center" />
+              </StackPanel>
+            </StackPanel>
 
-          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <TextBox Grid.Column="1"
+                     Text="{Binding Title, Mode=TwoWay}"
+                     FontSize="20" FontWeight="Medium"
+                     BorderThickness="0" Background="Transparent"
+                     Padding="10,2,8,2"
+                     PlaceholderText="{Binding Ui.Untitled}"
+                     VerticalAlignment="Center"
+                     MinWidth="80"
+                     IsReadOnly="{Binding $parent[Window].((vm:MainViewModel)DataContext).IsConfirmingDelete}" />
+          </Grid>
+
+          <Panel Grid.Row="1" Margin="0,8,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right"
+                        IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).IsConfirmingDelete}">
             
             <Button Classes="flat"
                     Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SaveNoteCommand}"
                     IsVisible="{Binding IsDraft}"
-                    ToolTip.Tip="Save this note"
-                    Content="Save" />
+                    ToolTip.Tip="{Binding Ui.TipSave}"
+                    Content="{Binding Ui.Save}" />
 
             <ToggleButton Classes="flat"
                           IsChecked="{Binding IsTask, Mode=TwoWay}"
-                          ToolTip.Tip="Mark as a task"
-                          Content="Task" />
+                          IsEnabled="{Binding !IsDraft}"
+                          ToolTip.Tip="{Binding Ui.TipTask}"
+                          Content="{Binding Ui.Task}" />
           
             <ToggleButton Classes="flat"
                           IsChecked="{Binding IsDone, Mode=TwoWay}"
+                          IsEnabled="{Binding !IsDraft}"
                           IsVisible="{Binding IsTask}"
-                          ToolTip.Tip="Mark task as done"
-                          Content="Done" />
+                          ToolTip.Tip="{Binding Ui.TipDone}"
+                          Content="{Binding Ui.Done}" />
 
-            <Button Classes="iconbtn" IsEnabled="{Binding !IsDraft}">
+            <Button Classes="iconbtn" IsEnabled="{Binding !IsDraft}" IsVisible="{Binding ShowReminderSettings}">
               <Button.Flyout>
                 <Flyout Placement="BottomEdgeAlignedRight">
-                  <StackPanel Width="220" Spacing="10">
-                    <TextBlock Text="Remind me" FontSize="13" FontWeight="Medium"
-                               Foreground="{StaticResource XnTextBrush}" />
+                  <StackPanel Width="240" Spacing="10">
+                    <Border Background="{StaticResource XnPanelAltBrush}"
+                            BorderBrush="{StaticResource XnBorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10">
+                      <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding Ui.RemindMe}" FontSize="13" FontWeight="Medium"
+                                   Foreground="{StaticResource XnTextBrush}" />
 
-                    <DatePicker SelectedDate="{Binding PendingReminderDate, Mode=TwoWay}" HorizontalAlignment="Stretch" />
-                    <TimePicker SelectedTime="{Binding PendingReminderTime, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+                        <TextBlock Text="{Binding Ui.Date}" FontSize="10"
+                                   Foreground="{StaticResource XnTextFaintBrush}" />
+                        <CalendarDatePicker SelectedDate="{Binding PendingReminderDate, Mode=TwoWay}"
+                                            DisplayDate="{Binding MinSelectableDate}"
+                                            DisplayDateStart="{Binding MinSelectableDate}"
+                                            DisplayDateEnd="{Binding MaxSelectableDate}"
+                                            HorizontalAlignment="Stretch" />
+                        <TextBlock Text="{Binding YearRangeText}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource XnTextFaintBrush}" />
 
-                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-                      <Button Classes="flat" Content="Clear"
-                              IsVisible="{Binding HasReminder}"
-                              Click="ClearReminder_Click" />
-                      <Button Content="Set" Click="SetReminder_Click"
-                              Background="{StaticResource XnTextBrush}"
-                              Foreground="{StaticResource XnBlackBrush}"
-                              CornerRadius="4" Padding="12,6" />
-                    </StackPanel>
+                        <TextBlock Text="{Binding Ui.Time}" FontSize="10"
+                                   Foreground="{StaticResource XnTextFaintBrush}" />
+                        <TimePicker SelectedTime="{Binding PendingReminderTime, Mode=TwoWay}" HorizontalAlignment="Stretch" />
 
-                    <TextBlock Text="{Binding RemindAtText}" FontSize="11"
-                               Foreground="{StaticResource XnTextDimBrush}"
-                               IsVisible="{Binding HasReminder}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                          <Button Classes="flat" Content="{Binding Ui.Clear}"
+                                  IsVisible="{Binding HasReminder}"
+                                  Click="ClearReminder_Click" />
+                          <Button Content="{Binding Ui.Set}" Click="SetReminder_Click"
+                                  Background="{StaticResource XnTextBrush}"
+                                  Foreground="{StaticResource XnBlackBrush}"
+                                  CornerRadius="4" Padding="12,6" />
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding RemindAtText}" FontSize="11"
+                                   Foreground="{StaticResource XnTextDimBrush}"
+                                   IsVisible="{Binding HasReminder}" />
+                      </StackPanel>
+                    </Border>
                   </StackPanel>
                 </Flyout>
               </Button.Flyout>
@@ -440,50 +512,104 @@
               </Panel>
             </Button>
 
+            <Button Classes="iconbtn" IsVisible="{Binding ShowExpirySettings}"
+                    ToolTip.Tip="{Binding Ui.TipAutoDelete}">
+              <Button.Flyout>
+                <Flyout Placement="BottomEdgeAlignedRight">
+                  <StackPanel Width="240" Spacing="10">
+                    <Border Background="{StaticResource XnPanelAltBrush}"
+                            BorderBrush="{StaticResource XnBorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10">
+                      <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding Ui.TimedNote}" FontSize="13" FontWeight="Medium"
+                                   Foreground="{StaticResource XnTextBrush}" />
+
+                        <TextBlock Text="{Binding Ui.ExpiryDate}" FontSize="10"
+                                   Foreground="{StaticResource XnTextFaintBrush}" />
+                        <CalendarDatePicker SelectedDate="{Binding PendingExpiryDate, Mode=TwoWay}"
+                                            DisplayDate="{Binding MinSelectableDate}"
+                                            DisplayDateStart="{Binding MinSelectableDate}"
+                                            DisplayDateEnd="{Binding MaxSelectableDate}"
+                                            HorizontalAlignment="Stretch" />
+                        <TextBlock Text="{Binding YearRangeText}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource XnTextFaintBrush}" />
+
+                        <TextBlock Text="{Binding Ui.ExpiryTime}" FontSize="10"
+                                   Foreground="{StaticResource XnTextFaintBrush}" />
+                        <TimePicker SelectedTime="{Binding PendingExpiryTime, Mode=TwoWay}" HorizontalAlignment="Stretch" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                          <Button Content="{Binding Ui.Set}" Click="SetExpiry_Click"
+                                  Background="{StaticResource XnTextBrush}"
+                                  Foreground="{StaticResource XnBlackBrush}"
+                                  CornerRadius="4" Padding="12,6" />
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding ExpiryAtText}" FontSize="11"
+                                   Foreground="{StaticResource XnTextDimBrush}"
+                                   IsVisible="{Binding HasExpiry}" />
+                        <TextBlock Text="{Binding Ui.CountdownAfterSave}"
+                                   FontSize="10"
+                                   Foreground="{StaticResource XnTextFaintBrush}"
+                                   IsVisible="{Binding IsDraft}"
+                                   TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Border>
+                  </StackPanel>
+                </Flyout>
+              </Button.Flyout>
+              <Panel>
+                <PathIcon Classes="rivet" Data="{StaticResource IconHourglass}" Foreground="{StaticResource XnTextBrush}" />
+                <Ellipse Width="6" Height="6" Fill="{StaticResource XnAccentBrush}"
+                         HorizontalAlignment="Right" VerticalAlignment="Top"
+                         Margin="0,-2,-2,0"
+                         IsVisible="{Binding HasExpiry}" />
+              </Panel>
+            </Button>
+
             <Button Classes="iconbtn"
                     Click="ImportTxt_Click"
                     IsEnabled="{Binding !IsDraft}"
-                    ToolTip.Tip="Import">
+                    ToolTip.Tip="{Binding Ui.Import}">
               <PathIcon Classes="rivet" Data="{StaticResource IconImport}" Foreground="{StaticResource XnTextBrush}" />
             </Button>
 
             <Button Classes="iconbtn"
                     Click="ExportTxt_Click"
                     IsEnabled="{Binding !IsDraft}"
-                    ToolTip.Tip="Export">
+                    ToolTip.Tip="{Binding Ui.Export}">
               <PathIcon Classes="rivet" Data="{StaticResource IconExport}" Foreground="{StaticResource XnTextBrush}" />
             </Button>
 
-            <Panel Margin="4,0,0,0">
-              <Button Classes="iconbtn deletebtn"
-                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).RequestDeleteCommand}"
-                      IsVisible="{Binding !$parent[Window].((vm:MainViewModel)DataContext).IsConfirmingDelete}"
-                      ToolTip.Tip="Delete this note">
-                <PathIcon Classes="rivet" Data="{StaticResource IconTrash}" Foreground="{StaticResource XnTextDimBrush}" />
+            <Button Classes="iconbtn deletebtn"
+                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).RequestDeleteCommand}"
+                    ToolTip.Tip="{Binding Ui.TipDelete}">
+              <PathIcon Classes="rivet" Data="{StaticResource IconTrash}" Foreground="{StaticResource XnTextDimBrush}" />
+            </Button>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right"
+                        IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).IsConfirmingDelete}">
+              <TextBlock Text="{Binding Ui.DeleteConfirm}"
+                         Foreground="{StaticResource XnTextDimBrush}"
+                         FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
+              <Button Classes="danger" Padding="10,6"
+                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ConfirmDeleteCommand}">
+                <TextBlock Text="{Binding Ui.Delete}" FontSize="12" />
               </Button>
-
-              <StackPanel Orientation="Horizontal" Spacing="6"
-                          IsVisible="{Binding $parent[Window].((vm:MainViewModel)DataContext).IsConfirmingDelete}">
-                <TextBlock Text="Delete this note?"
-                           Foreground="{StaticResource XnTextDimBrush}"
-                           FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
-              
-                <Button Classes="danger" Padding="10,6"
-                        Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ConfirmDeleteCommand}">
-                  <TextBlock Text="Delete" FontSize="12" />
-                </Button>
-
-                <Button Classes="flat" Padding="10,6"
-                        Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CancelDeleteCommand}"
-                        Content="Cancel" FontSize="12" />
-              </StackPanel>
-            </Panel>
-          </StackPanel>
+              <Button Classes="flat" Padding="10,6"
+                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CancelDeleteCommand}"
+                      Content="{Binding Ui.Cancel}" FontSize="12" />
+            </StackPanel>
+          </Panel>
         </Grid>
 
         <TextBox Grid.Row="2" Margin="32,10,32,0"
                  Text="{Binding TagsText, Mode=TwoWay}"
-                 PlaceholderText="Add tags, separated by commas…"
+                 PlaceholderText="{Binding Ui.TagsPlaceholder}"
                  FontSize="12" Height="30" />
 
         <Border Grid.Row="3" Margin="32,10,32,0"
@@ -511,12 +637,12 @@
         <PathIcon Classes="rivet" Data="{StaticResource IconPlus}" Width="28" Height="28"
                    Foreground="{StaticResource XnTextFaintBrush}"
                    HorizontalAlignment="Center" />
-        <TextBlock Text="No note selected" Foreground="{StaticResource XnTextDimBrush}"
+        <TextBlock Text="{Binding Ui.NoNoteSelected}" Foreground="{StaticResource XnTextDimBrush}"
                    FontSize="14" HorizontalAlignment="Center" />
-        <TextBlock Text="Pick a note on the left, or create a new one" Foreground="{StaticResource XnTextFaintBrush}"
+        <TextBlock Text="{Binding Ui.NoNoteHint}" Foreground="{StaticResource XnTextFaintBrush}"
                    FontSize="12" HorizontalAlignment="Center" />
         <Button Classes="flat" HorizontalAlignment="Center"
-                Command="{Binding AddNoteCommand}" Content="Create your first note" />
+                Command="{Binding AddNoteCommand}" Content="{Binding Ui.CreateFirstNote}" />
       </StackPanel>
     </Grid>
 
@@ -524,7 +650,7 @@
 
     <Border Background="#66000000" IsVisible="{Binding IsSettingsOpen}" IsHitTestVisible="True">
       <Border Background="{StaticResource XnPanelBrush}"
-              Width="420" Height="280"
+              Width="420" Height="420"
               CornerRadius="8"
               BorderBrush="{StaticResource XnBorderBrush}"
               BorderThickness="1"
@@ -532,47 +658,75 @@
               HorizontalAlignment="Center" VerticalAlignment="Center">
         <Grid RowDefinitions="Auto,Auto,*">
           <Grid Grid.Row="0" Margin="20,16,20,16">
-            <TextBlock Text="Settings" FontSize="16" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Ui.Settings}" FontSize="16" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" VerticalAlignment="Center" />
             <Button Classes="iconbtn" HorizontalAlignment="Right" Command="{Binding ToggleSettingsCommand}">
               <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}" Foreground="{StaticResource XnTextDimBrush}" />
             </Button>
           </Grid>
           <Border Grid.Row="1" Height="1" Background="{StaticResource XnBorderSubtleBrush}" />
-          
-          <StackPanel Grid.Row="2" Margin="20" Spacing="16">
-            <StackPanel Spacing="4">
-              <TextBlock Text="About" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" />
-              <TextBlock Text="XNote v0.5. Developed by xeraze." Foreground="{StaticResource XnTextDimBrush}" FontSize="13" />
-            </StackPanel>
-            
-            <StackPanel Spacing="12">
-              <TextBlock Text="Hotkeys" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" Margin="0,8,0,0" />
-              
-              <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*" Margin="4,0,0,0">
-                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-                  <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + B" FontSize="11" FontWeight="Medium" /></Border>
-                  <TextBlock Text="Bold" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
-                </StackPanel>
-                <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-                  <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + I" FontSize="11" FontWeight="Medium" /></Border>
-                  <TextBlock Text="Italic" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
-                </StackPanel>
-                <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                  <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + U" FontSize="11" FontWeight="Medium" /></Border>
-                  <TextBlock Text="Underline" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+
+          <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="20" Spacing="18">
+              <StackPanel Spacing="8">
+                <TextBlock Text="{Binding Ui.Configuration}" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" />
+                <TextBlock Text="{Binding Ui.Language}" FontSize="12" Foreground="{StaticResource XnTextFaintBrush}" />
+                <ComboBox ItemsSource="{Binding LanguageOptions}"
+                          SelectedItem="{Binding SelectedLanguageOption}"
+                          HorizontalAlignment="Stretch"
+                          MinHeight="34">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LanguageOption">
+                      <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Text="{Binding Ui.LanguageRestartHint}"
+                           FontSize="11"
+                           Foreground="{StaticResource XnTextDimBrush}"
+                           TextWrapping="Wrap"
+                           IsVisible="{Binding ShowLanguageRestartHint}" />
+              </StackPanel>
+
+              <Border Height="1" Background="{StaticResource XnBorderSubtleBrush}" />
+
+              <StackPanel Spacing="12">
+                <TextBlock Text="{Binding Ui.Information}" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" />
+
+                <StackPanel Spacing="4">
+                  <TextBlock Text="{Binding Ui.About}" FontSize="13" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" />
+                  <TextBlock Text="{Binding Ui.AboutText}" Foreground="{StaticResource XnTextDimBrush}" FontSize="13" />
                 </StackPanel>
 
-                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-                  <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + Z" FontSize="11" FontWeight="Medium" /></Border>
-                  <TextBlock Text="Undo" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                <StackPanel Spacing="10">
+                  <TextBlock Text="{Binding Ui.Hotkeys}" FontSize="13" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" Margin="0,4,0,0" />
+
+                  <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*" Margin="4,0,0,0">
+                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                      <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + B" FontSize="11" FontWeight="Medium" /></Border>
+                      <TextBlock Text="{Binding Ui.Bold}" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                      <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + I" FontSize="11" FontWeight="Medium" /></Border>
+                      <TextBlock Text="{Binding Ui.Italic}" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                      <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + U" FontSize="11" FontWeight="Medium" /></Border>
+                      <TextBlock Text="{Binding Ui.Underline}" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                      <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + Z" FontSize="11" FontWeight="Medium" /></Border>
+                      <TextBlock Text="{Binding Ui.Undo}" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                      <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + Y" FontSize="11" FontWeight="Medium" /></Border>
+                      <TextBlock Text="{Binding Ui.Redo}" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                    </StackPanel>
+                  </Grid>
                 </StackPanel>
-                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-                  <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + Y" FontSize="11" FontWeight="Medium" /></Border>
-                  <TextBlock Text="Redo" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
-                </StackPanel>
-              </Grid>
+              </StackPanel>
             </StackPanel>
-          </StackPanel>
+          </ScrollViewer>
         </Grid>
       </Border>
     </Border>
@@ -580,13 +734,13 @@
     <StackPanel Orientation="Horizontal" Spacing="2"
                 HorizontalAlignment="Right" VerticalAlignment="Top"
                 Margin="0,5,10,0">
-      <Button Classes="titlebtn" Click="Minimize_Click" ToolTip.Tip="Minimize">
+      <Button Classes="titlebtn" Click="Minimize_Click" ToolTip.Tip="{Binding Ui.Minimize}">
         <PathIcon Classes="rivet" Data="{StaticResource IconWinMinimize}" Foreground="{StaticResource XnTextDimBrush}" />
       </Button>
-      <Button Classes="titlebtn" Click="MaximizeRestore_Click" ToolTip.Tip="Maximize / Restore">
+      <Button Classes="titlebtn" Click="MaximizeRestore_Click" ToolTip.Tip="{Binding Ui.MaximizeRestore}">
         <PathIcon x:Name="MaxRestoreIcon" Classes="rivet" Data="{StaticResource IconWinMaximize}" Foreground="{StaticResource XnTextDimBrush}" />
       </Button>
-      <Button Classes="titlebtn titlebtn-close" Click="Close_Click" ToolTip.Tip="Close">
+      <Button Classes="titlebtn titlebtn-close" Click="Close_Click" ToolTip.Tip="{Binding Ui.Close}">
         <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}" Foreground="{StaticResource XnTextDimBrush}" />
       </Button>
     </StackPanel>

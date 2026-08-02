@@ -1,76 +1,77 @@
 # XNote
 
-Desktop notes app, C# + Avalonia. Black/grey theme, splash screen with fade animation, then a two-pane note list + editor. Saves to a local JSON file.
+XNote is a desktop note-taking application built with C# and Avalonia. The current project targets .NET 10 and focuses on a lightweight local-first workflow with notes, tasks, reminders, search/filtering, tray integration, and a custom window shell.
+
+## Current project scope
+
+The app already includes the following workflow pieces:
+
+- note creation, editing, deletion and local persistence
+- task/done state for notes
+- reminder scheduling and notification popups
+- tray icon support with quick new-note actions
+- search and filter helpers for note discovery
+- per-note metadata such as creation and last-modified timestamps
+- an unsaved-changes indicator in the UI
+- a custom window frame and settings/shortcuts surface
+
+## Tech stack
+
+- .NET 10
+- Avalonia UI
+- C# project with MVVM-style separation between Views, ViewModels, and Models
 
 ## Setup
 
-Install .NET 8 SDK: https://dotnet.microsoft.com/download/dotnet/8.0 (the SDK installer, not just runtime).
+Install .NET 10 SDK from the official Microsoft site, then verify the toolchain:
 
-Check it worked:
 ```powershell
 dotnet --version
 ```
 
-## Run it (dev mode)
+## Run in development mode
 
 ```powershell
 cd XNote
 dotnet run
 ```
 
-First run downloads Avalonia packages, takes a bit longer. This does NOT create an exe you can double-click — see below for that.
-
-## Get an actual .exe
+## Build a Windows executable
 
 ```powershell
 cd XNote
 dotnet publish -c Release -r win-x64 --self-contained true
 ```
 
-The exe lands here:
+The publish output lands in a folder similar to:
+
+```text
+XNote\bin\Release\net10.0\win-x64\publish\
 ```
-XNote\bin\Release\net8.0\win-x64\publish\XNote.exe
-```
 
-That's the file to put on your desktop / make a shortcut to. It's ~60-80MB since the .NET runtime is bundled inside — runs on any Windows machine with no install needed.
+## Notes storage
 
-## Using it
+The app keeps data locally in the Windows user profile, which is the usual place for a desktop notes app using a JSON file store.
 
-- `+` — new note
-- click a note in the list — opens it in the editor
-- `Task` toggle — makes it a task instead of a note
-- `Done` toggle — shows up on tasks, marks complete
-- tags field — comma separated
-- search box — filters as you type
-- `✕` — delete current note
-- saves automatically, no save button
+## Project structure
 
-## Where data is stored
-
-`%APPDATA%\XNote\notes.json` — plain JSON, readable in any text editor.
-
-## Structure
-
-```
+```text
 XNote/
-├── XNote.csproj
-├── Program.cs
 ├── App.axaml(.cs)
-├── Models/Note.cs
-├── Services/NoteStore.cs
+├── Program.cs
+├── XNote.csproj
+├── Assets/
+├── Models/
+├── Services/
 ├── ViewModels/
-│   ├── ViewModelBase.cs
-│   ├── RelayCommand.cs
-│   ├── NoteViewModel.cs
-│   ├── MainViewModel.cs
-│   └── Converters.cs
-└── Views/
-    ├── SplashWindow.axaml(.cs)
-    └── MainWindow.axaml(.cs)
+├── Views/
+└── README.md
 ```
 
-MVVM: Views are XAML bound to ViewModels, ViewModels don't touch UI types (except Converters.cs), Models are plain data. No MVVM framework dependency — ViewModelBase/RelayCommand are hand-written instead of pulling in CommunityToolkit.Mvvm.
+## Notes on the current status
 
-## Testing
+This README is intentionally written to match the current codebase rather than the older minimal feature list. The project has since expanded with reminder-driven notifications, tray interaction, and richer note metadata.
 
-Core logic (models, storage, viewmodels) was tested separately during development — 35 checks, all passing, covering save/load, atomic writes, corrupted-file handling, tags, add/search/delete. The Avalonia UI itself couldn't be build-tested in the environment this was written in, so if `dotnet run` throws an error, send it over and it'll get fixed.
+## Build note
+
+The obsolete `Window.SystemDecorations` usage in the notification window has been replaced with the current Avalonia property so the XAML stays compatible with new framework versions.

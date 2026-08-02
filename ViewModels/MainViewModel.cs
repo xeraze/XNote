@@ -29,8 +29,7 @@ public class MainViewModel : ViewModelBase
     private bool _isApplyingFilter;
     private NoteFilterMode _filterMode = NoteFilterMode.All;
 
-    private Note? _undoNote;
-    private string _undoTitle = string.Empty;
+    private readonly List<(Note Note, string Title)> _undoStack = new();
     private bool _isShowingUndo;
     private DispatcherTimer? _undoTimer;
 
@@ -38,6 +37,7 @@ public class MainViewModel : ViewModelBase
     private DispatcherTimer? _saveStatusClearTimer;
     private DispatcherTimer? _savingAnimationTimer;
     private DispatcherTimer _reminderTimer;
+    private DispatcherTimer _expiryTimer;
     private int _savingDots = 0;
 
     private bool _isSettingsOpen;
@@ -46,6 +46,43 @@ public class MainViewModel : ViewModelBase
         get => _isSettingsOpen;
         set => SetField(ref _isSettingsOpen, value);
     }
+
+    public UiStrings Ui => Services.Ui.Strings;
+
+    public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
+    [
+        new("en", Services.Ui.Strings.LanguageEnglish),
+        new("ru", Services.Ui.Strings.LanguageRussian),
+    ];
+
+    private string _selectedLanguageCode = AppLocale.CurrentCode;
+    public string SelectedLanguageCode
+    {
+        get => _selectedLanguageCode;
+        set
+        {
+            if (!SetField(ref _selectedLanguageCode, value)) return;
+
+            var settings = SettingsStore.Load();
+            settings.Language = value;
+            SettingsStore.Save(settings);
+            OnPropertyChanged(nameof(ShowLanguageRestartHint));
+            OnPropertyChanged(nameof(SelectedLanguageOption));
+        }
+    }
+
+    public LanguageOption SelectedLanguageOption
+    {
+        get => LanguageOptions.First(o => o.Code == _selectedLanguageCode);
+        set
+        {
+            if (value is null) return;
+            SelectedLanguageCode = value.Code;
+        }
+    }
+
+    public bool ShowLanguageRestartHint =>
+        !string.Equals(_selectedLanguageCode, AppLocale.CurrentCode, StringComparison.OrdinalIgnoreCase);
 
     public event Action<NoteViewModel>? OnShowNotification;
 
@@ -110,8 +147,8 @@ public class MainViewModel : ViewModelBase
             var total = _allNotes.Count;
             var filtered = FilteredNotes.Count;
             bool isFiltered = FilterMode != NoteFilterMode.All || !string.IsNullOrWhiteSpace(SearchText);
-            string totalStr = total == 1 ? "1 note" : $"{total} notes";
-            return isFiltered ? $"{filtered} of {totalStr}" : totalStr;
+            string totalStr = total == 1 ? Ui.NotesOne : Ui.NotesMany(total);
+            return isFiltered ? Ui.NotesFiltered(filtered, totalStr) : totalStr;
         }
     }
 
@@ -128,10 +165,26 @@ public class MainViewModel : ViewModelBase
         private set => SetField(ref _isShowingUndo, value);
     }
 
+    public string UndoStatusText =>
+        _undoStack.Count <= 1
+            ? Ui.NoteDeleted
+            : Ui.NotesDeletedMany(_undoStack.Count);
+
     public string UndoTitle
     {
-        get => _undoTitle;
-        private set => SetField(ref _undoTitle, value);
+        get
+        {
+            if (_undoStack.Count == 0) return string.Empty;
+            if (_undoStack.Count == 1) return _undoStack[^1].Title;
+            return Ui.UndoStackPreview(_undoStack[^1].Title, _undoStack.Count - 1);
+        }
+    }
+
+    private void NotifyUndoChanged()
+    {
+        OnPropertyChanged(nameof(IsShowingUndo));
+        OnPropertyChanged(nameof(UndoStatusText));
+        OnPropertyChanged(nameof(UndoTitle));
     }
 
     public string SaveStatusText
@@ -167,8 +220,13 @@ public class MainViewModel : ViewModelBase
     public MainViewModel(NoteStore store)
     {
         _store = store;
-        AddNoteCommand = new RelayCommand(AddNote);
-        SaveNoteCommand = new RelayCommand(() => SelectedNote?.MarkSaved(), () => SelectedNote is not null);
+        AddNoteCommand = new RelayCommand(() => AddNote());
+        SaveNoteCommand = new RelayCommand(() =>
+        {
+            if (SelectedNote is null) return;
+            SelectedNote.MarkSaved();
+            SaveToDisk();
+        }, () => SelectedNote is not null);
         RequestDeleteCommand = new RelayCommand(() => IsConfirmingDelete = true, () => SelectedNote is not null);
         ConfirmDeleteCommand = new RelayCommand(DeleteSelected);
         CancelDeleteCommand = new RelayCommand(() => IsConfirmingDelete = false);
@@ -186,12 +244,16 @@ public class MainViewModel : ViewModelBase
         {
             _saveDebounceTimer.Stop();
             SaveToDisk();
-            ShowSaveStatus("Saved \u2713");
+            ShowSaveStatus(Ui.SavedStatus);
         };
 
-        _reminderTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+        _reminderTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         _reminderTimer.Tick += (_, _) => CheckReminders();
         _reminderTimer.Start();
+
+        _expiryTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        _expiryTimer.Tick += (_, _) => CheckTimedNotes();
+        _expiryTimer.Start();
 
         LoadFromDisk();
     }
@@ -199,21 +261,89 @@ public class MainViewModel : ViewModelBase
     private void CheckReminders()
     {
         var now = DateTime.UtcNow;
-        foreach (var note in _allNotes.ToList())
+        var due = _allNotes
+            .Where(n => n.Model.RemindAtUtc.HasValue && n.Model.RemindAtUtc.Value <= now)
+            .ToList();
+
+        if (due.Count == 0) return;
+
+        foreach (var note in due)
         {
-            if (note.Model.RemindAtUtc.HasValue && note.Model.RemindAtUtc.Value <= now)
+            note.ConsumeReminder();
+            OnShowNotification?.Invoke(note);
+        }
+
+        SaveToDisk();
+    }
+
+    private void CheckTimedNotes()
+    {
+        var now = DateTime.UtcNow;
+
+        var tracked = _allNotes
+            .Where(n => n.HasBeenSaved && n.Model.IsTimed && n.Model.ExpiresAtUtc.HasValue)
+            .ToList();
+
+        var expired = tracked
+            .Where(n => n.Model.ExpiresAtUtc!.Value <= now)
+            .ToList();
+
+        foreach (var noteVm in expired)
+        {
+            _allNotes.Remove(noteVm);
+            if (ReferenceEquals(SelectedNote, noteVm))
             {
-                note.RemindAt = null;
-                SaveToDisk();
-                OnShowNotification?.Invoke(note);
+                SelectedNote = null;
             }
+        }
+
+        foreach (var noteVm in tracked.Where(n => !expired.Contains(n)))
+        {
+            var expiryUtc = noteVm.Model.ExpiresAtUtc!.Value;
+            var warnWindow = expiryUtc - now;
+
+            if (warnWindow <= TimeSpan.Zero)
+            {
+                continue;
+            }
+
+            if (warnWindow <= TimeSpan.FromSeconds(30) && !noteVm.Model.ExpiryWarningSent)
+            {
+                noteVm.Model.ExpiryWarningSent = true;
+                SaveToDisk();
+                OnShowNotification?.Invoke(noteVm);
+            }
+        }
+
+        if (expired.Count > 0)
+        {
+            SaveToDisk();
+            ApplyFilter();
+            OnPropertyChanged(nameof(TotalCountLabel));
         }
     }
 
     public void ForceSave()
     {
         _saveDebounceTimer.Stop();
+        _savingAnimationTimer?.Stop();
+        SaveStatusText = string.Empty;
         SaveToDisk();
+    }
+
+    public bool SelectNoteIfPresent(NoteViewModel note)
+    {
+        var match = _allNotes.FirstOrDefault(n => n.Id == note.Id);
+        if (match is null) return false;
+
+        if (!FilteredNotes.Any(n => n.Id == match.Id))
+        {
+            SearchText = string.Empty;
+            FilterMode = NoteFilterMode.All;
+        }
+
+        SelectedNote = match;
+        return true;
     }
 
     private NoteViewModel WrapAndSubscribe(Note note, bool hasBeenSaved)
@@ -225,7 +355,10 @@ public class MainViewModel : ViewModelBase
                 or nameof(NoteViewModel.Body)
                 or nameof(NoteViewModel.IsTask)
                 or nameof(NoteViewModel.IsDone)
-                or nameof(NoteViewModel.TagsText))
+                or nameof(NoteViewModel.TagsText)
+                or nameof(NoteViewModel.RemindAt)
+                or nameof(NoteViewModel.HasExpiry)
+                or nameof(NoteViewModel.IsTimed))
             {
                 if (vm.HasBeenSaved)
                 {
@@ -324,14 +457,59 @@ public class MainViewModel : ViewModelBase
 
     private void AddNote()
     {
+        var existingRegularDraft = _allNotes.FirstOrDefault(n =>
+            !n.HasBeenSaved &&
+            !n.IsTimed &&
+            IsDefaultRegularTitle(n.Title) &&
+            string.IsNullOrWhiteSpace(n.Body));
+
+        if (existingRegularDraft is not null)
+        {
+            SelectedNote = existingRegularDraft;
+            return;
+        }
+
         var note = new Note
         {
             Id = _nextId++,
-            Title = "New note",
+            Title = Ui.NewNoteTitle,
             Body = string.Empty,
         };
 
         var vm = WrapAndSubscribe(note, hasBeenSaved: false);
+
+        _allNotes.Insert(0, vm);
+        ApplyFilter();
+        OnPropertyChanged(nameof(TotalCountLabel));
+
+        SelectedNote = vm;
+    }
+
+    public void CreateTimedNote(DateTime expiresAtLocal)
+    {
+        var existingDraft = _allNotes.FirstOrDefault(n =>
+            !n.HasBeenSaved &&
+            n.IsTimed &&
+            IsDefaultTimedTitle(n.Title) &&
+            string.IsNullOrWhiteSpace(n.Body));
+
+        if (existingDraft is not null)
+        {
+            existingDraft.SetExpiry(expiresAtLocal);
+            SelectedNote = existingDraft;
+            return;
+        }
+
+        var note = new Note
+        {
+            Id = _nextId++,
+            Title = Ui.NewTimedNoteTitle,
+            Body = string.Empty,
+            IsTimed = true,
+        };
+
+        var vm = WrapAndSubscribe(note, hasBeenSaved: false);
+        vm.SetExpiry(expiresAtLocal);
 
         _allNotes.Insert(0, vm);
         ApplyFilter();
@@ -346,7 +524,7 @@ public class MainViewModel : ViewModelBase
 
         var wasSaved = SelectedNote.HasBeenSaved;
         var deletedNote = SelectedNote.Model;
-        var deletedTitle = string.IsNullOrWhiteSpace(SelectedNote.Title) ? "Untitled" : SelectedNote.Title;
+        var deletedTitle = string.IsNullOrWhiteSpace(SelectedNote.Title) ? Ui.Untitled : SelectedNote.Title;
 
         _allNotes.Remove(SelectedNote);
         SelectedNote = null;
@@ -360,38 +538,37 @@ public class MainViewModel : ViewModelBase
         ApplyFilter();
         OnPropertyChanged(nameof(TotalCountLabel));
 
-
         if (wasSaved)
         {
-            _undoNote = deletedNote;
-            UndoTitle = deletedTitle;
+            _undoStack.Add((deletedNote, deletedTitle));
             IsShowingUndo = true;
-
-            _undoTimer?.Stop();
-            _undoTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
-            _undoTimer.Tick += (_, _) => DismissUndo();
-            _undoTimer.Start();
+            NotifyUndoChanged();
+            RestartUndoTimer();
         }
     }
 
     private void UndoDelete()
     {
-        if (_undoNote is null) return;
+        if (_undoStack.Count == 0) return;
 
         _undoTimer?.Stop();
         _undoTimer = null;
 
-        var restored = _undoNote;
-        _undoNote = null;
-        IsShowingUndo = false;
+        foreach (var entry in _undoStack)
+        {
+            var vm = WrapAndSubscribe(entry.Note, hasBeenSaved: true);
+            _allNotes.Insert(0, vm);
+        }
 
-        var vm = WrapAndSubscribe(restored, hasBeenSaved: true);
-        _allNotes.Insert(0, vm);
+        var focusId = _undoStack[^1].Note.Id;
+        _undoStack.Clear();
+        IsShowingUndo = false;
+        NotifyUndoChanged();
 
         ApplyFilter();
         OnPropertyChanged(nameof(TotalCountLabel));
 
-        SelectedNote = FilteredNotes.FirstOrDefault(n => n.Id == vm.Id);
+        SelectedNote = FilteredNotes.FirstOrDefault(n => n.Id == focusId);
         SaveToDisk();
     }
 
@@ -399,8 +576,17 @@ public class MainViewModel : ViewModelBase
     {
         _undoTimer?.Stop();
         _undoTimer = null;
-        _undoNote = null;
+        _undoStack.Clear();
         IsShowingUndo = false;
+        NotifyUndoChanged();
+    }
+
+    private void RestartUndoTimer()
+    {
+        _undoTimer?.Stop();
+        _undoTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(12) };
+        _undoTimer.Tick += (_, _) => DismissUndo();
+        _undoTimer.Start();
     }
 
     private void StartSavingAnimation()
@@ -411,10 +597,10 @@ public class MainViewModel : ViewModelBase
             _savingAnimationTimer.Tick += (_, _) =>
             {
                 _savingDots = (_savingDots + 1) % 4;
-                SaveStatusText = "saving" + new string('.', _savingDots);
+                SaveStatusText = Ui.SavingStatus.ToLowerInvariant() + new string('.', _savingDots);
             };
         }
-        SaveStatusText = "saving...";
+        SaveStatusText = Ui.SavingStatus.ToLowerInvariant() + "...";
         _savingAnimationTimer.Start();
     }
 
@@ -432,4 +618,12 @@ public class MainViewModel : ViewModelBase
         };
         _saveStatusClearTimer.Start();
     }
+
+    private static bool IsDefaultRegularTitle(string title) =>
+        title == Services.Ui.Strings.NewNoteTitle || title is "New note" or "Новая заметка";
+
+    private static bool IsDefaultTimedTitle(string title) =>
+        title == Services.Ui.Strings.NewTimedNoteTitle || title is "New timed note" or "Новая временная заметка";
 }
+
+public sealed record LanguageOption(string Code, string DisplayName);

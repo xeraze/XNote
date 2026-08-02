@@ -3,12 +3,14 @@
         x:Class="XNote.Views.NotificationWindow"
         xmlns:vm="using:XNote.ViewModels"
         x:DataType="vm:NoteViewModel"
-        Title="Reminder" Width="320" Height="120"
-        SystemDecorations="None" Topmost="True" ShowInTaskbar="False"
+        Title="Notification" Width="340" MinHeight="132"
+        SizeToContent="Height"
+        WindowDecorations="None" Topmost="True" ShowInTaskbar="False"
         WindowStartupLocation="Manual" Background="Transparent">
-  
+
   <Window.Resources>
     <StreamGeometry x:Key="IconBell">M10 14h5.5v-2h-1.382l-.366-.733a2.9 2.9 0 0 1-.298-1.12l-.234-4.209A5.23 5.23 0 0 0 9 1.096V0H7v1.096a5.23 5.23 0 0 0-4.22 4.842l-.234 4.209a2.9 2.9 0 0 1-.298 1.12L1.882 12H.5v2H6a2 2 0 1 0 4 0m1.886-2H4.114a4.9 4.9 0 0 0 .429-1.742l.234-4.209a3.228 3.228 0 0 1 6.446 0l.234 4.209A4.9 4.9 0 0 0 11.886 12</StreamGeometry>
+    <StreamGeometry x:Key="IconHourglass">M3,0 H13 V2.2 L9.2,6.5 V9.5 L13,13.8 V16 H3 V13.8 L6.8,9.5 V6.5 L3,2.2 Z M4.6,1.4 V1.9 L7.3,5.2 H8.7 L11.4,1.9 V1.4 Z M4.6,14.6 H11.4 V14.1 L8.7,10.8 H7.3 L4.6,14.1 Z</StreamGeometry>
   </Window.Resources>
 
   <Border Background="{StaticResource XnPanelBrush}"
@@ -19,15 +21,30 @@
           Margin="10">
     <Grid RowDefinitions="Auto,*,Auto" Margin="16,12">
       <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
-        <PathIcon Classes="rivet" Data="{StaticResource IconBell}" Width="12" Height="12" Foreground="{StaticResource XnTextDimBrush}" />
-        <TextBlock Text="Reminder" FontSize="11" Foreground="{StaticResource XnTextFaintBrush}" FontWeight="Medium" />
+        <Panel Width="12" Height="12">
+          <PathIcon Classes="rivet" Data="{StaticResource IconBell}" Width="12" Height="12"
+                    Foreground="{StaticResource XnTextDimBrush}"
+                    IsVisible="{Binding !IsTimed}" />
+          <PathIcon Classes="rivet" Data="{StaticResource IconHourglass}" Width="12" Height="12"
+                    Foreground="{StaticResource XnTextDimBrush}"
+                    IsVisible="{Binding IsTimed}" />
+        </Panel>
+        <TextBlock Text="{Binding NotificationKindLabel}" FontSize="11"
+                   Foreground="{StaticResource XnTextFaintBrush}" FontWeight="Medium" />
       </StackPanel>
-      
-      <TextBlock Grid.Row="1" Text="{Binding Title}" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" TextTrimming="CharacterEllipsis" />
-      
-      <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,8,0,0">
-        <Button Classes="flat" Content="Dismiss" FontSize="12" Padding="12,6" Click="Dismiss_Click" />
-        <Button Content="Open Note" FontSize="12" Padding="12,6" Click="OpenNote_Click" Background="{StaticResource XnTextBrush}" Foreground="{StaticResource XnBlackBrush}" CornerRadius="4" />
+
+      <StackPanel Grid.Row="1" Spacing="3">
+        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium"
+                   Foreground="{StaticResource XnTextBrush}" TextTrimming="CharacterEllipsis" />
+        <TextBlock Text="{Binding NotificationMessage}" FontSize="11"
+                   Foreground="{StaticResource XnTextDimBrush}"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,10,0,0">
+        <Button Classes="flat" Content="{Binding Ui.Dismiss}" FontSize="12" Padding="12,6" Click="Dismiss_Click" />
+        <Button Content="{Binding Ui.OpenNote}" FontSize="12" Padding="12,6" Click="OpenNote_Click"
+                Background="{StaticResource XnTextBrush}" Foreground="{StaticResource XnBlackBrush}" CornerRadius="4" />
       </StackPanel>
     </Grid>
   </Border>

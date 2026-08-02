@@ -12,7 +12,7 @@
       <TrayIcon Icon="avares://XNote/Assets/xnote.ico" ToolTipText="XNote" Clicked="TrayIcon_Clicked">
         <TrayIcon.Menu>
           <NativeMenu>
-            <NativeMenuItem Header="New Note" Click="TrayNewNote_Click" Icon="avares://XNote/Assets/xnote.ico" />
+            <NativeMenuItem Header="New Note" Click="TrayNewNote_Click" Icon="avares://XNote/Assets/new-note.ico" />
             <NativeMenuItemSeparator />
             <NativeMenuItem Header="Exit" Click="TrayExit_Click" />
           </NativeMenu>

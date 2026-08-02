@@ -1,14 +1,25 @@
 using System;
+using System.IO;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using AvaloniaRichEditor.Controls;
+using XNote.Models;
 using XNote.ViewModels;
 
 namespace XNote.Views;
 
 public partial class MainWindow : Window
 {
+    private const uint SndAsync = 0x0001;
+    private const uint SndFilename = 0x00020000;
+    private const uint SndNodefault = 0x0002;
+    private int _notificationStackIndex;
+
+    [DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern bool PlaySound(string pszSound, IntPtr hmod, uint fdwSound);
+
     public MainWindow()
     {
         InitializeComponent();
@@ -31,7 +42,31 @@ public partial class MainWindow : Window
     {
         var notification = new NotificationWindow { DataContext = note };
         notification.OnOpenNote += OpenNoteFromNotification;
+
+        var screen = Screens.ScreenFromVisual(this);
+        if (screen is not null)
+        {
+            var workingArea = screen.WorkingArea;
+            var offset = _notificationStackIndex * 18;
+            notification.SetStackPosition(new Avalonia.PixelPoint(
+                Math.Max(0, workingArea.Right - (int)(notification.Width + 20) - 8),
+                Math.Max(0, workingArea.Bottom - (int)(notification.Height + 40 + offset))));
+            _notificationStackIndex = (_notificationStackIndex + 1) % 8;
+        }
+
         notification.Show();
+
+        try
+        {
+            var soundFile = Path.Combine(AppContext.BaseDirectory, "Assets", "reminder.wav");
+            if (File.Exists(soundFile))
+            {
+                PlaySound(soundFile, IntPtr.Zero, SndFilename | SndAsync | SndNodefault);
+            }
+        }
+        catch
+        {
+        }
     }
 
     private void OpenNoteFromNotification(NoteViewModel note)
@@ -42,7 +77,7 @@ public partial class MainWindow : Window
 
         if (DataContext is MainViewModel vm)
         {
-            vm.SelectedNote = note;
+            vm.SelectNoteIfPresent(note);
         }
     }
 
@@ -156,7 +191,7 @@ public partial class MainWindow : Window
         _bodyEditorView.Editor.TextChanged -= BodyEditor_TextChanged;
 
         _suppressTextChanged = true;
-        string bodyText = note?.Body ?? string.Empty;
+        string bodyText = Note.NormalizeStoredBody(note?.Body);
         await _bodyEditorView.Editor.LoadHtmlAsync(bodyText);
         _suppressTextChanged = false;
 
@@ -169,7 +204,7 @@ public partial class MainWindow : Window
         var note = SelectedNote;
         if (note is null || _bodyEditorView is null) return;
 
-        note.NotifyBodyEdited(_bodyEditorView.Editor.ToHtml());
+        note.NotifyBodyEdited(Note.NormalizeStoredBody(_bodyEditorView.Editor.ToHtml()));
     }
 
     private async void ImportDirect_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -202,12 +237,14 @@ public partial class MainWindow : Window
                     vm.SelectedNote.Title = title;
                     string escaped = System.Net.WebUtility.HtmlEncode(text);
                     string htmlContent = $"<p>{escaped.Replace("\n", "<br/>")}</p>";
-                    
+                    htmlContent = Note.NormalizeStoredBody(htmlContent);
+
                     vm.SelectedNote.NotifyBodyEdited(htmlContent);
                     if (_bodyEditorView != null)
                     {
                         await _bodyEditorView.Editor.LoadHtmlAsync(htmlContent);
                     }
+                    vm.SelectedNote.MarkSaved();
                     vm.ForceSave();
                 }
             }
@@ -238,6 +275,7 @@ public partial class MainWindow : Window
 
         string escaped = System.Net.WebUtility.HtmlEncode(text);
         string htmlContent = $"<p>{escaped.Replace("\n", "<br/>")}</p>";
+        htmlContent = Note.NormalizeStoredBody(htmlContent);
 
         await _bodyEditorView.Editor.LoadHtmlAsync(htmlContent);
         SelectedNote.NotifyBodyEdited(htmlContent);
@@ -275,24 +313,67 @@ public partial class MainWindow : Window
         await writer.WriteAsync(plainText);
     }
 
+    private void RegularNoteFlyout_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        HideNewNoteFlyout();
+        if (DataContext is MainViewModel vm)
+        {
+            vm.AddNoteCommand.Execute(null);
+        }
+    }
+
+    private async void TimedNoteFlyout_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        HideNewNoteFlyout();
+        if (DataContext is not MainViewModel vm) return;
+
+        var setup = new TimedNoteSetupWindow();
+        var confirmed = await setup.ShowDialog<bool>(this);
+        if (confirmed && setup.ConfirmedExpiry is { } expiry)
+        {
+            vm.CreateTimedNote(expiry);
+        }
+    }
+
+    private void HideNewNoteFlyout()
+    {
+        if (this.FindControl<Button>("NewNoteButton") is { } button && button.Flyout is Flyout flyout)
+        {
+            flyout.Hide();
+        }
+    }
+
     private void SetReminder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         SelectedNote?.ApplyPendingReminder();
-
-        if (sender is Control control)
-        {
-            (Avalonia.Controls.Primitives.FlyoutBase.GetAttachedFlyout(control) as Flyout)?.Hide();
-        }
+        HideSenderFlyout(sender);
     }
 
     private void ClearReminder_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         if (SelectedNote is null) return;
         SelectedNote.RemindAt = null;
+        HideSenderFlyout(sender);
+    }
 
-        if (sender is Control control)
+    private void SetExpiry_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        SelectedNote?.ApplyPendingExpiry();
+        HideSenderFlyout(sender);
+    }
+
+    private static void HideSenderFlyout(object? sender)
+    {
+        var current = sender as Control;
+        while (current is not null)
         {
-            (Avalonia.Controls.Primitives.FlyoutBase.GetAttachedFlyout(control) as Flyout)?.Hide();
+            if (current is Button { Flyout: Flyout flyout })
+            {
+                flyout.Hide();
+                return;
+            }
+
+            current = current.Parent as Control;
         }
     }
 }
