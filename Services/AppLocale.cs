@@ -103,8 +103,8 @@ public class UiStrings
         "Перезапустите приложение, чтобы применить язык.");
     public string About => AppLocale.T("About", "О приложении");
     public string AboutText => AppLocale.T(
-        "XNote v0.6. Developed by xeraze.",
-        "XNote v0.6. Разработано xeraze.");
+        "XNote v0.7. Developed by xeraze.",
+        "XNote v0.7. Разработано xeraze.");
     public string Hotkeys => AppLocale.T("Hotkeys", "Горячие клавиши");
     public string Bold => AppLocale.T("Bold", "Жирный");
     public string Italic => AppLocale.T("Italic", "Курсив");
@@ -114,7 +114,7 @@ public class UiStrings
 
     public string SearchPlaceholder => AppLocale.T("Search notes…", "Поиск заметок…");
     public string TipSettings => AppLocale.T("Settings", "Настройки");
-    public string TipImportDirect => AppLocale.T("Import .txt as new note", "Импорт .txt как новой заметки");
+    public string TipImportDirect => AppLocale.T("Import note as a .txt file", "Импорт заметки как .txt файла");
     public string TipNewNote => AppLocale.T("New note (Ctrl+N)", "Новая заметка (Ctrl+N)");
     public string RegularNote => AppLocale.T("Regular note", "Обычная заметка");
     public string TimedNote => AppLocale.T("Timed note", "Временная заметка");
@@ -123,7 +123,7 @@ public class UiStrings
     public string FilterNotes => AppLocale.T("Notes", "Заметки");
     public string FilterTasks => AppLocale.T("Tasks", "Задачи");
     public string FilterOpen => AppLocale.T("Open", "Открытые");
-    public string FilterDone => AppLocale.T("Done", "Готовые");
+    public string FilterDone => AppLocale.T("Done", "Выполненные");
 
     public string Draft => AppLocale.T("Draft", "Черновик");
     public string Timed => AppLocale.T("Timed", "Временная");
@@ -149,7 +149,7 @@ public class UiStrings
 
     public string Import => AppLocale.T("Import", "Импорт");
     public string Export => AppLocale.T("Export", "Экспорт");
-    public string TipDelete => AppLocale.T("Delete this note", "Удалить заметку");
+    public string TipDelete => AppLocale.T("Delete", "Удалить");
     public string DeleteConfirm => AppLocale.T("Delete this note?", "Удалить эту заметку?");
     public string Delete => AppLocale.T("Delete", "Удалить");
     public string Cancel => AppLocale.T("Cancel", "Отмена");
@@ -180,8 +180,11 @@ public class UiStrings
     public string Reminder => AppLocale.T("Reminder", "Напоминание");
 
     public string Minimize => AppLocale.T("Minimize", "Свернуть");
-    public string MaximizeRestore => AppLocale.T("Maximize / Restore", "Развернуть / Восстановить");
+    public string MaximizeRestore => AppLocale.T("Maximize", "Развернуть");
     public string Close => AppLocale.T("Close", "Закрыть");
+
+    public string TrayNewNote => AppLocale.T("New Note", "Новая заметка");
+    public string TrayExit => AppLocale.T("Exit", "Выход");
 
     public string Untitled => AppLocale.T("Untitled", "Без названия");
     public string NewNoteTitle => AppLocale.T("New note", "Новая заметка");
@@ -189,11 +192,11 @@ public class UiStrings
 
     public string SetupTitle => AppLocale.T("Timed note", "Временная заметка");
     public string SetupSubtitle => AppLocale.T(
-        "Pick auto-delete date before the note is created.",
-        "Укажите дату авто-удаления до создания заметки.");
+        "Pick auto-delete date to create timed note.",
+        "Укажите дату авто-удаления для создания временной заметки.");
     public string SetupConfirmInfo => AppLocale.T(
         "The countdown starts only after you save the note. 30 seconds before auto-delete you will get a notification.",
-        "Обратный отсчёт начнётся только после сохранения заметки. За 30 секунд до удаления придёт уведомление.");
+        "Обратный отсчёт начнётся только после сохранения заметки. За 30 секунд до удаления вам придёт уведомление.");
     public string Confirm => AppLocale.T("Confirm", "Подтвердить");
 
     public string ReminderDueNow => AppLocale.T("Reminder is due now.", "Время напоминания наступило.");

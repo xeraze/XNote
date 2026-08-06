@@ -19,8 +19,8 @@
           CornerRadius="8"
           BoxShadow="0 4 20 0 #40000000"
           Margin="10">
-    <Grid RowDefinitions="Auto,*,Auto" Margin="16,12">
-      <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" Margin="0,0,0,4">
+    <Grid RowDefinitions="Auto,Auto,Auto" Margin="16,12">
+      <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" Margin="0,0,0,6">
         <Panel Width="12" Height="12">
           <PathIcon Classes="rivet" Data="{StaticResource IconBell}" Width="12" Height="12"
                     Foreground="{StaticResource XnTextDimBrush}"
@@ -33,7 +33,7 @@
                    Foreground="{StaticResource XnTextFaintBrush}" FontWeight="Medium" />
       </StackPanel>
 
-      <StackPanel Grid.Row="1" Spacing="3">
+      <StackPanel Grid.Row="1" Spacing="4">
         <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium"
                    Foreground="{StaticResource XnTextBrush}" TextTrimming="CharacterEllipsis" />
         <TextBlock Text="{Binding NotificationMessage}" FontSize="11"
@@ -41,7 +41,7 @@
                    TextWrapping="Wrap" />
       </StackPanel>
 
-      <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,10,0,0">
+      <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,12,0,0">
         <Button Classes="flat" Content="{Binding Ui.Dismiss}" FontSize="12" Padding="12,6" Click="Dismiss_Click" />
         <Button Content="{Binding Ui.OpenNote}" FontSize="12" Padding="12,6" Click="OpenNote_Click"
                 Background="{StaticResource XnTextBrush}" Foreground="{StaticResource XnBlackBrush}" CornerRadius="4" />

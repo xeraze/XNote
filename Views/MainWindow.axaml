@@ -207,6 +207,23 @@
       <Setter Property="Opacity" Value="1" />
     </Style>
 
+    <Style Selector="ComboBoxItem /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelBrush}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="ComboBoxItem:selected:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+
     <Style Selector="Button.titlebtn">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />

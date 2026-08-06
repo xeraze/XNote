@@ -1,11 +1,17 @@
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using AvaloniaRichEditor.Controls;
 using XNote.Models;
+using XNote.Services;
 using XNote.ViewModels;
 
 namespace XNote.Views;
@@ -15,7 +21,17 @@ public partial class MainWindow : Window
     private const uint SndAsync = 0x0001;
     private const uint SndFilename = 0x00020000;
     private const uint SndNodefault = 0x0002;
-    private int _notificationStackIndex;
+    private static readonly HttpClient ImageHttpClient = CreateImageHttpClient();
+
+    private static HttpClient CreateImageHttpClient()
+    {
+        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("XNote/0.6");
+        return client;
+    }
+    private static readonly Regex ImageUrlRegex = new(
+        @"^https?://\S+\.(?:png|jpe?g|gif|webp|bmp|svg)(?:\?\S*)?$",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     [DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern bool PlaySound(string pszSound, IntPtr hmod, uint fdwSound);
@@ -42,18 +58,6 @@ public partial class MainWindow : Window
     {
         var notification = new NotificationWindow { DataContext = note };
         notification.OnOpenNote += OpenNoteFromNotification;
-
-        var screen = Screens.ScreenFromVisual(this);
-        if (screen is not null)
-        {
-            var workingArea = screen.WorkingArea;
-            var offset = _notificationStackIndex * 18;
-            notification.SetStackPosition(new Avalonia.PixelPoint(
-                Math.Max(0, workingArea.Right - (int)(notification.Width + 20) - 8),
-                Math.Max(0, workingArea.Bottom - (int)(notification.Height + 40 + offset))));
-            _notificationStackIndex = (_notificationStackIndex + 1) % 8;
-        }
-
         notification.Show();
 
         try
@@ -169,6 +173,7 @@ public partial class MainWindow : Window
     private RichEditorView? _bodyEditorView;
     private bool _suppressTextChanged;
     private NoteViewModel? _loadedNote;
+    private readonly EditorGifPlayback _gifPlayback = new();
 
     private async void SelectedNoteChanged()
     {
@@ -178,9 +183,14 @@ public partial class MainWindow : Window
 
         if (isFirstBind)
         {
-            _bodyEditorView.Editor.EditorMode = EditorMode.Basic;
+            _bodyEditorView.Editor.EditorMode = EditorMode.Full;
+            _bodyEditorView.Editor.AllowImages = true;
+            _bodyEditorView.Editor.AllowRichPaste = true;
+            _bodyEditorView.Editor.AllowLocalFileImages = true;
             _bodyEditorView.Editor.PageSize = RichEditorPageSize.Continuous;
             _bodyEditorView.Editor.ShowPageBoundaries = false;
+            _bodyEditorView.AddHandler(InputElement.KeyDownEvent, BodyEditor_PreviewKeyDown, RoutingStrategies.Tunnel);
+            _gifPlayback.Attach(_bodyEditorView.Editor);
         }
 
         var note = SelectedNote;
@@ -194,6 +204,7 @@ public partial class MainWindow : Window
         string bodyText = Note.NormalizeStoredBody(note?.Body);
         await _bodyEditorView.Editor.LoadHtmlAsync(bodyText);
         _suppressTextChanged = false;
+        _gifPlayback.RestartFromDocument();
 
         _bodyEditorView.Editor.TextChanged += BodyEditor_TextChanged;
     }
@@ -205,6 +216,106 @@ public partial class MainWindow : Window
         if (note is null || _bodyEditorView is null) return;
 
         note.NotifyBodyEdited(Note.NormalizeStoredBody(_bodyEditorView.Editor.ToHtml()));
+        _gifPlayback.TryAnimateLatest();
+    }
+
+    private async void BodyEditor_PreviewKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (_bodyEditorView is null || SelectedNote is null) return;
+        if (e.Key != Key.V || (e.KeyModifiers & KeyModifiers.Control) == 0) return;
+        if ((e.KeyModifiers & (KeyModifiers.Alt | KeyModifiers.Shift | KeyModifiers.Meta)) != 0) return;
+
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard is null) return;
+
+        try
+        {
+            var files = await clipboard.TryGetFilesAsync();
+            if (files is { Length: > 0 })
+            {
+                foreach (var item in files)
+                {
+                    if (item is not IStorageFile file || !IsImageFileName(file.Name)) continue;
+                    await using var stream = await file.OpenReadAsync();
+                    using var ms = new MemoryStream();
+                    await stream.CopyToAsync(ms);
+                    var bytes = ms.ToArray();
+                    if (bytes.Length == 0) continue;
+
+                    e.Handled = true;
+                    _bodyEditorView.Editor.InsertImageBytes(bytes);
+                    _gifPlayback.TryAnimateLatest();
+                    return;
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        string? text;
+        try
+        {
+            text = await clipboard.TryGetTextAsync();
+        }
+        catch
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(text)) return;
+        var url = text.Trim().Trim('"');
+        if (!IsImageUrl(url)) return;
+
+        e.Handled = true;
+        await InsertImageFromUrlAsync(url);
+    }
+
+    private static bool IsImageFileName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return false;
+        return LooksLikeImagePath(name);
+    }
+
+    private static bool IsImageUrl(string value)
+    {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri)) return false;
+        if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) return false;
+        return ImageUrlRegex.IsMatch(value) || LooksLikeImagePath(uri.AbsolutePath);
+    }
+
+    private static bool LooksLikeImagePath(string path)
+    {
+        var ext = Path.GetExtension(path);
+        return ext.Equals(".png", StringComparison.OrdinalIgnoreCase)
+               || ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
+               || ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase)
+               || ext.Equals(".gif", StringComparison.OrdinalIgnoreCase)
+               || ext.Equals(".webp", StringComparison.OrdinalIgnoreCase)
+               || ext.Equals(".bmp", StringComparison.OrdinalIgnoreCase)
+               || ext.Equals(".svg", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task InsertImageFromUrlAsync(string url)
+    {
+        if (_bodyEditorView is null) return;
+
+        try
+        {
+            using var response = await ImageHttpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            if (bytes.Length == 0) return;
+
+            _bodyEditorView.Editor.InsertImageBytes(bytes);
+            _gifPlayback.TryAnimateLatest();
+        }
+        catch
+        {
+            // Fall back to embedding by URL so LoadHtmlAsync can still resolve it later.
+            _bodyEditorView.Editor.InsertHtml($"<img src=\"{System.Net.WebUtility.HtmlEncode(url)}\" />");
+            _gifPlayback.TryAnimateLatest();
+        }
     }
 
     private async void ImportDirect_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

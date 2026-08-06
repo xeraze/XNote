@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using XNote.Views;
@@ -17,6 +18,15 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new SplashWindow();
+        }
+
+        if (TrayIcon.GetIcons(this) is { } icons && icons.Count > 0 &&
+            icons[0].Menu is NativeMenu menu)
+        {
+            if (menu.Items.Count > 0 && menu.Items[0] is NativeMenuItem newNoteItem)
+                newNoteItem.Header = Services.Ui.Strings.TrayNewNote;
+            if (menu.Items.Count > 2 && menu.Items[2] is NativeMenuItem exitItem)
+                exitItem.Header = Services.Ui.Strings.TrayExit;
         }
 
         base.OnFrameworkInitializationCompleted();
