@@ -29,6 +29,12 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="tools\**\*.cs" />
+    <EmbeddedResource Remove="tools\**\*" />
+    <None Remove="tools\**\*" />
+  </ItemGroup>
+
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
     <PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildProjectDirectory)\publish\XNote\</PublishDir>

@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Threading;
 using XNote.Models;
-using XNote.Services;
+using XNote.Utils;
 
 namespace XNote.ViewModels;
 
@@ -17,14 +17,14 @@ public enum NoteFilterMode
     TasksOpen,
 }
 
-public class MainViewModel : ViewModelBase
+public class MainVM : ViewModel
 {
-    private readonly NoteStore _store;
-    private readonly System.Collections.Generic.List<NoteViewModel> _allNotes = new();
+    private readonly Notes _store;
+    private readonly System.Collections.Generic.List<NoteVM> _allNotes = new();
     private readonly DispatcherTimer _saveDebounceTimer;
 
     private string _searchText = string.Empty;
-    private NoteViewModel? _selectedNote;
+    private NoteVM? _selectedNote;
     private int _nextId = 1;
     private bool _isApplyingFilter;
     private NoteFilterMode _filterMode = NoteFilterMode.All;
@@ -47,15 +47,15 @@ public class MainViewModel : ViewModelBase
         set => SetField(ref _isSettingsOpen, value);
     }
 
-    public UiStrings Ui => Services.Ui.Strings;
+    public UiStrings Ui => Utils.Ui.Strings;
 
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
     [
-        new("en", Services.Ui.Strings.LanguageEnglish),
-        new("ru", Services.Ui.Strings.LanguageRussian),
+        new("en", Utils.Ui.Strings.LanguageEnglish),
+        new("ru", Utils.Ui.Strings.LanguageRussian),
     ];
 
-    private string _selectedLanguageCode = AppLocale.CurrentCode;
+    private string _selectedLanguageCode = Strings.CurrentCode;
     public string SelectedLanguageCode
     {
         get => _selectedLanguageCode;
@@ -82,11 +82,11 @@ public class MainViewModel : ViewModelBase
     }
 
     public bool ShowLanguageRestartHint =>
-        !string.Equals(_selectedLanguageCode, AppLocale.CurrentCode, StringComparison.OrdinalIgnoreCase);
+        !string.Equals(_selectedLanguageCode, Strings.CurrentCode, StringComparison.OrdinalIgnoreCase);
 
-    public event Action<NoteViewModel>? OnShowNotification;
+    public event Action<NoteVM>? OnShowNotification;
 
-    public ObservableCollection<NoteViewModel> FilteredNotes { get; } = new();
+    public ObservableCollection<NoteVM> FilteredNotes { get; } = new();
 
     public string SearchText
     {
@@ -123,7 +123,7 @@ public class MainViewModel : ViewModelBase
     public bool IsFilterOpen => FilterMode == NoteFilterMode.TasksOpen;
     public bool IsFilterDone => FilterMode == NoteFilterMode.TasksDone;
 
-    public NoteViewModel? SelectedNote
+    public NoteVM? SelectedNote
     {
         get => _selectedNote;
         set
@@ -213,11 +213,11 @@ public class MainViewModel : ViewModelBase
     public RelayCommand DismissUndoCommand { get; }
     public RelayCommand ToggleSettingsCommand { get; }
 
-    public MainViewModel() : this(new NoteStore())
+    public MainVM() : this(new Notes())
     {
     }
 
-    public MainViewModel(NoteStore store)
+    public MainVM(Notes store)
     {
         _store = store;
         AddNoteCommand = new RelayCommand(() => AddNote());
@@ -331,7 +331,7 @@ public class MainViewModel : ViewModelBase
         SaveToDisk();
     }
 
-    public bool SelectNoteIfPresent(NoteViewModel note)
+    public bool SelectNoteIfPresent(NoteVM note)
     {
         var match = _allNotes.FirstOrDefault(n => n.Id == note.Id);
         if (match is null) return false;
@@ -346,19 +346,19 @@ public class MainViewModel : ViewModelBase
         return true;
     }
 
-    private NoteViewModel WrapAndSubscribe(Note note, bool hasBeenSaved)
+    private NoteVM WrapAndSubscribe(Note note, bool hasBeenSaved)
     {
-        var vm = new NoteViewModel(note, hasBeenSaved);
+        var vm = new NoteVM(note, hasBeenSaved);
         vm.PropertyChanged += (sender, e) =>
         {
-            if (e.PropertyName is nameof(NoteViewModel.Title)
-                or nameof(NoteViewModel.Body)
-                or nameof(NoteViewModel.IsTask)
-                or nameof(NoteViewModel.IsDone)
-                or nameof(NoteViewModel.TagsText)
-                or nameof(NoteViewModel.RemindAt)
-                or nameof(NoteViewModel.HasExpiry)
-                or nameof(NoteViewModel.IsTimed))
+            if (e.PropertyName is nameof(NoteVM.Title)
+                or nameof(NoteVM.Body)
+                or nameof(NoteVM.IsTask)
+                or nameof(NoteVM.IsDone)
+                or nameof(NoteVM.TagsText)
+                or nameof(NoteVM.RemindAt)
+                or nameof(NoteVM.HasExpiry)
+                or nameof(NoteVM.IsTimed))
             {
                 if (vm.HasBeenSaved)
                 {
@@ -368,7 +368,7 @@ public class MainViewModel : ViewModelBase
                 }
             }
 
-            if (e.PropertyName == nameof(NoteViewModel.IsTask) || e.PropertyName == nameof(NoteViewModel.IsDone))
+            if (e.PropertyName == nameof(NoteVM.IsTask) || e.PropertyName == nameof(NoteVM.IsDone))
             {
                 if (!_isApplyingFilter)
                 {
@@ -412,7 +412,7 @@ public class MainViewModel : ViewModelBase
         {
             var query = SearchText.Trim().ToLowerInvariant();
 
-            IEnumerable<NoteViewModel> matches = _allNotes;
+            IEnumerable<NoteVM> matches = _allNotes;
 
             matches = FilterMode switch
             {
@@ -620,10 +620,10 @@ public class MainViewModel : ViewModelBase
     }
 
     private static bool IsDefaultRegularTitle(string title) =>
-        title == Services.Ui.Strings.NewNoteTitle || title is "New note" or "Новая заметка";
+        title == Utils.Ui.Strings.NewNoteTitle || title is "New note" or "Новая заметка";
 
     private static bool IsDefaultTimedTitle(string title) =>
-        title == Services.Ui.Strings.NewTimedNoteTitle || title is "New timed note" or "Новая временная заметка";
+        title == Utils.Ui.Strings.NewTimedNoteTitle || title is "New timed note" or "Новая временная заметка";
 }
 
 public sealed record LanguageOption(string Code, string DisplayName);

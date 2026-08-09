@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace XNote.ViewModels;
 
-public abstract class ViewModelBase : INotifyPropertyChanged
+public abstract class ViewModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
 

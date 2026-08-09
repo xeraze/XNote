@@ -5,9 +5,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using XNote.Models;
 
-namespace XNote.Services;
+namespace XNote.Utils;
 
-public class NoteStore
+public class Notes
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -17,7 +17,7 @@ public class NoteStore
 
     public string FilePath { get; }
 
-    public NoteStore(string? customPath = null)
+    public Notes(string? customPath = null)
     {
         FilePath = customPath ?? GetDefaultPath();
     }

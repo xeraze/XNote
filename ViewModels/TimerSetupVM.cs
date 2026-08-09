@@ -2,12 +2,12 @@ using System;
 
 namespace XNote.ViewModels;
 
-public class TimedNoteSetupViewModel : ViewModelBase
+public class TimerSetupVM : ViewModel
 {
     private DateTime? _pendingDate = DateTime.Now.Date;
     private TimeSpan? _pendingTime = DateTime.Now.AddMinutes(1).TimeOfDay;
 
-    public Services.UiStrings Ui => Services.Ui.Strings;
+    public Utils.UiStrings Ui => Utils.Ui.Strings;
 
     public DateTime MinSelectableDate => DateTime.Now.Date;
     public DateTime MaxSelectableDate => new(2100, 12, 31);

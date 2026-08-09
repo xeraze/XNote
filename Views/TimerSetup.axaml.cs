@@ -5,14 +5,14 @@ using XNote.ViewModels;
 
 namespace XNote.Views;
 
-public partial class TimedNoteSetupWindow : Window
+public partial class TimerSetup : Window
 {
     public DateTime? ConfirmedExpiry { get; private set; }
 
-    public TimedNoteSetupWindow()
+    public TimerSetup()
     {
         InitializeComponent();
-        DataContext = new TimedNoteSetupViewModel();
+        DataContext = new TimerSetupVM();
     }
 
     private void Cancel_Click(object? sender, RoutedEventArgs e)
@@ -23,7 +23,7 @@ public partial class TimedNoteSetupWindow : Window
 
     private void Confirm_Click(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is not TimedNoteSetupViewModel vm) return;
+        if (DataContext is not TimerSetupVM vm) return;
 
         var expiry = vm.GetNormalizedExpiry();
         if (expiry is null) return;

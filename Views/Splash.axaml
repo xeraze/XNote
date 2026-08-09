@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="XNote.Views.SplashWindow"
+        x:Class="XNote.Views.Splash"
         Title="XNote"
         Icon="avares://XNote/Assets/xnote.ico"
         Width="420" Height="420"

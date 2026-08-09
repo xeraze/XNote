@@ -1,6 +1,6 @@
 using Avalonia;
 using System;
-using XNote.Services;
+using XNote.Utils;
 
 namespace XNote;
 
@@ -9,7 +9,7 @@ class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        AppLocale.ApplyFromSettings();
+        Strings.ApplyFromSettings();
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 

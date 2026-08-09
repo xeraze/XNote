@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -9,9 +11,10 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
 using AvaloniaRichEditor.Controls;
 using XNote.Models;
-using XNote.Services;
+using XNote.Utils;
 using XNote.ViewModels;
 
 namespace XNote.Views;
@@ -36,14 +39,16 @@ public partial class MainWindow : Window
     [DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern bool PlaySound(string pszSound, IntPtr hmod, uint fdwSound);
 
+    private readonly TaskCompletionSource _firstLoadCompleted = new();
+
     public MainWindow()
     {
         InitializeComponent();
-        var vm = new MainViewModel();
+        var vm = new MainVM();
         DataContext = vm;
         vm.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(MainViewModel.SelectedNote))
+            if (e.PropertyName == nameof(MainVM.SelectedNote))
             {
                 SelectedNoteChanged();
             }
@@ -51,12 +56,57 @@ public partial class MainWindow : Window
 
         vm.OnShowNotification += ShowReminderNotification;
 
-        Opened += (_, _) => SelectedNoteChanged();
+        SelectedNoteChanged();
+
+        EmojiPanel.EmojiPicked += emoji =>
+        {
+            InsertEmojiAtFocus(emoji);
+            EmojiButton.Flyout?.Hide();
+        };
+        GifPanel.GifPicked += async url =>
+        {
+            GifButton.Flyout?.Hide();
+            await InsertImageFromUrlAsync(url);
+        };
     }
 
-    private void ShowReminderNotification(NoteViewModel note)
+    private void InsertEmojiAtFocus(string emoji)
     {
-        var notification = new NotificationWindow { DataContext = note };
+        var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement();
+
+        if (focused is TextBox textBox)
+        {
+            var caret = textBox.CaretIndex;
+            var current = textBox.Text ?? string.Empty;
+            textBox.Text = current[..caret] + emoji + current[caret..];
+            textBox.CaretIndex = caret + emoji.Length;
+            return;
+        }
+
+        if (_bodyEditorView != null)
+        {
+            _bodyEditorView.Editor.InsertHtml(emoji);
+            _gifPlayback.TryAnimateLatest();
+            return;
+        }
+
+        InsertPlainText(emoji);
+    }
+
+    private void InsertPlainText(string text)
+    {
+        if (_bodyEditorView is null) return;
+        // DO NOT HtmlEncode here — emoji characters outside BMP get turned into
+        // &#55357;&#56836; style numeric entities which the editor stores literally
+        // and StripHtmlForPreview cannot reliably reconstruct back into emoji glyphs.
+        _bodyEditorView.Editor.InsertHtml($"<span>{text}</span>");
+    }
+
+    public Task WaitUntilFirstNoteLoadedAsync() => _firstLoadCompleted.Task;
+
+    private void ShowReminderNotification(NoteVM note)
+    {
+        var notification = new Notification { DataContext = note };
         notification.OnOpenNote += OpenNoteFromNotification;
         notification.Show();
 
@@ -73,21 +123,60 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OpenNoteFromNotification(NoteViewModel note)
+    private void OpenNoteFromNotification(NoteVM note)
     {
         WindowState = WindowState.Normal;
         Show();
         Activate();
 
-        if (DataContext is MainViewModel vm)
+        if (DataContext is MainVM vm)
         {
             vm.SelectNoteIfPresent(note);
         }
     }
 
+    private void HideNativeInsertImageButton()
+    {
+        if (_bodyEditorView?.Toolbar is { } toolbar)
+        {
+            toolbar.AttachedToVisualTree += (_, _) => DisableImageToolbarButton(toolbar);
+            DisableImageToolbarButton(toolbar);
+        }
+    }
+
+    private static void DisableImageToolbarButton(Avalonia.Controls.Control root)
+    {
+        foreach (var child in GetAllChildren(root))
+        {
+            if (child is Button btn)
+            {
+                var name = btn.Name ?? string.Empty;
+                var tag = btn.Tag?.ToString() ?? string.Empty;
+                if (name.Contains("Image", StringComparison.OrdinalIgnoreCase) ||
+                    tag.Contains("InsertImage", StringComparison.OrdinalIgnoreCase))
+                {
+                    btn.IsVisible = false;
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<Avalonia.Controls.Control> GetAllChildren(Avalonia.Controls.Control root)
+    {
+        var queue = new Queue<Avalonia.Controls.Control>();
+        queue.Enqueue(root);
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            yield return current;
+            foreach (var child in current.GetVisualChildren().OfType<Avalonia.Controls.Control>())
+                queue.Enqueue(child);
+        }
+    }
+
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        if (DataContext is MainViewModel vm)
+        if (DataContext is MainVM vm)
         {
             vm.ForceSave();
         }
@@ -168,18 +257,22 @@ public partial class MainWindow : Window
         Hide();
     }
 
-    private NoteViewModel? SelectedNote => (DataContext as MainViewModel)?.SelectedNote;
+    private NoteVM? SelectedNote => (DataContext as MainVM)?.SelectedNote;
 
     private RichEditorView? _bodyEditorView;
     private bool _suppressTextChanged;
-    private NoteViewModel? _loadedNote;
-    private readonly EditorGifPlayback _gifPlayback = new();
+    private NoteVM? _loadedNote;
+    private readonly GifPlayer _gifPlayback = new();
 
     private async void SelectedNoteChanged()
     {
         var isFirstBind = _bodyEditorView is null;
         _bodyEditorView ??= this.FindControl<RichEditorView>("BodyEditorView");
-        if (_bodyEditorView is null) return;
+        if (_bodyEditorView is null)
+        {
+            _firstLoadCompleted.TrySetResult();
+            return;
+        }
 
         if (isFirstBind)
         {
@@ -191,11 +284,16 @@ public partial class MainWindow : Window
             _bodyEditorView.Editor.ShowPageBoundaries = false;
             _bodyEditorView.AddHandler(InputElement.KeyDownEvent, BodyEditor_PreviewKeyDown, RoutingStrategies.Tunnel);
             _gifPlayback.Attach(_bodyEditorView.Editor);
+            HideNativeInsertImageButton();
         }
 
         var note = SelectedNote;
 
-        if (ReferenceEquals(note, _loadedNote)) return;
+        if (ReferenceEquals(note, _loadedNote))
+        {
+            _firstLoadCompleted.TrySetResult();
+            return;
+        }
         _loadedNote = note;
 
         _bodyEditorView.Editor.TextChanged -= BodyEditor_TextChanged;
@@ -205,6 +303,8 @@ public partial class MainWindow : Window
         await _bodyEditorView.Editor.LoadHtmlAsync(bodyText);
         _suppressTextChanged = false;
         _gifPlayback.RestartFromDocument();
+
+        _firstLoadCompleted.TrySetResult();
 
         _bodyEditorView.Editor.TextChanged += BodyEditor_TextChanged;
     }
@@ -312,10 +412,16 @@ public partial class MainWindow : Window
         }
         catch
         {
-            // Fall back to embedding by URL so LoadHtmlAsync can still resolve it later.
             _bodyEditorView.Editor.InsertHtml($"<img src=\"{System.Net.WebUtility.HtmlEncode(url)}\" />");
             _gifPlayback.TryAnimateLatest();
         }
+    }
+
+    private async void InsertImage_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_bodyEditorView is null) return;
+        await _bodyEditorView.Editor.InsertImageFromFileAsync();
+        _gifPlayback.TryAnimateLatest();
     }
 
     private async void ImportDirect_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -340,7 +446,7 @@ public partial class MainWindow : Window
             string title = System.IO.Path.GetFileNameWithoutExtension(fileName);
             if (string.IsNullOrWhiteSpace(title)) title = "Imported Note";
 
-            if (DataContext is MainViewModel vm)
+            if (DataContext is MainVM vm)
             {
                 vm.AddNoteCommand.Execute(null);
                 if (vm.SelectedNote != null)
@@ -427,7 +533,7 @@ public partial class MainWindow : Window
     private void RegularNoteFlyout_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         HideNewNoteFlyout();
-        if (DataContext is MainViewModel vm)
+        if (DataContext is MainVM vm)
         {
             vm.AddNoteCommand.Execute(null);
         }
@@ -436,9 +542,9 @@ public partial class MainWindow : Window
     private async void TimedNoteFlyout_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         HideNewNoteFlyout();
-        if (DataContext is not MainViewModel vm) return;
+        if (DataContext is not MainVM vm) return;
 
-        var setup = new TimedNoteSetupWindow();
+        var setup = new TimerSetup();
         var confirmed = await setup.ShowDialog<bool>(this);
         if (confirmed && setup.ConfirmedExpiry is { } expiry)
         {

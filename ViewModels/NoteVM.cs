@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Avalonia.Threading;
 using XNote.Models;
-using XNote.Services;
+using XNote.Utils;
 
 namespace XNote.ViewModels;
 
@@ -13,7 +13,7 @@ public enum NoteStatusIcon
     TaskDone,
 }
 
-public class NoteViewModel : ViewModelBase
+public class NoteVM : ViewModel
 {
     public Note Model { get; }
 
@@ -37,7 +37,7 @@ public class NoteViewModel : ViewModelBase
 
     private readonly DispatcherTimer _touchDebounce;
 
-    public NoteViewModel(Note model, bool hasBeenSaved)
+    public NoteVM(Note model, bool hasBeenSaved)
     {
         Model = model;
         _hasBeenSaved = hasBeenSaved;
@@ -160,7 +160,7 @@ public class NoteViewModel : ViewModelBase
     public bool IsTimed => Model.IsTimed;
     public bool ShowReminderSettings => !IsTimed;
     public bool ShowExpirySettings => IsTimed;
-    public UiStrings Ui => Services.Ui.Strings;
+    public UiStrings Ui => Utils.Ui.Strings;
     public string NotificationKindLabel => IsTimed ? Ui.TimedNote : Ui.Reminder;
 
     public string NotificationMessage => IsTimed

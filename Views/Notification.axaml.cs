@@ -8,13 +8,13 @@ using XNote.ViewModels;
 
 namespace XNote.Views;
 
-public partial class NotificationWindow : Window
+public partial class Notification : Window
 {
-    private static readonly List<NotificationWindow> OpenToasts = new();
+    private static readonly List<Notification> OpenToasts = new();
 
-    public event Action<NoteViewModel>? OnOpenNote;
+    public event Action<NoteVM>? OnOpenNote;
 
-    public NotificationWindow()
+    public Notification()
     {
         InitializeComponent();
     }
@@ -35,7 +35,7 @@ public partial class NotificationWindow : Window
 
     private static void RepositionAll()
     {
-        NotificationWindow? anchor = null;
+        Notification? anchor = null;
         foreach (var toast in OpenToasts)
         {
             if (toast.IsVisible)
@@ -81,7 +81,7 @@ public partial class NotificationWindow : Window
 
     private void OpenNote_Click(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is NoteViewModel note)
+        if (DataContext is NoteVM note)
         {
             OnOpenNote?.Invoke(note);
         }

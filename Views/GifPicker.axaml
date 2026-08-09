@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="using:XNote.Utils"
+             x:Class="XNote.Views.GifPicker"
+             x:CompileBindings="False"
+             Width="340" Height="380">
+  <Border Background="{StaticResource XnPanelBrush}"
+          BorderBrush="{StaticResource XnBorderBrush}"
+          BorderThickness="1" CornerRadius="10">
+    <Grid RowDefinitions="Auto,*">
+
+      <TextBox x:Name="SearchBox" Grid.Row="0" Margin="10,10,10,8" Height="30" FontSize="12"
+               PlaceholderText="{Binding GifSearchPlaceholder}"
+               KeyDown="SearchBox_KeyDown" />
+
+      <Grid Grid.Row="1">
+        <ScrollViewer Padding="6,0,6,10">
+          <ItemsControl x:Name="GifGrid">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Button Classes="gifCell" Click="GifCell_Click" Tag="{Binding}">
+                  <Image Source="{Binding Preview}" Width="96" Height="96" Stretch="UniformToFill" />
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <TextBlock x:Name="StatusLabel" IsVisible="False"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Foreground="{StaticResource XnTextFaintBrush}" FontSize="12"
+                   TextWrapping="Wrap" TextAlignment="Center" MaxWidth="240" />
+      </Grid>
+    </Grid>
+  </Border>
+</UserControl>

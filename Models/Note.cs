@@ -64,10 +64,95 @@ public class Note
             text = BlockTagRegex.Replace(text, "\n");
             text = AnyTagRegex.Replace(text, string.Empty);
             text = WebUtility.HtmlDecode(text);
+            text = FixBrokenSurrogatePairEntities(text);
             text = WhitespaceRegex.Replace(text, " ");
             text = MultiNewlineRegex.Replace(text, "\n").Trim();
             return text;
         }
+    }
+
+    private static string FixBrokenSurrogatePairEntities(string text)
+    {
+        if (text.IndexOf('\uD800') < 0 && !ContainsLoneSurrogate(text)) return text;
+
+        var sb = new System.Text.StringBuilder(text.Length);
+        for (int i = 0; i < text.Length; i++)
+        {
+            char c = text[i];
+            if (char.IsHighSurrogate(c) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
+            {
+                sb.Append(c);
+                sb.Append(text[i + 1]);
+                i++;
+            }
+            else if (char.IsSurrogate(c))
+            {
+                continue;
+            }
+            else
+            {
+                sb.Append(c);
+            }
+        }
+        return sb.ToString();
+    }
+
+    private static string FixBrokenEmojiEntities(string text)
+    {
+        if (text.IndexOf("&#", StringComparison.Ordinal) < 0) return text;
+
+        var decoded = WebUtility.HtmlDecode(text);
+        return FixBrokenSurrogatePairEntities(decoded);
+    }
+
+    private static string StripHtmlForPreview(string html)
+    {
+        if (string.IsNullOrWhiteSpace(html)) return string.Empty;
+
+        var noImages = Regex.Replace(html, "<img[^>]*>", "", RegexOptions.IgnoreCase);
+        var noTags = AnyTagRegex.Replace(noImages, string.Empty);
+
+        var fixedText = FixBrokenEmojiEntities(noTags);
+
+        fixedText = WhitespaceRegex.Replace(fixedText, " ");
+        fixedText = MultiNewlineRegex.Replace(fixedText, "\n").Trim();
+
+        return fixedText;
+    }
+
+    private static string FixLoneSurrogates(string text)
+    {
+        if (text.IndexOf('\uD800') < 0 && !ContainsLoneSurrogate(text)) return text;
+
+        var sb = new System.Text.StringBuilder(text.Length);
+        for (int i = 0; i < text.Length; i++)
+        {
+            char c = text[i];
+            if (char.IsHighSurrogate(c) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
+            {
+                sb.Append(c);
+                sb.Append(text[i + 1]);
+                i++;
+            }
+            else if (char.IsSurrogate(c))
+            {
+                continue;
+            }
+            else
+            {
+                sb.Append(c);
+            }
+        }
+        return sb.ToString();
+    }
+
+    private static bool ContainsLoneSurrogate(string text)
+    {
+        for (int i = 0; i < text.Length; i++)
+        {
+            if (char.IsSurrogate(text[i])) return true;
+        }
+        return false;
     }
 
     [JsonIgnore]
@@ -75,7 +160,8 @@ public class Note
     {
         get
         {
-            var oneLine = PlainText.Replace("\n", " ").Trim();
+            var text = StripHtmlForPreview(Body);
+            var oneLine = text.Replace("\n", " ").Trim();
             oneLine = WhitespaceRegex.Replace(oneLine, " ");
             return oneLine.Length > 80 ? oneLine[..80] + "…" : oneLine;
         }

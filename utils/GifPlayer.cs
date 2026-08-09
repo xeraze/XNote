@@ -9,9 +9,9 @@ using AvaloniaRichEditor.Controls;
 using AvaloniaRichEditor.Documents;
 using SkiaSharp;
 
-namespace XNote.Services;
+namespace XNote.Utils;
 
-public sealed class EditorGifPlayback : IDisposable
+public sealed class GifPlayer : IDisposable
 {
     private readonly List<Playback> _playbacks = new();
     private RichEditor? _editor;
