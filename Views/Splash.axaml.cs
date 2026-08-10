@@ -42,6 +42,7 @@ public partial class Splash : Window
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = main;
+            App.MainWindowInstance = main;
         }
 
         main.Show();

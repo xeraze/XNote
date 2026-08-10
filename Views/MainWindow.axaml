@@ -39,6 +39,7 @@
     <StreamGeometry x:Key="IconSmile">M10 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM7 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM4.86 8.732a1 1 0 0 1 1.398.116l.005.005c.01.01.03.031.062.06.064.057.169.142.315.23.287.172.736.357 1.36.357.624 0 1.073-.185 1.36-.357a2.05 2.05 0 0 0 .377-.29l.005-.005a1 1 0 0 1 1.526 1.292l-.001.002-.001.001-.003.004-.007.008-.018.02a2.42 2.42 0 0 1-.225.224c-.145.13-.352.296-.623.459A4.603 4.603 0 0 1 8 11.5a4.603 4.603 0 0 1-2.39-.643 4.046 4.046 0 0 1-.795-.624 2.269 2.269 0 0 1-.053-.057l-.018-.021-.007-.008-.003-.004v-.001l-.002-.001a1 1 0 0 1 .128-1.41Z M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0ZM2 8a6 6 0 1 1 12 0A6 6 0 0 1 2 8Z</StreamGeometry>
     <StreamGeometry x:Key="IconImage">M10 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z M15 1H1v14h14V1ZM3 6.92V3h10v7.132l-1.928-1.286-1.914.957-4.624-4.11L3 6.918Zm7.928 4.234L13 12.535V13H3V9.48l1.466-1.172 4.376 3.89 2.086-1.044Z</StreamGeometry>
     <StreamGeometry x:Key="IconGif">M15.662 8 1 15.65V.35L15.662 8Zm-4.324 0L3 3.65v8.7L11.338 8Z</StreamGeometry>
+    <StreamGeometry x:Key="IconLock">M 8 1 a 3.5 3.5 0 0 0 -3.5 3.5 V 7 H 3 a 1 1 0 0 0 -1 1 v 6 a 1 1 0 0 0 1 1 h 10 a 1 1 0 0 0 1 -1 V 8 a 1 1 0 0 0 -1 -1 h -1.5 V 4.5 A 3.5 3.5 0 0 0 8 1 Z M 8 3 a 1.5 1.5 0 0 1 1.5 1.5 V 7 h -3 V 4.5 A 1.5 1.5 0 0 1 8 3 Z</StreamGeometry>
 
     <StreamGeometry x:Key="IconDot">M 8,2 A 6,6 0 1 0 8,14 A 6,6 0 0 0 8,2 M 0,8 A 8,8 0 1 1 16,8 A 8,8 0 0 1 0,8</StreamGeometry>
   </Window.Resources>
@@ -515,8 +516,16 @@
             <ToggleButton Classes="flat"
                           IsChecked="{Binding IsTask, Mode=TwoWay}"
                           IsEnabled="{Binding !IsDraft}"
-                          ToolTip.Tip="{Binding Ui.TipTask}"
-                          Content="{Binding Ui.Task}" />
+                          ToolTip.Tip="{Binding Ui.TipTask}">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <TextBlock Text="{Binding Ui.Task}" />
+                <PathIcon Classes="rivet"
+                          Data="{StaticResource IconLock}"
+                          Width="13" Height="13"
+                          IsVisible="{Binding IsDraft}"
+                          Foreground="{StaticResource XnTextFaintBrush}" />
+              </StackPanel>
+            </ToggleButton>
           
             <ToggleButton Classes="flat"
                           IsChecked="{Binding IsDone, Mode=TwoWay}"
@@ -705,6 +714,11 @@
                     <views:GifPicker x:Name="GifPanel" />
                   </Flyout>
                 </Button.Flyout>
+              </Button>
+              <Button x:Name="PhotoButton" Classes="iconbtn" Width="30" Height="30"
+                      Click="InsertImage_Click"
+                      ToolTip.Tip="{Binding Ui.TipImage}">
+                <PathIcon Classes="rivet" Data="{StaticResource IconImage}" Foreground="{StaticResource XnTextBrush}" />
               </Button>
             </StackPanel>
 

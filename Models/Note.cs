@@ -112,8 +112,10 @@ public class Note
         var noImages = Regex.Replace(html, "<img[^>]*>", "", RegexOptions.IgnoreCase);
         var noTags = AnyTagRegex.Replace(noImages, string.Empty);
 
-        var fixedText = FixBrokenEmojiEntities(noTags);
+        var fixedText = FixBrokenSurrogatePairEntities(WebUtility.HtmlDecode(noTags));
 
+        fixedText = AnyTagRegex.Replace(fixedText, string.Empty);
+        fixedText = fixedText.Replace('\u00A0', ' ');
         fixedText = WhitespaceRegex.Replace(fixedText, " ");
         fixedText = MultiNewlineRegex.Replace(fixedText, "\n").Trim();
 

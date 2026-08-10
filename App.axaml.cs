@@ -9,6 +9,8 @@ namespace XNote;
 
 public partial class App : Application
 {
+    public static Avalonia.Controls.Window? MainWindowInstance { get; set; }
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -74,11 +76,12 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            if (desktop.MainWindow is not null)
+            var window = MainWindowInstance ?? desktop.MainWindow;
+            if (window is not null)
             {
-                desktop.MainWindow.Show();
-                desktop.MainWindow.WindowState = Avalonia.Controls.WindowState.Normal;
-                desktop.MainWindow.Activate();
+                window.Show();
+                window.WindowState = Avalonia.Controls.WindowState.Normal;
+                window.Activate();
             }
         }
     }

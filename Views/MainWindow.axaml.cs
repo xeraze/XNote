@@ -11,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AvaloniaRichEditor.Controls;
 using XNote.Models;
@@ -44,6 +45,24 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        RichEditorIcons.Provider = key =>
+        {
+            if (key == RichEditorIcon.InsertImage)
+            {
+                return new Avalonia.Controls.Panel
+                {
+                    Name = "XNoteHiddenImageSlot",
+                    IsVisible = false,
+                    IsHitTestVisible = false,
+                    Width = 0,
+                    Height = 0,
+                };
+            }
+
+            return null;
+        };
+
         var vm = new MainVM();
         DataContext = vm;
         vm.PropertyChanged += (_, e) =>
@@ -63,6 +82,7 @@ public partial class MainWindow : Window
             InsertEmojiAtFocus(emoji);
             EmojiButton.Flyout?.Hide();
         };
+        EmojiPanel.RequestCloseHostFlyout += () => EmojiButton.Flyout?.Hide();
         GifPanel.GifPicked += async url =>
         {
             GifButton.Flyout?.Hide();
@@ -96,9 +116,6 @@ public partial class MainWindow : Window
     private void InsertPlainText(string text)
     {
         if (_bodyEditorView is null) return;
-        // DO NOT HtmlEncode here — emoji characters outside BMP get turned into
-        // &#55357;&#56836; style numeric entities which the editor stores literally
-        // and StripHtmlForPreview cannot reliably reconstruct back into emoji glyphs.
         _bodyEditorView.Editor.InsertHtml($"<span>{text}</span>");
     }
 
@@ -139,8 +156,14 @@ public partial class MainWindow : Window
     {
         if (_bodyEditorView?.Toolbar is { } toolbar)
         {
-            toolbar.AttachedToVisualTree += (_, _) => DisableImageToolbarButton(toolbar);
+            toolbar.AttachedToVisualTree += (_, _) =>
+            {
+                DisableImageToolbarButton(toolbar);
+                Dispatcher.UIThread.Post(() => DisableImageToolbarButton(toolbar));
+            };
             DisableImageToolbarButton(toolbar);
+
+            Dispatcher.UIThread.Post(() => DisableImageToolbarButton(toolbar), DispatcherPriority.Background);
         }
     }
 
@@ -150,15 +173,46 @@ public partial class MainWindow : Window
         {
             if (child is Button btn)
             {
-                var name = btn.Name ?? string.Empty;
-                var tag = btn.Tag?.ToString() ?? string.Empty;
-                if (name.Contains("Image", StringComparison.OrdinalIgnoreCase) ||
-                    tag.Contains("InsertImage", StringComparison.OrdinalIgnoreCase))
+                if (LooksLikeInsertImageButton(btn) || ContainsHiddenImageMarker(btn))
                 {
                     btn.IsVisible = false;
+                    btn.IsEnabled = false;
                 }
             }
         }
+    }
+
+    private static bool ContainsHiddenImageMarker(Avalonia.Controls.Control c)
+    {
+        foreach (var child in GetAllChildren(c))
+        {
+            if (string.Equals(child.Name, "XNoteHiddenImageSlot", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool LooksLikeInsertImageButton(Button btn)
+    {
+        var name = btn.Name ?? string.Empty;
+        var tag = btn.Tag?.ToString() ?? string.Empty;
+        var automationId = Avalonia.Automation.AutomationProperties.GetAutomationId(btn) ?? string.Empty;
+        var toolTip = Avalonia.Controls.ToolTip.GetTip(btn)?.ToString() ?? string.Empty;
+
+        bool MatchesKeyword(string s) =>
+            s.Contains("Image", StringComparison.OrdinalIgnoreCase) ||
+            s.Contains("Photo", StringComparison.OrdinalIgnoreCase) ||
+            s.Contains("Picture", StringComparison.OrdinalIgnoreCase);
+
+        if (MatchesKeyword(name) || MatchesKeyword(tag) || MatchesKeyword(automationId) || MatchesKeyword(toolTip))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private static IEnumerable<Avalonia.Controls.Control> GetAllChildren(Avalonia.Controls.Control root)

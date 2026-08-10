@@ -4,10 +4,8 @@
              x:Class="XNote.Views.GifPicker"
              x:CompileBindings="False"
              Width="340" Height="380">
-  <Border Background="{StaticResource XnPanelBrush}"
-          BorderBrush="{StaticResource XnBorderBrush}"
-          BorderThickness="1" CornerRadius="10">
-    <Grid RowDefinitions="Auto,*">
+  <Grid Background="{StaticResource XnPanelBrush}"
+        RowDefinitions="Auto,*">
 
       <TextBox x:Name="SearchBox" Grid.Row="0" Margin="10,10,10,8" Height="30" FontSize="12"
                PlaceholderText="{Binding GifSearchPlaceholder}"
@@ -36,6 +34,5 @@
                    Foreground="{StaticResource XnTextFaintBrush}" FontSize="12"
                    TextWrapping="Wrap" TextAlignment="Center" MaxWidth="240" />
       </Grid>
-    </Grid>
-  </Border>
+  </Grid>
 </UserControl>

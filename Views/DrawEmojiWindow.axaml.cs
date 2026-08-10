@@ -3,6 +3,7 @@ using System.IO;
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -19,9 +20,11 @@ public partial class DrawEmojiWindow : Window
 
     private bool _isDrawing;
     private Point _lastPoint;
-    private Color _currentColor = Colors.White;
+    private Color _currentColor = Colors.Black;
     private double _strokeThickness = 4.0;
     private bool _isEraser;
+    private bool _colorModeIsRgb = true;
+    private bool _updatingColor;
 
     public DrawEmojiWindow()
     {
@@ -49,10 +52,11 @@ public partial class DrawEmojiWindow : Window
         bool isEmojiMode = RadioEmoji?.IsChecked == true;
         ColorPalettePanel.IsVisible = isEmojiMode;
         BtnImportBg.IsVisible = isEmojiMode;
+        UpdateColorInputVisibility();
 
         if (!isEmojiMode)
         {
-            _currentColor = Colors.White;
+            _currentColor = Colors.Black;
             _isEraser = false;
         }
     }
@@ -65,8 +69,84 @@ public partial class DrawEmojiWindow : Window
             {
                 _currentColor = color;
                 _isEraser = false;
+                SyncRgbSliders(color);
             }
         }
+    }
+
+    private void Rgb_Changed(object? sender, RangeBaseValueChangedEventArgs e)
+    {
+        if (RgbR == null || RgbG == null || RgbB == null || RgbPreview == null) return;
+
+        byte r = (byte)Math.Clamp((int)RgbR.Value, 0, 255);
+        byte g = (byte)Math.Clamp((int)RgbG.Value, 0, 255);
+        byte b = (byte)Math.Clamp((int)RgbB.Value, 0, 255);
+
+        _currentColor = Color.FromRgb(r, g, b);
+        RgbPreview.Background = new SolidColorBrush(_currentColor);
+        UpdateHexBox();
+        _isEraser = false;
+    }
+
+    private void SyncRgbSliders(Color color)
+    {
+        if (RgbR == null || RgbG == null || RgbB == null || RgbPreview == null) return;
+
+        RgbR.Value = color.R;
+        RgbG.Value = color.G;
+        RgbB.Value = color.B;
+        RgbPreview.Background = new SolidColorBrush(color);
+        UpdateHexBox();
+    }
+
+    private void ColorMode_Click(object? sender, RoutedEventArgs e)
+    {
+        _colorModeIsRgb = !_colorModeIsRgb;
+        UpdateColorInputVisibility();
+        if (ColorModeBtn != null)
+        {
+            ColorModeBtn.Content = _colorModeIsRgb ? "HEX" : "RGB";
+        }
+    }
+
+    private void UpdateColorInputVisibility()
+    {
+        bool isEmoji = RadioEmoji?.IsChecked == true;
+        if (RgbPanel != null) RgbPanel.IsVisible = isEmoji && _colorModeIsRgb;
+        if (HexPanel != null) HexPanel.IsVisible = isEmoji && !_colorModeIsRgb;
+        if (ColorModeBtn != null) ColorModeBtn.IsVisible = isEmoji;
+    }
+
+    private void HexBox_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (_updatingColor || HexBox == null) return;
+
+        var text = HexBox.Text?.Trim() ?? string.Empty;
+        if (string.IsNullOrEmpty(text)) return;
+        if (!text.StartsWith('#')) text = "#" + text;
+
+        if (!Color.TryParse(text, out var color)) return;
+
+        _currentColor = color;
+        _isEraser = false;
+
+        _updatingColor = true;
+        if (RgbR != null) RgbR.Value = color.R;
+        if (RgbG != null) RgbG.Value = color.G;
+        if (RgbB != null) RgbB.Value = color.B;
+        if (RgbPreview != null) RgbPreview.Background = new SolidColorBrush(color);
+        if (HexPreview != null) HexPreview.Background = new SolidColorBrush(color);
+        _updatingColor = false;
+    }
+
+    private void UpdateHexBox()
+    {
+        if (HexBox == null || HexPreview == null) return;
+
+        _updatingColor = true;
+        HexBox.Text = $"#{_currentColor.R:X2}{_currentColor.G:X2}{_currentColor.B:X2}";
+        HexPreview.Background = new SolidColorBrush(_currentColor);
+        _updatingColor = false;
     }
 
     private void Eraser_Click(object? sender, RoutedEventArgs e)
@@ -82,6 +162,9 @@ public partial class DrawEmojiWindow : Window
     {
         DrawCanvas.Children.Clear();
         BackgroundImage.Source = null;
+
+        if (RadioSymbol != null) RadioSymbol.IsEnabled = true;
+        if (RadioEmoji != null) RadioEmoji.IsEnabled = true;
     }
 
     private async void ImportBg_Click(object? sender, RoutedEventArgs e)
@@ -98,6 +181,9 @@ public partial class DrawEmojiWindow : Window
 
         if (files.Count > 0)
         {
+            var path = files[0].Path.LocalPath;
+            if (!CustomEmojiStore.IsSupportedImage(path)) return;
+
             await using var stream = await files[0].OpenReadAsync();
             BackgroundImage.Source = new Bitmap(stream);
         }
@@ -111,6 +197,9 @@ public partial class DrawEmojiWindow : Window
         e.Pointer.Capture(DrawCanvas);
     }
 
+    private const string DrawAreaBackgroundHex = "#F2F2F2";
+    private static readonly IBrush DrawAreaBrush = new SolidColorBrush(Color.Parse(DrawAreaBackgroundHex));
+
     private void Canvas_PointerMoved(object? sender, PointerEventArgs e)
     {
         if (!_isDrawing) return;
@@ -121,13 +210,22 @@ public partial class DrawEmojiWindow : Window
         {
             StartPoint = _lastPoint,
             EndPoint = currentPoint,
-            Stroke = _isEraser ? Brushes.Black : new SolidColorBrush(_currentColor),
+            Stroke = _isEraser ? DrawAreaBrush : new SolidColorBrush(_currentColor),
             StrokeThickness = _isEraser ? 12.0 : _strokeThickness,
             StrokeLineCap = PenLineCap.Round
         };
 
         DrawCanvas.Children.Add(line);
+        LockModeSelection();
         _lastPoint = currentPoint;
+    }
+
+    private void LockModeSelection()
+    {
+        if (DrawCanvas.Children.Count == 0) return;
+
+        if (RadioSymbol != null) RadioSymbol.IsEnabled = false;
+        if (RadioEmoji != null) RadioEmoji.IsEnabled = false;
     }
 
     private void Canvas_PointerReleased(object? sender, PointerReleasedEventArgs e)

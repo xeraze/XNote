@@ -1,13 +1,13 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="XNote.Views.DrawEmojiWindow"
-        Title="Создать кастомный эмодзи"
-        Width="380" Height="480"
+        Title="XNote Editor"
+        Width="380" Height="520"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
         Background="{StaticResource XnBlackBrush}"
         ExtendClientAreaToDecorationsHint="True"
-        WindowDecorations="None">
+        WindowDecorations="BorderOnly">
 
   <Window.Resources>
     <StreamGeometry x:Key="IconCheck">M 14.914,4 L 5.444,13.47 L 1.09,8.393 L 2.608,7.09 L 5.556,10.53 L 13.5,2.585 Z</StreamGeometry>
@@ -15,6 +15,63 @@
     <StreamGeometry x:Key="IconPencil">M 12,1 L 15,4 L 5,14 H 2 V 11 Z</StreamGeometry>
     <StreamGeometry x:Key="IconImport">M 9,7.826 V 1 H 7 V 7.826 L 4.392,5.59 L 3.09,7.108 L 8,11.318 L 12.91,7.108 L 11.608,5.59 Z M 3,13 V 10 H 1 V 13 A 2,2 0 0 0 3,15 H 13 A 2,2 0 0 0 15,13 V 10 H 13 V 13 Z</StreamGeometry>
   </Window.Resources>
+
+  <Window.Styles>
+    <Style Selector="Button.flat">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Padding" Value="12,6" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="FontSize" Value="13" />
+    </Style>
+    <Style Selector="Button.flat:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+
+    <Style Selector="Button.iconbtn">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="Padding" Value="6" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Width" Value="30" />
+      <Setter Property="Height" Value="30" />
+    </Style>
+    <Style Selector="Button.iconbtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+
+    <Style Selector="Button.titlebtn">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Width" Value="26" />
+      <Setter Property="Height" Value="22" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.titlebtn PathIcon">
+      <Setter Property="Width" Value="13" />
+      <Setter Property="Height" Value="13" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.titlebtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+    <Style Selector="Button.titlebtn-close:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#FBEAEA" />
+    </Style>
+
+    <Style Selector="PathIcon.rivet">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+    </Style>
+  </Window.Styles>
 
   <Border BorderBrush="{StaticResource XnBorderBrush}" BorderThickness="1" CornerRadius="8">
     <Grid RowDefinitions="36,Auto,*,Auto">
@@ -37,7 +94,7 @@
       <Grid Grid.Row="2" RowDefinitions="*,Auto" Margin="16,0,16,8">
         <Border Grid.Row="0" Width="200" Height="200"
                 HorizontalAlignment="Center" VerticalAlignment="Center"
-                Background="#1E1E1E" BorderBrush="{StaticResource XnBorderBrush}"
+                Background="#F2F2F2" BorderBrush="{StaticResource XnBorderBrush}"
                 BorderThickness="1" CornerRadius="8" ClipToBounds="True">
           <Grid x:Name="CanvasContainer">
             <Image x:Name="BackgroundImage" Stretch="Uniform" />
@@ -50,7 +107,6 @@
 
         <StackPanel Grid.Row="1" Spacing="8" Margin="0,10,0,0">
           <StackPanel x:Name="ColorPalettePanel" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6" IsVisible="False">
-            <Button Width="20" Height="20" CornerRadius="10" Background="#FFFFFF" Click="Color_Click" Tag="#FFFFFF" Padding="0" BorderThickness="1" BorderBrush="#888888" />
             <Button Width="20" Height="20" CornerRadius="10" Background="#000000" Click="Color_Click" Tag="#000000" Padding="0" BorderThickness="1" BorderBrush="#888888" />
             <Button Width="20" Height="20" CornerRadius="10" Background="#FF4444" Click="Color_Click" Tag="#FF4444" Padding="0" />
             <Button Width="20" Height="20" CornerRadius="10" Background="#44FF44" Click="Color_Click" Tag="#44FF44" Padding="0" />
@@ -59,6 +115,24 @@
             <Button Width="20" Height="20" CornerRadius="10" Background="#FF8800" Click="Color_Click" Tag="#FF8800" Padding="0" />
             <Button Width="20" Height="20" CornerRadius="10" Background="#AA44FF" Click="Color_Click" Tag="#AA44FF" Padding="0" />
           </StackPanel>
+
+          <StackPanel x:Name="RgbPanel" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6" IsVisible="False">
+            <TextBlock Text="R" VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource XnTextDimBrush}" />
+            <Slider x:Name="RgbR" Minimum="0" Maximum="255" Value="0" Width="70" VerticalAlignment="Center" ValueChanged="Rgb_Changed" />
+            <TextBlock Text="G" VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource XnTextDimBrush}" />
+            <Slider x:Name="RgbG" Minimum="0" Maximum="255" Value="0" Width="70" VerticalAlignment="Center" ValueChanged="Rgb_Changed" />
+            <TextBlock Text="B" VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource XnTextDimBrush}" />
+            <Slider x:Name="RgbB" Minimum="0" Maximum="255" Value="0" Width="70" VerticalAlignment="Center" ValueChanged="Rgb_Changed" />
+            <Border x:Name="RgbPreview" Width="20" Height="20" CornerRadius="10" Background="#000000" BorderBrush="#888888" BorderThickness="1" />
+          </StackPanel>
+
+          <StackPanel x:Name="HexPanel" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6" IsVisible="False">
+            <TextBlock Text="HEX #" VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource XnTextDimBrush}" />
+            <TextBox x:Name="HexBox" Width="96" FontSize="12" VerticalContentAlignment="Center" Text="#000000" TextChanged="HexBox_TextChanged" />
+            <Border x:Name="HexPreview" Width="20" Height="20" CornerRadius="10" Background="#000000" BorderBrush="#888888" BorderThickness="1" />
+          </StackPanel>
+
+          <Button x:Name="ColorModeBtn" Classes="flat" HorizontalAlignment="Center" Padding="12,3" FontSize="11" Content="HEX" Click="ColorMode_Click" />
 
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
             <Button x:Name="BtnEraser" Classes="flat" Padding="8,4" FontSize="11" Click="Eraser_Click" Content="Ластик" />

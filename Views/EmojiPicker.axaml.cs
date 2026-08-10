@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
@@ -17,6 +18,7 @@ public partial class EmojiPicker : UserControl
 
     private enum Tab { Basic, Symbols, Custom }
     private Tab _currentTab = Tab.Basic;
+    private bool _customShowSymbols;
     private DispatcherTimer? _searchDebounce;
 
     public EmojiPicker()
@@ -41,7 +43,30 @@ public partial class EmojiPicker : UserControl
 
         CustomActionsBar.IsVisible = tab == Tab.Custom;
 
+        UpdateCustomTypeButtons();
+
         Render(string.Empty);
+    }
+
+    private void CustomEmojiBtn_Click(object? sender, RoutedEventArgs e)
+    {
+        _customShowSymbols = false;
+        UpdateCustomTypeButtons();
+        Render(SearchBox.Text ?? string.Empty);
+    }
+
+    private void CustomSymbolsBtn_Click(object? sender, RoutedEventArgs e)
+    {
+        _customShowSymbols = true;
+        UpdateCustomTypeButtons();
+        Render(SearchBox.Text ?? string.Empty);
+    }
+
+    private void UpdateCustomTypeButtons()
+    {
+        if (CustomEmojiBtn == null || CustomSymbolsBtn == null) return;
+        CustomEmojiBtn.Classes.Set("active", !_customShowSymbols);
+        CustomSymbolsBtn.Classes.Set("active", _customShowSymbols);
     }
 
     private void SearchBox_TextChanged(object? sender, TextChangedEventArgs e)
@@ -71,7 +96,7 @@ public partial class EmojiPicker : UserControl
             try
             {
                 var bmp = new Bitmap(item.FilePath);
-                items.Add(new EmojiPickerItem(string.Empty, item.Name, bmp, item.HtmlImageTag, FilePath: item.FilePath));
+                items.Add(new EmojiPickerItem(string.Empty, item.Name, bmp, item.HtmlImageTag, FilePath: item.FilePath, IsSymbol: item.IsSymbol));
             }
             catch
             {
@@ -124,7 +149,7 @@ public partial class EmojiPicker : UserControl
                 break;
 
             case Tab.Custom:
-                var custom = GetCustomEmojiItems();
+                var custom = GetCustomEmojiItems().Where(c => c.IsSymbol == _customShowSymbols);
                 if (!string.IsNullOrWhiteSpace(filter))
                 {
                     var lf = filter.Trim().ToLowerInvariant();
@@ -156,21 +181,27 @@ public partial class EmojiPicker : UserControl
         }
     }
 
+    public event Action? RequestCloseHostFlyout;
+
     private async void DrawCustom_Click(object? sender, RoutedEventArgs e)
     {
-        var dialog = new DrawEmojiWindow();
-        var topLevel = TopLevel.GetTopLevel(this);
+        RequestCloseHostFlyout?.Invoke();
+        await Task.Delay(80);
 
-        if (topLevel is Window parentWindow)
+        var topLevel = TopLevel.GetTopLevel(this);
+        var parentWindow = topLevel as Window
+            ?? (Avalonia.Application.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+
+        if (parentWindow is null) return;
+
+        var dialog = new DrawEmojiWindow();
+        var result = await dialog.ShowDialog<bool>(parentWindow);
+        if (result && dialog.CreatedItem != null)
         {
-            var result = await dialog.ShowDialog<bool>(parentWindow);
-            if (result && dialog.CreatedItem != null)
+            Render(SearchBox.Text ?? string.Empty);
+            if (!string.IsNullOrEmpty(dialog.CreatedItem.HtmlImageTag))
             {
-                Render(SearchBox.Text ?? string.Empty);
-                if (!string.IsNullOrEmpty(dialog.CreatedItem.HtmlImageTag))
-                {
-                    EmojiPicked?.Invoke(dialog.CreatedItem.HtmlImageTag);
-                }
+                EmojiPicked?.Invoke(dialog.CreatedItem.HtmlImageTag);
             }
         }
     }
@@ -182,23 +213,49 @@ public partial class EmojiPicker : UserControl
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Выберите изображение эмодзи",
+            Title = "Выберите изображение",
             AllowMultiple = false,
             FileTypeFilter = new[] { FilePickerFileTypes.ImageAll }
         });
 
-        if (files.Count > 0)
+        if (files.Count == 0) return;
+
+        var path = files[0].Path.LocalPath;
+        if (!CustomEmojiStore.IsSupportedImage(path))
         {
-            var item = CustomEmojiStore.SaveFromFile(files[0].Path.LocalPath, isSymbol: false);
-            if (item != null)
-            {
-                Render(SearchBox.Text ?? string.Empty);
-            }
+            ShowCustomError("Формат не поддерживается. Разрешены: PNG, JPG, JPEG, WEBP, BMP.");
+            return;
         }
+
+        var item = CustomEmojiStore.SaveFromFile(path, isSymbol: _customShowSymbols);
+        if (item != null)
+        {
+            if (CustomErrorText != null) CustomErrorText.IsVisible = false;
+            Render(SearchBox.Text ?? string.Empty);
+        }
+        else
+        {
+            ShowCustomError("Не удалось загрузить изображение.");
+        }
+    }
+
+    private void ShowCustomError(string message)
+    {
+        if (CustomErrorText == null) return;
+        CustomErrorText.Text = message;
+        CustomErrorText.IsVisible = true;
+
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(4000) };
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            CustomErrorText.IsVisible = false;
+        };
+        timer.Start();
     }
 }
 
-public sealed record EmojiPickerItem(string Char, string Name, Bitmap? Image = null, string? HtmlTag = null, string SearchKeywords = "", string? FilePath = null)
+public sealed record EmojiPickerItem(string Char, string Name, Bitmap? Image = null, string? HtmlTag = null, string SearchKeywords = "", string? FilePath = null, bool IsSymbol = false)
 {
     public bool IsImage => Image != null;
     public override string ToString() => Char;
