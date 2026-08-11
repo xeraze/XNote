@@ -84,10 +84,7 @@ public partial class GifPicker : UserControl
 
         if (token.IsCancellationRequested) return;
 
-        GifGrid.ItemsSource = items;
-        GifGrid.IsVisible = items.Count > 0;
-        StatusLabel.IsVisible = items.Count == 0;
-        if (items.Count == 0) ShowStatus(Utils.Ui.Strings.GifNothingFound);
+        ReplaceResults(items);
     }
 
     private void ShowStatus(string text)
@@ -95,6 +92,27 @@ public partial class GifPicker : UserControl
         GifGrid.IsVisible = false;
         StatusLabel.IsVisible = true;
         StatusLabel.Text = text;
+    }
+
+    private void ReplaceResults(List<GifGridItem> items)
+    {
+        DisposePreviewItems();
+
+        GifGrid.ItemsSource = items;
+        GifGrid.IsVisible = items.Count > 0;
+        StatusLabel.IsVisible = items.Count == 0;
+        if (items.Count == 0) ShowStatus(Utils.Ui.Strings.GifNothingFound);
+    }
+
+    private void DisposePreviewItems()
+    {
+        if (GifGrid.ItemsSource is not IEnumerable<GifGridItem> oldItems) return;
+
+        foreach (var item in oldItems)
+        {
+            item.Preview?.Dispose();
+            item.Preview = null;
+        }
     }
 
     private void GifCell_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

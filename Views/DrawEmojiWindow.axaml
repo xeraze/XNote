@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="XNote.Views.DrawEmojiWindow"
+        x:CompileBindings="False"
         Title="XNote Editor"
         Width="380" Height="520"
         WindowStartupLocation="CenterOwner"
@@ -14,6 +15,8 @@
     <StreamGeometry x:Key="IconClose">M 3.5,2.086 L 8,6.586 L 12.5,2.086 L 13.914,3.5 L 9.414,8 L 13.914,12.5 L 12.5,13.914 L 8,9.414 L 3.5,13.914 L 2.086,12.5 L 6.586,8 L 2.086,3.5 Z</StreamGeometry>
     <StreamGeometry x:Key="IconPencil">M 12,1 L 15,4 L 5,14 H 2 V 11 Z</StreamGeometry>
     <StreamGeometry x:Key="IconImport">M 9,7.826 V 1 H 7 V 7.826 L 4.392,5.59 L 3.09,7.108 L 8,11.318 L 12.91,7.108 L 11.608,5.59 Z M 3,13 V 10 H 1 V 13 A 2,2 0 0 0 3,15 H 13 A 2,2 0 0 0 15,13 V 10 H 13 V 13 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconTrash">M 7,7 V 12 H 9 V 7 Z M 11,0 H 5 V 3 H 0 V 5 H 1.165 L 2.718,13.537 A 3,3 0 0 0 5.669,16 H 10.331 A 3,3 0 0 0 13.283,13.537 L 14.835,5 H 16 V 3 H 11 Z M 9,3 H 7 V 2 H 9 Z M 4.685,13.179 L 3.198,5 H 12.802 L 11.315,13.179 A 1,1 0 0 1 10.331,14 H 5.669 A 1,1 0 0 1 4.685,13.179 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconImage">M10 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z M15 1H1v14h14z M3 6.92V3h10v7.132l-1.928-1.286l-1.914.957-4.624-4.11L3 6.918Zm7.928 4.234L13 12.535V13H3V9.48l1.466-1.172 4.376 3.89z</StreamGeometry>
   </Window.Resources>
 
   <Window.Styles>
@@ -28,6 +31,9 @@
       <Setter Property="FontSize" Value="13" />
     </Style>
     <Style Selector="Button.flat:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+    <Style Selector="Button.flat.active /template/ ContentPresenter">
       <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
     </Style>
 
@@ -77,7 +83,7 @@
     <Grid RowDefinitions="36,Auto,*,Auto">
       <Border Grid.Row="0" Background="{StaticResource XnPanelBrush}" Padding="12,0,6,0" PointerPressed="TitleBar_PointerPressed">
         <Grid ColumnDefinitions="*,Auto">
-          <TextBlock VerticalAlignment="Center" Text="Кастомный элемент" Foreground="{StaticResource XnTextBrush}" FontWeight="SemiBold" FontSize="13" />
+          <TextBlock VerticalAlignment="Center" Text="{Binding CustomElementTitle}" Foreground="{StaticResource XnTextBrush}" FontWeight="SemiBold" FontSize="13" />
           <Button Grid.Column="1" Classes="iconbtn" Width="28" Height="28" Click="Cancel_Click">
             <PathIcon Classes="rivet" Data="{StaticResource IconClose}" Width="12" Height="12" Foreground="{StaticResource XnTextDimBrush}" />
           </Button>
@@ -85,9 +91,9 @@
       </Border>
 
       <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,10,0,10">
-        <RadioButton x:Name="RadioSymbol" Content="Символ (1 цвет)" IsChecked="True" GroupName="Mode"
+        <RadioButton x:Name="RadioSymbol" Content="{Binding DrawSymbolMode}" IsChecked="True" GroupName="Mode"
                      IsCheckedChanged="Mode_Changed" Foreground="{StaticResource XnTextBrush}" FontSize="12" />
-        <RadioButton x:Name="RadioEmoji" Content="Эмодзи (Цвета)" GroupName="Mode"
+        <RadioButton x:Name="RadioEmoji" Content="{Binding DrawEmojiMode}" GroupName="Mode"
                      IsCheckedChanged="Mode_Changed" Foreground="{StaticResource XnTextBrush}" FontSize="12" />
       </StackPanel>
 
@@ -135,16 +141,22 @@
           <Button x:Name="ColorModeBtn" Classes="flat" HorizontalAlignment="Center" Padding="12,3" FontSize="11" Content="HEX" Click="ColorMode_Click" />
 
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-            <Button x:Name="BtnEraser" Classes="flat" Padding="8,4" FontSize="11" Click="Eraser_Click" Content="Ластик" />
-            <Button Classes="flat" Padding="8,4" FontSize="11" Click="Clear_Click" Content="Очистить" />
-            <Button x:Name="BtnImportBg" Classes="flat" Padding="8,4" FontSize="11" Click="ImportBg_Click" Content="Фото" IsVisible="False" />
+            <Button x:Name="BtnFill" Classes="flat" Padding="8,4" FontSize="11" Click="Fill_Click" Content="{Binding DrawFill}" />
+            <Button x:Name="BtnPipette" Classes="flat" Padding="8,4" FontSize="11" Click="Pipette_Click" Content="{Binding DrawPipette}" />
+            <Button x:Name="BtnEraser" Classes="flat" Padding="8,4" FontSize="11" Click="Eraser_Click" Content="{Binding DrawEraser}" />
+            <Button Classes="iconbtn" Click="Clear_Click" ToolTip.Tip="{Binding Clear}">
+              <PathIcon Classes="rivet" Data="{StaticResource IconTrash}" Width="14" Height="14" Foreground="{StaticResource XnTextDimBrush}" />
+            </Button>
+            <Button x:Name="BtnImportBg" Classes="iconbtn" Click="ImportBg_Click" ToolTip.Tip="{Binding DrawPhoto}" IsVisible="False">
+              <PathIcon Classes="rivet" Data="{StaticResource IconImage}" Width="14" Height="14" Foreground="{StaticResource XnTextDimBrush}" />
+            </Button>
           </StackPanel>
         </StackPanel>
       </Grid>
 
       <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="16,0,16,12">
-        <Button Classes="flat" Padding="14,6" Content="Отмена" Click="Cancel_Click" />
-        <Button Classes="flat" Padding="14,6" Background="{StaticResource XnPanelAltBrush}" Content="Сохранить" Click="Save_Click" />
+        <Button Classes="flat" Padding="14,6" Content="{Binding Cancel}" Click="Cancel_Click" />
+        <Button Classes="flat" Padding="14,6" Background="{StaticResource XnPanelAltBrush}" Content="{Binding Save}" Click="Save_Click" />
       </StackPanel>
     </Grid>
   </Border>

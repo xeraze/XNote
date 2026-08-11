@@ -67,6 +67,10 @@ public partial class EmojiPicker : UserControl
         if (CustomEmojiBtn == null || CustomSymbolsBtn == null) return;
         CustomEmojiBtn.Classes.Set("active", !_customShowSymbols);
         CustomSymbolsBtn.Classes.Set("active", _customShowSymbols);
+        if (UploadCustomBtn != null)
+        {
+            UploadCustomBtn.IsVisible = !_customShowSymbols;
+        }
     }
 
     private void SearchBox_TextChanged(object? sender, TextChangedEventArgs e)
@@ -167,6 +171,9 @@ public partial class EmojiPicker : UserControl
         grid.ItemsSource = list;
         grid.IsVisible = list.Count > 0;
         emptyLabel.IsVisible = _currentTab == Tab.Custom && list.Count == 0;
+        emptyLabel.Text = _customShowSymbols
+            ? Ui.Strings.CustomSymbolsEmpty
+            : Ui.Strings.CustomEmojiEmpty;
     }
 
     private void EmojiCell_Click(object? sender, RoutedEventArgs e)
@@ -213,7 +220,7 @@ public partial class EmojiPicker : UserControl
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Выберите изображение",
+            Title = Ui.Strings.ChooseImageTitle,
             AllowMultiple = false,
             FileTypeFilter = new[] { FilePickerFileTypes.ImageAll }
         });
@@ -223,19 +230,21 @@ public partial class EmojiPicker : UserControl
         var path = files[0].Path.LocalPath;
         if (!CustomEmojiStore.IsSupportedImage(path))
         {
-            ShowCustomError("Формат не поддерживается. Разрешены: PNG, JPG, JPEG, WEBP, BMP.");
+            ShowCustomError(Ui.Strings.CustomFormatError);
             return;
         }
 
-        var item = CustomEmojiStore.SaveFromFile(path, isSymbol: _customShowSymbols);
+        var item = CustomEmojiStore.SaveFromFile(path, isSymbol: false);
         if (item != null)
         {
             if (CustomErrorText != null) CustomErrorText.IsVisible = false;
+            _customShowSymbols = false;
+            UpdateCustomTypeButtons();
             Render(SearchBox.Text ?? string.Empty);
         }
         else
         {
-            ShowCustomError("Не удалось загрузить изображение.");
+            ShowCustomError(Ui.Strings.CustomLoadError);
         }
     }
 

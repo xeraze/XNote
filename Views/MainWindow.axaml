@@ -39,7 +39,9 @@
     <StreamGeometry x:Key="IconSmile">M10 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM7 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM4.86 8.732a1 1 0 0 1 1.398.116l.005.005c.01.01.03.031.062.06.064.057.169.142.315.23.287.172.736.357 1.36.357.624 0 1.073-.185 1.36-.357a2.05 2.05 0 0 0 .377-.29l.005-.005a1 1 0 0 1 1.526 1.292l-.001.002-.001.001-.003.004-.007.008-.018.02a2.42 2.42 0 0 1-.225.224c-.145.13-.352.296-.623.459A4.603 4.603 0 0 1 8 11.5a4.603 4.603 0 0 1-2.39-.643 4.046 4.046 0 0 1-.795-.624 2.269 2.269 0 0 1-.053-.057l-.018-.021-.007-.008-.003-.004v-.001l-.002-.001a1 1 0 0 1 .128-1.41Z M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0ZM2 8a6 6 0 1 1 12 0A6 6 0 0 1 2 8Z</StreamGeometry>
     <StreamGeometry x:Key="IconImage">M10 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z M15 1H1v14h14V1ZM3 6.92V3h10v7.132l-1.928-1.286-1.914.957-4.624-4.11L3 6.918Zm7.928 4.234L13 12.535V13H3V9.48l1.466-1.172 4.376 3.89 2.086-1.044Z</StreamGeometry>
     <StreamGeometry x:Key="IconGif">M15.662 8 1 15.65V.35L15.662 8Zm-4.324 0L3 3.65v8.7L11.338 8Z</StreamGeometry>
-    <StreamGeometry x:Key="IconLock">M 8 1 a 3.5 3.5 0 0 0 -3.5 3.5 V 7 H 3 a 1 1 0 0 0 -1 1 v 6 a 1 1 0 0 0 1 1 h 10 a 1 1 0 0 0 1 -1 V 8 a 1 1 0 0 0 -1 -1 h -1.5 V 4.5 A 3.5 3.5 0 0 0 8 1 Z M 8 3 a 1.5 1.5 0 0 1 1.5 1.5 V 7 h -3 V 4.5 A 1.5 1.5 0 0 1 8 3 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconLock">M 9,10 A 1,1 0 1 0 7,10 L 7,11 A 1,1 0 1 0 9,11 Z M 7,0 A 3,3 0 0 0 4,3 L 4,5 A 2,2 0 0 0 2,7 L 2,14 A 2,2 0 0 0 4,16 L 12,16 A 2,2 0 0 0 14,14 L 14,7 A 2,2 0 0 0 12,5 L 12,3 A 3,3 0 0 0 9,0 Z M 10,5 L 6,5 L 6,3 A 1,1 0 0 1 7,2 L 9,2 A 1,1 0 0 1 10,3 Z M 4,14 L 4,7 L 12,7 L 12,14 Z</StreamGeometry>
+
+    <StreamGeometry x:Key="IconCloseMini">M 10.586,2.086 L 8,4.672 L 5.414,2.086 L 4,3.5 L 6.586,6.086 L 4,8.672 L 5.414,10.086 L 8,7.5 L 10.586,10.086 L 12,8.672 L 9.414,6.086 L 12,3.5 Z</StreamGeometry>
 
     <StreamGeometry x:Key="IconDot">M 8,2 A 6,6 0 1 0 8,14 A 6,6 0 0 0 8,2 M 0,8 A 8,8 0 1 1 16,8 A 8,8 0 0 1 0,8</StreamGeometry>
   </Window.Resources>
@@ -102,6 +104,24 @@
     <Style Selector="ToggleButton.flat:checked">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.flat:disabled">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="ToggleButton.flat:disabled /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="0.3" />
+    </Style>
+    <Style Selector="Button.flat:disabled">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Button.flat:disabled /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="0.3" />
     </Style>
 
 
@@ -415,10 +435,27 @@
                                VerticalAlignment="Center"
                                IsVisible="{Binding ShowTimedBadge}" />
                   </StackPanel>
-                  <TextBlock Text="{Binding Preview}"
-                             Foreground="{StaticResource XnTextDimBrush}"
-                             FontSize="12"
-                             TextTrimming="CharacterEllipsis" />
+                  <ItemsControl ItemsSource="{Binding TagChips}"
+                                IsVisible="{Binding HasTags}"
+                                Margin="0,1,0,0"
+                                x:CompileBindings="False">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <WrapPanel />
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Border Background="{StaticResource XnPanelAltBrush}"
+                                BorderBrush="{StaticResource XnBorderSubtleBrush}"
+                                BorderThickness="1" CornerRadius="8"
+                                Padding="7,1" Margin="0,2,4,0">
+                          <TextBlock Text="{Binding}" FontSize="10"
+                                     Foreground="{StaticResource XnTextDimBrush}" />
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
                 </StackPanel>
               </Grid>
             </DataTemplate>
@@ -684,10 +721,49 @@
           </Panel>
         </Grid>
 
-        <TextBox Grid.Row="2" Margin="32,10,32,0"
-                 Text="{Binding TagsText, Mode=TwoWay}"
-                 PlaceholderText="{Binding Ui.TagsPlaceholder}"
-                 FontSize="12" Height="30" />
+        <Border Grid.Row="2" Margin="32,10,32,0"
+                Background="{StaticResource XnPanelBrush}"
+                BorderBrush="{StaticResource XnBorderBrush}"
+                BorderThickness="1" CornerRadius="8"
+                Padding="8,5">
+          <StackPanel Spacing="4">
+            <ItemsControl ItemsSource="{Binding TagChips}" x:CompileBindings="False">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border Background="{StaticResource XnPanelAltBrush}"
+                          BorderBrush="{StaticResource XnBorderSubtleBrush}"
+                          BorderThickness="1" CornerRadius="10"
+                          Padding="9,2" Margin="0,2,4,2">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                      <TextBlock Text="{Binding}" FontSize="12"
+                                 Foreground="{StaticResource XnTextBrush}"
+                                 VerticalAlignment="Center"
+                                 MaxWidth="150" TextTrimming="CharacterEllipsis" />
+                      <Button Classes="iconbtn" Width="16" Height="16" Padding="0"
+                              Tag="{Binding}"
+                              Click="RemoveTag_Click">
+                        <PathIcon Classes="rivet" Data="{StaticResource IconCloseMini}"
+                                  Width="7" Height="7"
+                                  Foreground="{StaticResource XnTextDimBrush}" />
+                      </Button>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBox x:Name="TagInput"
+                     PlaceholderText="{Binding Ui.TagsPlaceholder}"
+                     FontSize="12" Height="24"
+                     BorderThickness="0" Background="Transparent"
+                     Padding="2,0"
+                     KeyDown="TagInput_KeyDown" />
+          </StackPanel>
+        </Border>
 
         <Border Grid.Row="3" Margin="32,10,32,0"
                 Background="{StaticResource XnPanelBrush}"

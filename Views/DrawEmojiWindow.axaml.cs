@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 
 using Avalonia;
 using Avalonia.Controls;
@@ -9,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using XNote.Utils;
 
@@ -23,12 +26,18 @@ public partial class DrawEmojiWindow : Window
     private Color _currentColor = Colors.Black;
     private double _strokeThickness = 4.0;
     private bool _isEraser;
+    private bool _isFill;
+    private bool _isPipette;
+    private WriteableBitmap? _fillBitmap;
+    private Image? _fillLayer;
+    private const string DrawAreaBackgroundHex = "#F2F2F2";
     private bool _colorModeIsRgb = true;
     private bool _updatingColor;
 
     public DrawEmojiWindow()
     {
         InitializeComponent();
+        DataContext = Ui.Strings;
         UpdateModeState();
     }
 
@@ -58,6 +67,11 @@ public partial class DrawEmojiWindow : Window
         {
             _currentColor = Colors.Black;
             _isEraser = false;
+            _isFill = false;
+            _isPipette = false;
+            if (BtnEraser != null) BtnEraser.Classes.Set("active", false);
+            if (BtnFill != null) BtnFill.Classes.Set("active", false);
+            if (BtnPipette != null) BtnPipette.Classes.Set("active", false);
         }
     }
 
@@ -152,15 +166,65 @@ public partial class DrawEmojiWindow : Window
     private void Eraser_Click(object? sender, RoutedEventArgs e)
     {
         _isEraser = !_isEraser;
+        _isFill = false;
+        _isPipette = false;
         if (BtnEraser != null)
         {
             BtnEraser.Classes.Set("active", _isEraser);
+        }
+        if (BtnFill != null)
+        {
+            BtnFill.Classes.Set("active", false);
+        }
+        if (BtnPipette != null)
+        {
+            BtnPipette.Classes.Set("active", false);
+        }
+    }
+
+    private void Fill_Click(object? sender, RoutedEventArgs e)
+    {
+        _isFill = !_isFill;
+        _isEraser = false;
+        _isPipette = false;
+        if (BtnEraser != null)
+        {
+            BtnEraser.Classes.Set("active", false);
+        }
+        if (BtnFill != null)
+        {
+            BtnFill.Classes.Set("active", _isFill);
+        }
+        if (BtnPipette != null)
+        {
+            BtnPipette.Classes.Set("active", false);
+        }
+    }
+
+    private void Pipette_Click(object? sender, RoutedEventArgs e)
+    {
+        _isPipette = !_isPipette;
+        _isEraser = false;
+        _isFill = false;
+        if (BtnEraser != null)
+        {
+            BtnEraser.Classes.Set("active", false);
+        }
+        if (BtnFill != null)
+        {
+            BtnFill.Classes.Set("active", false);
+        }
+        if (BtnPipette != null)
+        {
+            BtnPipette.Classes.Set("active", _isPipette);
         }
     }
 
     private void Clear_Click(object? sender, RoutedEventArgs e)
     {
         DrawCanvas.Children.Clear();
+        _fillBitmap = null;
+        _fillLayer = null;
         BackgroundImage.Source = null;
 
         if (RadioSymbol != null) RadioSymbol.IsEnabled = true;
@@ -174,7 +238,7 @@ public partial class DrawEmojiWindow : Window
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Выберите фоновое изображение",
+            Title = Ui.Strings.DrawChooseBackground,
             AllowMultiple = false,
             FileTypeFilter = new[] { FilePickerFileTypes.ImageAll }
         });
@@ -192,13 +256,248 @@ public partial class DrawEmojiWindow : Window
     private void Canvas_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         var point = e.GetPosition(DrawCanvas);
+
+        if (_isFill)
+        {
+            ApplyFill(point);
+            return;
+        }
+
+        if (_isPipette)
+        {
+            SampleColor(point);
+            return;
+        }
+
         _isDrawing = true;
         _lastPoint = point;
         e.Pointer.Capture(DrawCanvas);
     }
 
-    private const string DrawAreaBackgroundHex = "#F2F2F2";
-    private static readonly IBrush DrawAreaBrush = new SolidColorBrush(Color.Parse(DrawAreaBackgroundHex));
+    private static double PointSegmentDistance(Point p, Point a, Point b)
+    {
+        double dx = b.X - a.X;
+        double dy = b.Y - a.Y;
+        double lenSq = dx * dx + dy * dy;
+        if (lenSq <= 0.0) return Math.Sqrt((p.X - a.X) * (p.X - a.X) + (p.Y - a.Y) * (p.Y - a.Y));
+
+        double t = Math.Clamp(((p.X - a.X) * dx + (p.Y - a.Y) * dy) / lenSq, 0.0, 1.0);
+        double px = a.X + t * dx;
+        double py = a.Y + t * dy;
+        return Math.Sqrt((p.X - px) * (p.X - px) + (p.Y - py) * (p.Y - py));
+    }
+
+    private static double SegmentDistance(Point a, Point b, Point c, Point d)
+    {
+        double d1 = PointSegmentDistance(a, c, d);
+        double d2 = PointSegmentDistance(b, c, d);
+        double d3 = PointSegmentDistance(c, a, b);
+        double d4 = PointSegmentDistance(d, a, b);
+        return Math.Min(Math.Min(d1, d2), Math.Min(d3, d4));
+    }
+
+    private void EraseSegment(Point from, Point to)
+    {
+        const double eraserRadius = 6.0;
+
+        for (int i = DrawCanvas.Children.Count - 1; i >= 0; i--)
+        {
+            if (DrawCanvas.Children[i] is not Line line) continue;
+
+            double reach = eraserRadius + line.StrokeThickness / 2.0;
+            if (SegmentDistance(from, to, line.StartPoint, line.EndPoint) <= reach)
+            {
+                DrawCanvas.Children.RemoveAt(i);
+            }
+        }
+
+        UpdateModeLockAfterErase();
+    }
+
+    private bool HasInkStrokes()
+    {
+        foreach (var child in DrawCanvas.Children)
+        {
+            if (child is Line) return true;
+        }
+        return false;
+    }
+
+    private void ApplyFill(Point point)
+    {
+        int width = (int)CanvasContainer.Bounds.Width;
+        int height = (int)CanvasContainer.Bounds.Height;
+        if (width <= 0 || height <= 0) return;
+
+        int sx = (int)point.X;
+        int sy = (int)point.Y;
+        if (sx < 0 || sy < 0 || sx >= width || sy >= height) return;
+
+        var rtb = new RenderTargetBitmap(new PixelSize(width, height), new Vector(96, 96));
+        rtb.Render(CanvasContainer);
+
+        var src = new byte[width * height * 4];
+        var handle = GCHandle.Alloc(src, GCHandleType.Pinned);
+        try
+        {
+            rtb.CopyPixels(new PixelRect(0, 0, width, height), handle.AddrOfPinnedObject(), src.Length, width * 4);
+        }
+        finally
+        {
+            handle.Free();
+        }
+
+        int clicked = (sy * width + sx) * 4;
+        byte targetA = src[clicked + 3];
+        byte targetR = src[clicked + 2];
+        byte targetG = src[clicked + 1];
+        byte targetB = src[clicked];
+
+        const int obstacleAlpha = 32;
+        var visited = new bool[width * height];
+        var stack = new Stack<int>();
+        stack.Push(sy * width + sx);
+        visited[sy * width + sx] = true;
+
+        Color fill = _currentColor;
+
+        var outBuf = new byte[width * height * 4];
+
+        if (_fillBitmap is { PixelSize: { Width: var bw, Height: var bh } } && bw == width && bh == height)
+        {
+            var curHandle = GCHandle.Alloc(outBuf, GCHandleType.Pinned);
+            try
+            {
+                _fillBitmap.CopyPixels(new PixelRect(0, 0, width, height), curHandle.AddrOfPinnedObject(), outBuf.Length, width * 4);
+            }
+            finally
+            {
+                curHandle.Free();
+            }
+        }
+
+        while (stack.Count > 0)
+        {
+            int idx = stack.Pop();
+            int x = idx % width;
+            int y = idx / width;
+
+            byte a = src[idx * 4 + 3];
+            if (targetA >= obstacleAlpha)
+            {
+                byte r = src[idx * 4 + 2];
+                byte g = src[idx * 4 + 1];
+                byte b = src[idx * 4];
+                if (Math.Abs(r - targetR) > 24 || Math.Abs(g - targetG) > 24 ||
+                    Math.Abs(b - targetB) > 24 || Math.Abs(a - targetA) > 32)
+                {
+                    continue;
+                }
+            }
+            else if (a >= obstacleAlpha)
+            {
+                continue;
+            }
+
+            outBuf[idx * 4 + 0] = fill.B;
+            outBuf[idx * 4 + 1] = fill.G;
+            outBuf[idx * 4 + 2] = fill.R;
+            outBuf[idx * 4 + 3] = 255;
+
+            if (x > 0 && !visited[idx - 1]) { visited[idx - 1] = true; stack.Push(idx - 1); }
+            if (x < width - 1 && !visited[idx + 1]) { visited[idx + 1] = true; stack.Push(idx + 1); }
+            if (y > 0 && !visited[idx - width]) { visited[idx - width] = true; stack.Push(idx - width); }
+            if (y < height - 1 && !visited[idx + width]) { visited[idx + width] = true; stack.Push(idx + width); }
+        }
+
+        var outHandle = GCHandle.Alloc(outBuf, GCHandleType.Pinned);
+        try
+        {
+            var wb = new WriteableBitmap(
+                PixelFormat.Bgra8888, AlphaFormat.Premul,
+                outHandle.AddrOfPinnedObject(),
+                new PixelSize(width, height), new Vector(96, 96), width * 4);
+
+            if (_fillLayer is null)
+            {
+                _fillLayer = new Image
+                {
+                    Stretch = Stretch.None,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
+                };
+                DrawCanvas.Children.Insert(0, _fillLayer);
+            }
+
+            _fillLayer.Source = wb;
+            _fillLayer.Width = width;
+            _fillLayer.Height = height;
+            _fillBitmap = wb;
+        }
+        finally
+        {
+            outHandle.Free();
+        }
+
+        _isFill = false;
+        if (BtnFill != null)
+        {
+            BtnFill.Classes.Set("active", false);
+        }
+
+        LockModeSelection();
+    }
+
+    private void SampleColor(Point point)
+    {
+        try
+        {
+            int width = (int)CanvasContainer.Bounds.Width;
+            int height = (int)CanvasContainer.Bounds.Height;
+            if (width <= 0 || height <= 0) return;
+
+            var rtb = new RenderTargetBitmap(new PixelSize(width, height), new Vector(96, 96));
+            rtb.Render(CanvasContainer);
+
+            var pixels = new byte[width * height * 4];
+            var handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
+            try
+            {
+                rtb.CopyPixels(new PixelRect(0, 0, width, height), handle.AddrOfPinnedObject(), pixels.Length, width * 4);
+            }
+            finally
+            {
+                handle.Free();
+            }
+
+            int x = (int)point.X;
+            int y = (int)point.Y;
+            if (x < 0 || y < 0 || x >= width || y >= height) return;
+
+            int i = (y * width + x) * 4;
+            byte b = pixels[i];
+            byte g = pixels[i + 1];
+            byte r = pixels[i + 2];
+            byte a = pixels[i + 3];
+
+            Color picked = a < 24
+                ? Color.Parse(DrawAreaBackgroundHex)
+                : Color.FromArgb(255, r, g, b);
+
+            _currentColor = picked;
+            _isPipette = false;
+            if (BtnPipette != null)
+            {
+                BtnPipette.Classes.Set("active", false);
+            }
+
+            SyncRgbSliders(picked);
+            UpdateHexBox();
+        }
+        catch
+        {
+        }
+    }
 
     private void Canvas_PointerMoved(object? sender, PointerEventArgs e)
     {
@@ -206,12 +505,19 @@ public partial class DrawEmojiWindow : Window
 
         var currentPoint = e.GetPosition(DrawCanvas);
 
+        if (_isEraser)
+        {
+            EraseSegment(_lastPoint, currentPoint);
+            _lastPoint = currentPoint;
+            return;
+        }
+
         var line = new Line
         {
             StartPoint = _lastPoint,
             EndPoint = currentPoint,
-            Stroke = _isEraser ? DrawAreaBrush : new SolidColorBrush(_currentColor),
-            StrokeThickness = _isEraser ? 12.0 : _strokeThickness,
+            Stroke = new SolidColorBrush(_currentColor),
+            StrokeThickness = _strokeThickness,
             StrokeLineCap = PenLineCap.Round
         };
 
@@ -222,10 +528,20 @@ public partial class DrawEmojiWindow : Window
 
     private void LockModeSelection()
     {
-        if (DrawCanvas.Children.Count == 0) return;
+        bool hasContent = _fillLayer != null || HasInkStrokes();
+        if (!hasContent) return;
 
         if (RadioSymbol != null) RadioSymbol.IsEnabled = false;
         if (RadioEmoji != null) RadioEmoji.IsEnabled = false;
+    }
+
+    private void UpdateModeLockAfterErase()
+    {
+        bool hasContent = _fillLayer != null || HasInkStrokes();
+        if (hasContent) return;
+
+        if (RadioSymbol != null) RadioSymbol.IsEnabled = true;
+        if (RadioEmoji != null) RadioEmoji.IsEnabled = true;
     }
 
     private void Canvas_PointerReleased(object? sender, PointerReleasedEventArgs e)

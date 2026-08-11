@@ -6,11 +6,13 @@ A lightweight desktop notes app for Windows. Everything stays on your machine �
 
 ## What you get
 
-- **Notes** with rich text, tags, and search
+- **Notes** — rich text, tags, and search
 - **Tasks** — mark notes as open or done
 - **Reminders** — scheduled notifications with sound
 - **Timed notes** — auto-delete when the timer runs out
-- **Drafts** — unsaved notes are clearly marked
+- **Drafts** — unsaved notes are clearly marked and editable
+- **Emoji** — built-in picker with basic emoji, symbols, GIF search, and custom emoji or symbols you define yourself
+- **Custom emoji editor** — draw a symbol or an emoji and insert it anywhere in a note
 - **Tray** — minimize to the system tray; app keeps running in the background
 - **Import / export** — bring in `.txt` files or save note text out
 - **English & Russian** UI (switch in Settings)
@@ -21,21 +23,7 @@ Data is stored locally in your Windows profile (`%AppData%\XNote`).
 
 ## Download & run
 
-You need the [.NET 10 SDK](https://dotnet.microsoft.com/download).
-
-**Run from source**
-
-```powershell
-dotnet run
-```
-
-**Build a release folder**
-
-```powershell
-dotnet publish -c Release
-```
-
-The ready-to-use app lands in `publish/XNote/` — `XNote.exe` plus an `Assets` folder. Dependencies are bundled into the executable, so you won't get a pile of DLL files next to it.
+Grab the latest release, run `XNote.exe`. Everything is bundled into the single executable, so there is nothing else to install.
 
 ---
 
@@ -51,4 +39,4 @@ Open source · LICENSED
 
 ---
 
-*v0.7 · developed by xeraze*
+*v0.8 · developed by xeraze*

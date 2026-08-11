@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Threading;
 using XNote.Models;
@@ -37,10 +38,18 @@ public class NoteVM : ViewModel
 
     private readonly DispatcherTimer _touchDebounce;
 
+    public ObservableCollection<string> TagChips { get; } = new();
+
+    public bool HasTags => TagChips.Count > 0;
+
     public NoteVM(Note model, bool hasBeenSaved)
     {
         Model = model;
         _hasBeenSaved = hasBeenSaved;
+        foreach (var tag in model.Tags)
+        {
+            TagChips.Add(tag);
+        }
         _touchDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
         _touchDebounce.Tick += (_, _) =>
         {
@@ -302,6 +311,33 @@ public class NoteVM : ViewModel
         : NoteStatusIcon.TaskOpen;
 
     public string Preview => Model.Preview;
+
+    public void AddTag(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return;
+
+        var tag = raw.Trim().ToLowerInvariant();
+        if (tag.Length == 0 || TagChips.Contains(tag)) return;
+
+        TagChips.Add(tag);
+        SyncTags();
+        OnPropertyChanged(nameof(HasTags));
+        Touch();
+    }
+
+    public void RemoveTag(string tag)
+    {
+        if (!TagChips.Remove(tag)) return;
+        SyncTags();
+        OnPropertyChanged(nameof(HasTags));
+        Touch();
+    }
+
+    private void SyncTags()
+    {
+        Model.Tags = TagChips.ToList();
+        OnPropertyChanged(nameof(TagsText));
+    }
 
     public string TagsText
     {

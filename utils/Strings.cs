@@ -155,8 +155,8 @@ public class UiStrings
     public string Delete => Strings.T("Delete", "Удалить");
     public string Cancel => Strings.T("Cancel", "Отмена");
     public string TagsPlaceholder => Strings.T(
-        "Add tags, separated by commas…",
-        "Теги через запятую…");
+        "Add tags via Enter…",
+        "Теги через Enter…");
 
     public string NoNoteSelected => Strings.T("No note selected", "Заметка не выбрана");
 
@@ -172,6 +172,8 @@ public class UiStrings
     public string GifNothingFound => Strings.T("Nothing found", "Ничего не найдено");
     public string CustomEmojiEmpty => Strings.T(
         "No custom emoji yet", "Кастомных эмодзи пока нет");
+    public string CustomSymbolsEmpty => Strings.T(
+        "No custom symbols yet", "Кастомных символов пока нет");
     public string NoNoteHint => Strings.T(
         "Pick a note on the left, or create a new one",
         "Выберите заметку слева или создайте новую");
@@ -235,4 +237,29 @@ public class UiStrings
     public string NotesMany(int n) => Strings.T($"{n} notes", $"{n} заметок");
     public string NotesFiltered(int filtered, string totalStr) =>
         Strings.T($"{filtered} of {totalStr}", $"{filtered} из {totalStr}");
+
+    public string CustomElementTitle => Strings.T("Custom element", "Кастомный элемент");
+    public string DrawSymbolMode => Strings.T("Symbol (1 color)", "Символ (1 цвет)");
+    public string DrawEmojiMode => Strings.T("Emoji (colors)", "Эмодзи (цвета)");
+    public string DrawEraser => Strings.T("Eraser", "Ластик");
+    public string DrawFill => Strings.T("Fill", "Заливка");
+    public string DrawPipette => Strings.T("Pipette", "Пипетка");
+    public string DrawPhoto => Strings.T("Photo", "Фото");
+    public string DrawChooseBackground => Strings.T(
+        "Choose a background image",
+        "Выберите фоновое изображение");
+    public string DrawCustomButton => Strings.T("+ Draw", "+ Нарисовать");
+    public string DrawFileButton => Strings.T("+ File", "+ Файл");
+    public string CustomEmojiCategory => Strings.T("Emoji", "Эмодзи");
+    public string CustomSymbolsCategory => Strings.T("Symbols", "Символы");
+    public string CustomFormatsHint => Strings.T(
+        "Formats: PNG, JPG, JPEG, WEBP, BMP · resized to 24px",
+        "Форматы: PNG, JPG, JPEG, WEBP, BMP · уменьшаются до 24px");
+    public string ChooseImageTitle => Strings.T("Choose an image", "Выберите изображение");
+    public string CustomFormatError => Strings.T(
+        "Format not supported. Allowed: PNG, JPG, JPEG, WEBP, BMP.",
+        "Формат не поддерживается. Разрешены: PNG, JPG, JPEG, WEBP, BMP.");
+    public string CustomLoadError => Strings.T(
+        "Could not load the image.",
+        "Не удалось загрузить изображение.");
 }

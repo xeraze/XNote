@@ -313,6 +313,25 @@ public partial class MainWindow : Window
 
     private NoteVM? SelectedNote => (DataContext as MainVM)?.SelectedNote;
 
+    private void TagInput_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        if (TagInput is not null && SelectedNote is not null)
+        {
+            SelectedNote.AddTag(TagInput.Text);
+            TagInput.Text = string.Empty;
+        }
+        e.Handled = true;
+    }
+
+    private void RemoveTag_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string tag } && SelectedNote is not null)
+        {
+            SelectedNote.RemoveTag(tag);
+        }
+    }
+
     private RichEditorView? _bodyEditorView;
     private bool _suppressTextChanged;
     private NoteVM? _loadedNote;
