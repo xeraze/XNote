@@ -39,4 +39,4 @@ Open source · LICENSED
 
 ---
 
-*v0.8 · developed by xeraze*
+*v0.9 · developed by xeraze*
