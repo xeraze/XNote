@@ -14,6 +14,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AvaloniaRichEditor.Controls;
+using AvaloniaRichEditor.Documents;
 using XNote.Models;
 using XNote.Utils;
 using XNote.ViewModels;
@@ -356,6 +357,7 @@ public partial class MainWindow : Window
             _bodyEditorView.Editor.PageSize = RichEditorPageSize.Continuous;
             _bodyEditorView.Editor.ShowPageBoundaries = false;
             _bodyEditorView.AddHandler(InputElement.KeyDownEvent, BodyEditor_PreviewKeyDown, RoutingStrategies.Tunnel);
+            _bodyEditorView.AddHandler(InputElement.PointerPressedEvent, BodyEditor_PointerPressed, RoutingStrategies.Tunnel);
             _gifPlayback.Attach(_bodyEditorView.Editor);
             HideNativeInsertImageButton();
         }
@@ -438,10 +440,20 @@ public partial class MainWindow : Window
 
         if (string.IsNullOrWhiteSpace(text)) return;
         var url = text.Trim().Trim('"');
-        if (!IsImageUrl(url)) return;
+        if (IsImageUrl(url))
+        {
+            e.Handled = true;
+            await InsertImageFromUrlAsync(url);
+            return;
+        }
 
-        e.Handled = true;
-        await InsertImageFromUrlAsync(url);
+        if (VideoLink.IsYoutubeUrl(url) || VideoLink.IsDirectMediaUrl(url))
+        {
+            e.Handled = true;
+            _bodyEditorView.Editor.InsertHtml(
+                $"<a href=\"{System.Net.WebUtility.HtmlEncode(url)}\">{System.Net.WebUtility.HtmlEncode(url)}</a><br/>");
+            InsertLinkCard(url);
+        }
     }
 
     private static bool IsImageFileName(string? name)
@@ -495,6 +507,265 @@ public partial class MainWindow : Window
         if (_bodyEditorView is null) return;
         await _bodyEditorView.Editor.InsertImageFromFileAsync();
         _gifPlayback.TryAnimateLatest();
+    }
+
+    private async void InsertVideo_Click(object? sender, RoutedEventArgs e)
+    {
+        VideoButton.Flyout?.Hide();
+        if (_bodyEditorView is null) return;
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is null) return;
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Insert video",
+            AllowMultiple = false,
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("Video")
+                {
+                    Patterns = new[] { "*.mp4", "*.mov", "*.mkv", "*.avi", "*.webm", "*.wmv" },
+                },
+            },
+        });
+
+        if (files.Count == 0) return;
+
+        var sourcePath = files[0].TryGetLocalPath();
+        if (string.IsNullOrEmpty(sourcePath)) return;
+
+        try
+        {
+            var storedPath = VideoStore.StoreVideo(sourcePath);
+            var displayName = System.IO.Path.GetFileName(sourcePath);
+            InsertVideoCard(VideoLink.EncodeVideoCard(storedPath), displayName);
+        }
+        catch
+        {
+            Notification.ShowMessage(Utils.Ui.Strings.TipVideo, Utils.Ui.Strings.VideoCopyFailed);
+        }
+    }
+
+    private void InsertVideoLink_Click(object? sender, RoutedEventArgs e)
+    {
+        var url = VideoUrlBox?.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(url)) return;
+        VideoButton.Flyout?.Hide();
+        InsertLinkCard(url);
+    }
+
+    private void VideoUrlBox_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        InsertVideoLink_Click(sender, e);
+        e.Handled = true;
+    }
+
+    private async void InsertLinkCard(string url)
+    {
+        if (_bodyEditorView is null) return;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            return;
+        }
+
+        string? thumb = null;
+        if (VideoLink.TryGetYouTubeId(url) is { } id)
+        {
+            thumb = await DownloadYtThumbAsync(id);
+        }
+
+        InsertVideoCard(VideoLink.EncodeLinkCard(url), BuildLinkLabel(url), thumb);
+    }
+
+    private static async Task<string?> DownloadYtThumbAsync(string id)
+    {
+        try
+        {
+            var tmp = Path.Combine(Path.GetTempPath(), "xnote-thumb-" + id + ".jpg");
+            if (!File.Exists(tmp) || (DateTime.UtcNow - File.GetLastWriteTimeUtc(tmp)).TotalDays > 3)
+            {
+                using var http = new HttpClient();
+                http.Timeout = TimeSpan.FromSeconds(10);
+                byte[] bytes;
+                try
+                {
+                    bytes = await http.GetByteArrayAsync("https://img.youtube.com/vi/" + id + "/maxresdefault.jpg");
+                }
+                catch
+                {
+                    bytes = await http.GetByteArrayAsync("https://img.youtube.com/vi/" + id + "/hqdefault.jpg");
+                }
+
+                if (bytes.Length == 0) return null;
+                await File.WriteAllBytesAsync(tmp, bytes);
+            }
+
+            return "file:///" + tmp.Replace('\\', '/');
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string BuildLinkLabel(string url)
+    {
+        if (VideoLink.TryGetYouTubeId(url) is { })
+        {
+            return Ui.Strings.WatchOnYouTube;
+        }
+
+        var s = url;
+        if (s.Length > 44) s = s[..41] + "…";
+        return s;
+    }
+
+    private void InsertVideoCard(string href, string displayName, string? thumbnailUrl = null)
+    {
+        if (_bodyEditorView is null) return;
+
+        var safeHref = System.Net.WebUtility.HtmlEncode(href);
+        var label = System.Net.WebUtility.HtmlEncode(string.IsNullOrWhiteSpace(displayName) ? "Video" : displayName);
+        string content;
+        if (!string.IsNullOrEmpty(thumbnailUrl))
+        {
+            var safeThumb = System.Net.WebUtility.HtmlEncode(thumbnailUrl);
+            content = "<img src=\"" + safeThumb + "\" width=\"400\" /><p style=\"text-align:center\"><a href=\"" + safeHref + "\">▶ " + label + "</a></p>";
+        }
+        else
+        {
+            content = "<p style=\"text-align:center\"><a href=\"" + safeHref + "\">🎬 " + label + "</a></p>";
+        }
+
+        _bodyEditorView.Editor.InsertHtml("<table border=\"1\"><tr><td>" + content + "</td></tr></table>");
+    }
+
+    private void BodyEditor_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (_bodyEditorView?.Editor is not { } editor) return;
+        if (!e.GetCurrentPoint(_bodyEditorView).Properties.IsLeftButtonPressed) return;
+
+        var uri = TryGetHitLinkUri(editor, e);
+        if (VideoLink.IsVideoCard(uri))
+        {
+            e.Handled = true;
+            OpenVideoCard(uri!);
+            return;
+        }
+
+        if (TryGetCardHref(editor, e, out var cardHref))
+        {
+            e.Handled = true;
+            OpenVideoCard(cardHref);
+        }
+    }
+
+    private static bool TryGetCardHref(RichEditor editor, PointerPressedEventArgs e, out string href)
+    {
+        href = string.Empty;
+        try
+        {
+            var point = e.GetPosition(editor);
+            var block = TryGetBlockAtPoint(editor, point);
+            return block is TableBlock tb && TryFindVideoHrefInTable(tb, out href);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static Block? TryGetBlockAtPoint(RichEditor editor, Avalonia.Point point)
+    {
+        try
+        {
+            var method = editor.GetType().GetMethod(
+                "GetBlockAtPoint",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            if (method is null) return null;
+            return method.Invoke(editor, new object[] { point }) as Block;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool TryFindVideoHrefInTable(TableBlock tb, out string href)
+    {
+        href = string.Empty;
+        for (int r = 0; r < tb.Rows; r++)
+        {
+            for (int c = 0; c < tb.Columns; c++)
+            {
+                foreach (var b in tb.Cells[r][c].Blocks)
+                {
+                    if (b is not Paragraph para) continue;
+                    foreach (var inline in para.Inlines)
+                    {
+                        if (inline is Run run && VideoLink.IsVideoCard(run.NavigateUri))
+                        {
+                            href = run.NavigateUri!;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static string? TryGetHitLinkUri(RichEditor editor, PointerPressedEventArgs e)
+    {
+        try
+        {
+            var method = editor.GetType().GetMethod(
+                "GetLinkRunAtPoint",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            if (method is null) return null;
+
+            var point = e.GetPosition(editor);
+            if (method.Invoke(editor, new object[] { point }) is AvaloniaRichEditor.Documents.Run run)
+            {
+                return run.NavigateUri;
+            }
+        }
+        catch
+        {
+        }
+
+        return null;
+    }
+
+    private void OpenVideoCard(string href)
+    {
+        string source;
+        if (VideoLink.TryGetVideoPath(href, out var path))
+        {
+            source = path;
+        }
+        else if (VideoLink.TryGetLinkUrl(href, out var url))
+        {
+            source = url;
+        }
+        else
+        {
+            return;
+        }
+
+        try
+        {
+            var player = new VideoPlayerWindow(source);
+            player.Show(this);
+        }
+        catch
+        {
+            Notification.ShowMessage(Utils.Ui.Strings.TipVideo, Utils.Ui.Strings.VideoPlayerError);
+        }
     }
 
     private async void ImportDirect_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

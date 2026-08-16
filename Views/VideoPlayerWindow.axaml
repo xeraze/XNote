@@ -1,0 +1,167 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="XNote.Views.VideoPlayerWindow"
+        x:CompileBindings="False"
+        Title="Video"
+        Width="860" Height="520"
+        MinWidth="520" MinHeight="320"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource XnBlackBrush}"
+        ExtendClientAreaToDecorationsHint="True"
+        WindowDecorations="BorderOnly">
+
+  <Window.Resources>
+    <StreamGeometry x:Key="IconClose">M 3.5,2.086 L 8,6.586 L 12.5,2.086 L 13.914,3.5 L 9.414,8 L 13.914,12.5 L 12.5,13.914 L 8,9.414 L 3.5,13.914 L 2.086,12.5 L 6.586,8 L 2.086,3.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconPlay">M 5,2.8 L 12.5,8 L 5,13.2 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconPause">M 5,2.8 H 7 V 13.2 H 5 Z M 9,2.8 H 11 V 13.2 H 9 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconExternal">M 9,2 H 14 V 7 H 12 V 4.414 L 7.707,8.707 L 6.293,7.293 L 10.586,3 H 8 Z M 4,4 H 6 V 6 H 4 V 12 H 10 V 10 H 12 V 13 A 1,1 0 0 1 11,14 H 3 A 1,1 0 0 1 2,13 V 5 A 1,1 0 0 1 3,4 Z</StreamGeometry>
+    <StreamGeometry x:Key="IconVolume">M 4,7 H 7 L 11,4 V 12 L 7,9 H 4 Z M 13.5,6 A 3,3 0 0 1 13.5,10 M 15.5,4.5 A 5.5,5.5 0 0 1 15.5,11.5</StreamGeometry>
+  </Window.Resources>
+
+  <Window.Styles>
+    <Style Selector="Button.flat">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Padding" Value="12,6" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="FontSize" Value="13" />
+    </Style>
+    <Style Selector="Button.flat:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+
+    <Style Selector="Button.yt">
+      <Setter Property="Background" Value="#CC0000" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Padding" Value="16,8" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.yt:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#E60000" />
+    </Style>
+
+    <Style Selector="Button.iconbtn">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="Padding" Value="6" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Width" Value="30" />
+      <Setter Property="Height" Value="30" />
+    </Style>
+    <Style Selector="Button.iconbtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+
+    <Style Selector="Button.titlebtn">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Width" Value="26" />
+      <Setter Property="Height" Value="22" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.titlebtn PathIcon">
+      <Setter Property="Width" Value="13" />
+      <Setter Property="Height" Value="13" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.titlebtn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+    </Style>
+    <Style Selector="Button.titlebtn-close:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#FBEAEA" />
+    </Style>
+    <Style Selector="Button.titlebtn-close:pointerover PathIcon">
+      <Setter Property="Foreground" Value="#B33030" />
+    </Style>
+
+    <Style Selector="PathIcon.rivet">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+    </Style>
+  </Window.Styles>
+
+  <Border BorderBrush="{StaticResource XnBorderBrush}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+    <Grid RowDefinitions="36,*">
+      <Border x:Name="TitleBar" Grid.Row="0" Background="{StaticResource XnPanelBrush}" Padding="12,0,6,0" PointerPressed="TitleBar_PointerPressed">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+          <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock x:Name="BrandText" Text="XNote Player" VerticalAlignment="Center"
+                       Foreground="{StaticResource XnTextBrush}" FontWeight="SemiBold" FontSize="13" />
+          </StackPanel>
+          <Button x:Name="OpenBrowserTitleBtn" Grid.Column="2" Classes="iconbtn titlebtn" Width="28" Height="28"
+                  IsVisible="False" Click="OpenInBrowser_Click" ToolTip.Tip="{Binding Ui.OpenInBrowser}">
+            <PathIcon Classes="rivet" Data="{StaticResource IconExternal}" Width="13" Height="13" Foreground="{StaticResource XnTextDimBrush}" />
+          </Button>
+          <Button Grid.Column="3" Classes="iconbtn titlebtn-close" Width="28" Height="28" Click="Close_Click">
+            <PathIcon Classes="rivet" Data="{StaticResource IconClose}" Width="12" Height="12" Foreground="{StaticResource XnTextDimBrush}" />
+          </Button>
+        </Grid>
+      </Border>
+
+      <Grid Grid.Row="1">
+        <Grid x:Name="VlcPanel" IsVisible="False" Background="Black">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <Border Grid.Row="1" Background="#CC000000" Padding="14,10">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+              <Button x:Name="PlayPauseButton" Classes="iconbtn" Width="32" Height="32" Background="#22FFFFFF" Click="PlayPause_Click">
+                <PathIcon x:Name="PlayPauseIcon" Classes="rivet" Data="{StaticResource IconPlay}" Foreground="White" />
+              </Button>
+              <Slider x:Name="SeekSlider" Grid.Column="1" Minimum="0" VerticalAlignment="Center" MinHeight="28" />
+              <TextBlock x:Name="TimeText" Grid.Column="2" VerticalAlignment="Center" FontSize="12" Foreground="White" />
+              <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <PathIcon Classes="rivet" Data="{StaticResource IconVolume}" Foreground="White" />
+                <Slider x:Name="VolumeSlider" Width="90" Minimum="0" Maximum="100" Value="100" VerticalAlignment="Center" MinHeight="28" />
+              </StackPanel>
+            </Grid>
+          </Border>
+        </Grid>
+
+        <Grid x:Name="YouTubePanel" IsVisible="False" Background="#181818">
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" MaxWidth="600" Margin="24">
+            <Border Background="#222222" CornerRadius="8" ClipToBounds="True" Width="480" Height="270">
+              <Image x:Name="YtThumb" Stretch="UniformToFill" />
+            </Border>
+            <TextBlock x:Name="YtTitle" HorizontalAlignment="Center" FontSize="15" Foreground="White"
+                       TextAlignment="Center" TextWrapping="Wrap" />
+            <Button Classes="yt" HorizontalAlignment="Center" Click="OpenInBrowser_Click">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Classes="rivet" Data="{StaticResource IconPlay}" Width="14" Height="14" Foreground="White" />
+                <TextBlock x:Name="YtWatchText" Text="Watch on YouTube" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Grid>
+
+        <Grid x:Name="FallbackPanel" IsVisible="False">
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" MaxWidth="480">
+            <TextBlock x:Name="FallbackTitle" HorizontalAlignment="Center" FontSize="15" FontWeight="Medium"
+                       Foreground="{StaticResource XnTextBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+            <TextBlock x:Name="FallbackUrl" HorizontalAlignment="Center" FontSize="12"
+                       Foreground="{StaticResource XnTextDimBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+            <Button Classes="flat" HorizontalAlignment="Center" Click="OpenInBrowser_Click">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Classes="rivet" Data="{StaticResource IconExternal}" Width="14" Height="14" Foreground="{StaticResource XnTextBrush}" />
+                <TextBlock x:Name="FallbackOpenText" Text="Open in browser" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Grid>
+    </Grid>
+  </Border>
+</Window>

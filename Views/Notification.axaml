@@ -34,16 +34,16 @@
       </StackPanel>
 
       <StackPanel Grid.Row="1" Spacing="4">
-        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Medium"
+        <TextBlock x:Name="TitleText" Text="{Binding Title}" FontSize="14" FontWeight="Medium"
                    Foreground="{StaticResource XnTextBrush}" TextTrimming="CharacterEllipsis" />
-        <TextBlock Text="{Binding NotificationMessage}" FontSize="11"
+        <TextBlock x:Name="MessageText" Text="{Binding NotificationMessage}" FontSize="11"
                    Foreground="{StaticResource XnTextDimBrush}"
                    TextWrapping="Wrap" />
       </StackPanel>
 
       <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,12,0,0">
         <Button Classes="flat" Content="{Binding Ui.Dismiss}" FontSize="12" Padding="12,6" Click="Dismiss_Click" />
-        <Button Content="{Binding Ui.OpenNote}" FontSize="12" Padding="12,6" Click="OpenNote_Click"
+        <Button x:Name="OpenNoteButton" Content="{Binding Ui.OpenNote}" FontSize="12" Padding="12,6" Click="OpenNote_Click"
                 Background="{StaticResource XnTextBrush}" Foreground="{StaticResource XnBlackBrush}" CornerRadius="4" />
       </StackPanel>
     </Grid>

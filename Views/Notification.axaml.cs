@@ -19,6 +19,17 @@ public partial class Notification : Window
         InitializeComponent();
     }
 
+    
+    public static void ShowMessage(string title, string message)
+    {
+        var toast = new Notification();
+        toast.DataContext = null;
+        toast.TitleText.Text = title;
+        toast.MessageText.Text = message;
+        toast.OpenNoteButton.IsVisible = false;
+        toast.Show();
+    }
+
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);

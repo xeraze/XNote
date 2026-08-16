@@ -103,8 +103,8 @@ public class UiStrings
         "Перезапустите приложение, чтобы применить язык.");
     public string About => Strings.T("About", "О приложении");
     public string AboutText => Strings.T(
-        "XNote v0.8. Developed by xeraze.",
-        "XNote v0.8. Разработано xeraze.");
+        "XNote v0.9. Developed by xeraze.",
+        "XNote v0.9. Разработано xeraze.");
     public string Hotkeys => Strings.T("Hotkeys", "Горячие клавиши");
     public string Bold => Strings.T("Bold", "Жирный");
     public string Italic => Strings.T("Italic", "Курсив");
@@ -130,6 +130,30 @@ public class UiStrings
     public string Save => Strings.T("Save", "Сохранить");
     public string TipSave => Strings.T("Save this note", "Сохранить заметку");
     public string TipImage => Strings.T("Insert image", "Вставить фото");
+    public string TipVideo => Strings.T("Insert video", "Вставить видео");
+    public string InsertVideoFile => Strings.T("Video file…", "Видеофайл…");
+    public string InsertVideoLink => Strings.T("Add link", "Добавить ссылку");
+    public string VideoUrlPlaceholder => Strings.T(
+        "Paste a YouTube or video link…",
+        "Вставьте ссылку YouTube или видео…");
+    public string VideoCopyFailed => Strings.T(
+        "Couldn't copy the video file.",
+        "Не удалось скопировать видеофайл.");
+    public string VideoPlayerError => Strings.T(
+        "Couldn't open the player.",
+        "Не удалось открыть плеер.");
+    public string VideoFallbackTitle => Strings.T(
+        "This link can't be played here.",
+        "Эта ссылка не может быть проиграна здесь.");
+    public string OpenInBrowser => Strings.T(
+        "Open in browser",
+        "Открыть в браузере");
+    public string WatchOnYouTube => Strings.T(
+        "Watch on YouTube",
+        "Смотреть на YouTube");
+    public string VideoLoading => Strings.T(
+        "Loading video…",
+        "Загрузка видео…");
     public string Task => Strings.T("Task", "Задача");
     public string TipTask => Strings.T("Mark as a task", "Отметить как задачу");
     public string Done => Strings.T("Done", "Готово");
