@@ -8,6 +8,8 @@ namespace XNote.Utils;
 public class AppSettings
 {
     public string Language { get; set; } = "en";
+    public string ThemePreset { get; set; } = ThemeService.DefaultPresetId;
+    public int CustomHue { get; set; } = 180;
 }
 
 public static class SettingsStore
@@ -103,8 +105,18 @@ public class UiStrings
         "Перезапустите приложение, чтобы применить язык.");
     public string About => Strings.T("About", "О приложении");
     public string AboutText => Strings.T(
-        "XNote v0.9. Developed by xeraze.",
-        "XNote v0.9. Разработано xeraze.");
+        "XNote v1.0. Developed by xeraze.",
+        "XNote v1.0. Разработано xeraze.");
+    public string Appearance => Strings.T("Appearance", "Оформление");
+    public string Theme => Strings.T("Theme", "Тема");
+    public string ThemeCustom => Strings.T("Custom hue", "Свой оттенок");
+    public string ThemeFormattingHint => Strings.T(
+        "The formatting toolbar always stays white due to editor limitations.",
+        "Панель форматирования всегда остаётся белой из‑за ограничений редактора.");
+    public string Apply => Strings.T("Apply", "Применить");
+    public string ThemeUnsavedHint => Strings.T(
+        "Preview is active. Apply to save or Cancel to revert.",
+        "Предпросмотр активен. Нажмите «Применить» для сохранения или «Отмена» для отката.");
     public string Hotkeys => Strings.T("Hotkeys", "Горячие клавиши");
     public string Bold => Strings.T("Bold", "Жирный");
     public string Italic => Strings.T("Italic", "Курсив");

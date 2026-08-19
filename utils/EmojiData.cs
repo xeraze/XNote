@@ -25,7 +25,6 @@ public static class EmojiData
         ("\U0001F929", "star-struck"),
         ("\U0001F618", "face blowing a kiss"),
         ("\U0001F617", "kissing face"),
-        ("\u263A\uFE0F", "smiling face"),
         ("\U0001F61A", "kissing face with closed eyes"),
         ("\U0001F619", "kissing face with smiling eyes"),
         ("\U0001F972", "smiling face with tear"),

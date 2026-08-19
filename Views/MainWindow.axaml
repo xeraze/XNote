@@ -9,7 +9,7 @@
         Title="XNote"
         Width="980" Height="640"
         MinWidth="720" MinHeight="480"
-        Background="{StaticResource XnBlackBrush}"
+        Background="{DynamicResource XnBlackBrush}"
         WindowStartupLocation="CenterScreen"
         ExtendClientAreaToDecorationsHint="True"
         WindowDecorations="BorderOnly"
@@ -20,7 +20,7 @@
   </Window.KeyBindings>
 
   <Window.Resources>
-    <SolidColorBrush x:Key="DotOpen" Color="{StaticResource XnTextFaintColor}" />
+    <SolidColorBrush x:Key="DotOpen" Color="{DynamicResource XnTextFaintColor}" />
 
     <StreamGeometry x:Key="IconPlus">M 7,7 V 0.5 H 9 V 7 H 15.5 V 9 H 9 V 15.5 H 7 V 9 H 0.5 V 7 Z</StreamGeometry>
     <StreamGeometry x:Key="IconImport">M 9,7.826 V 1 H 7 V 7.826 L 4.392,5.59 L 3.09,7.108 L 8,11.318 L 12.91,7.108 L 11.608,5.59 Z M 3,13 V 10 H 1 V 13 A 2,2 0 0 0 3,15 H 13 A 2,2 0 0 0 15,13 V 10 H 13 V 13 Z</StreamGeometry>
@@ -51,16 +51,22 @@
   <Window.Styles>
     <Style Selector="Button.flat">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextBrush}" />
       <Setter Property="Padding" Value="12,6" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="FontSize" Value="13" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.15" />
+          <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+        </Transitions>
+      </Setter>
     </Style>
     <Style Selector="Button.flat:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
     </Style>
 
     <Style Selector="CalendarDatePicker /template/ TextBox#PART_TextBox">
@@ -70,9 +76,9 @@
 
     <Style Selector="ToggleButton.flat">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextBrush}" />
       <Setter Property="Padding" Value="12,6" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
@@ -82,35 +88,35 @@
     </Style>
     <Style Selector="ToggleButton.flat:unchecked">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextBrush}" />
     </Style>
     <Style Selector="ToggleButton.flat /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="Opacity" Value="1" />
-      <Setter Property="TextBlock.Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource XnTextBrush}" />
     </Style>
     <Style Selector="ToggleButton.flat:unchecked /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="TextBlock.Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource XnTextBrush}" />
     </Style>
     <Style Selector="ToggleButton.flat:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
-      <Setter Property="TextBlock.Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource XnTextBrush}" />
     </Style>
     <Style Selector="ToggleButton.flat:checked /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
-      <Setter Property="TextBlock.Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnBorderBrush}" />
+      <Setter Property="TextBlock.Foreground" Value="{DynamicResource XnTextBrush}" />
     </Style>
     <Style Selector="ToggleButton.flat:checked">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextBrush}" />
     </Style>
     <Style Selector="ToggleButton.flat:disabled">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextDimBrush}" />
       <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="ToggleButton.flat:disabled /template/ ContentPresenter">
@@ -118,8 +124,8 @@
     </Style>
     <Style Selector="Button.flat:disabled">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextDimBrush}" />
       <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="Button.flat:disabled /template/ ContentPresenter">
@@ -143,15 +149,20 @@
     <Style Selector="Button.iconbtn">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextDimBrush}" />
       <Setter Property="Padding" Value="8" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="Width" Value="34" />
       <Setter Property="Height" Value="34" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.15" />
+        </Transitions>
+      </Setter>
     </Style>
     <Style Selector="Button.iconbtn:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
     </Style>
     <Style Selector="Button.iconbtn:disabled /template/ ContentPresenter">
       <Setter Property="Opacity" Value="0.3" />
@@ -174,9 +185,14 @@
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="Margin" Value="2" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.12" />
+        </Transitions>
+      </Setter>
     </Style>
     <Style Selector="Button.emojiCell:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
     </Style>
 
     <Style Selector="Button.emojiDeleteBtn">
@@ -191,15 +207,15 @@
     </Style>
 
     <Style Selector="Button.emojiTab.active">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnTextDimBrush}" />
     </Style>
     <Style Selector="Button.emojiTab.active /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
     </Style>
 
     <Style Selector="Button.gifCell">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
       <Setter Property="BorderThickness" Value="0" />
       <Setter Property="Padding" Value="0" />
       <Setter Property="CornerRadius" Value="6" />
@@ -229,28 +245,35 @@
 
     <Style Selector="Button.filtertab">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnBorderSubtleBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnBorderSubtleBrush}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextDimBrush}" />
       <Setter Property="Padding" Value="12,5" />
       <Setter Property="CornerRadius" Value="14" />
       <Setter Property="FontSize" Value="12" />
       <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.15" />
+          <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+          <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+        </Transitions>
+      </Setter>
     </Style>
     <Style Selector="Button.filtertab:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
     </Style>
     <Style Selector="Button.filtertab.active">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnTextDimBrush}" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnTextDimBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextBrush}" />
     </Style>
 
     <Style Selector="TextBox">
-      <Setter Property="Background" Value="{StaticResource XnPanelBrush}" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
-      <Setter Property="CaretBrush" Value="{StaticResource XnAccentBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextBrush}" />
+      <Setter Property="CaretBrush" Value="{DynamicResource XnAccentBrush}" />
       <Setter Property="SelectionBrush" Value="#332A2A2A" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
@@ -260,24 +283,21 @@
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Margin" Value="0,0,0,4" />
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="Transitions">
-        <Transitions />
-      </Setter>
     </Style>
     <Style Selector="ListBoxItem /template/ ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelBrush}" />
       <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
       <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
       <Setter Property="Opacity" Value="1" />
     </Style>
 
@@ -286,15 +306,15 @@
       <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelBrush}" />
       <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
       <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="ComboBoxItem:selected:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
       <Setter Property="Opacity" Value="1" />
     </Style>
 
@@ -306,6 +326,11 @@
       <Setter Property="Padding" Value="0" />
       <Setter Property="CornerRadius" Value="4" />
       <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.12" />
+        </Transitions>
+      </Setter>
     </Style>
     <Style Selector="Button.titlebtn PathIcon">
       <Setter Property="Width" Value="13" />
@@ -314,7 +339,7 @@
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style Selector="Button.titlebtn:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
     </Style>
     <Style Selector="Button.titlebtn-close:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="#FBEAEA" />
@@ -327,13 +352,13 @@
   <Panel Name="RootPanel" PointerPressed="RootPanel_PointerPressed">
     <Grid ColumnDefinitions="300,1,*">
 
-    <Grid Grid.Column="0" RowDefinitions="32,Auto,Auto,Auto,*,Auto" Background="{StaticResource XnBlackBrush}">
+    <Grid Grid.Column="0" RowDefinitions="32,Auto,Auto,Auto,*,Auto" Background="{DynamicResource XnBlackBrush}">
 
       <Border Grid.Row="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed" />
 
       <TextBlock Grid.Row="1" Text="XNote"
                  FontFamily="avares://XNote/Assets/Fonts/Battley.otf#Battley"
-                 Foreground="{StaticResource XnTextBrush}"
+                 Foreground="{DynamicResource XnTextBrush}"
                  FontSize="72"
                  Margin="20,8,20,12" />
 
@@ -347,21 +372,21 @@
                    FontSize="13" />
           <Canvas Width="14" Height="14" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0" IsHitTestVisible="False">
             <Ellipse Width="9" Height="9" Canvas.Left="0" Canvas.Top="0"
-                     Stroke="{StaticResource XnTextFaintBrush}" StrokeThickness="1.5" />
+                     Stroke="{DynamicResource XnTextFaintBrush}" StrokeThickness="1.5" />
             <Line StartPoint="8,8" EndPoint="13,13"
-                  Stroke="{StaticResource XnTextFaintBrush}" StrokeThickness="1.5" />
+                  Stroke="{DynamicResource XnTextFaintBrush}" StrokeThickness="1.5" />
           </Canvas>
         </Grid>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="4,0,0,0">
           <Button Classes="iconbtn"
                   Command="{Binding ToggleSettingsCommand}"
                   ToolTip.Tip="{Binding Ui.TipSettings}">
-            <PathIcon Classes="rivet" Data="{StaticResource IconSettings}" Foreground="{StaticResource XnTextBrush}" />
+            <PathIcon Classes="rivet" Data="{StaticResource IconSettings}" Foreground="{DynamicResource XnTextBrush}" />
           </Button>
           <Button Classes="iconbtn"
                   Click="ImportDirect_Click"
                   ToolTip.Tip="{Binding Ui.TipImportDirect}">
-            <PathIcon Classes="rivet" Data="{StaticResource IconImport}" Foreground="{StaticResource XnTextBrush}" />
+            <PathIcon Classes="rivet" Data="{StaticResource IconImport}" Foreground="{DynamicResource XnTextBrush}" />
           </Button>
           <Button x:Name="NewNoteButton" Classes="iconbtn"
                   ToolTip.Tip="{Binding Ui.TipNewNote}">
@@ -370,20 +395,20 @@
                 <StackPanel Width="220" Spacing="8">
                   <Button Classes="flat" HorizontalAlignment="Stretch" Click="RegularNoteFlyout_Click">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                      <PathIcon Classes="rivet" Data="{StaticResource IconDot}" Width="14" Height="14" Foreground="{StaticResource XnTextBrush}" />
+                      <PathIcon Classes="rivet" Data="{StaticResource IconDot}" Width="14" Height="14" Foreground="{DynamicResource XnTextBrush}" />
                       <TextBlock Text="{Binding Ui.RegularNote}" VerticalAlignment="Center" />
                     </StackPanel>
                   </Button>
                   <Button Classes="flat" HorizontalAlignment="Stretch" Click="TimedNoteFlyout_Click">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                      <PathIcon Classes="rivet" Data="{StaticResource IconHourglass}" Width="14" Height="14" Foreground="{StaticResource XnTextBrush}" />
+                      <PathIcon Classes="rivet" Data="{StaticResource IconHourglass}" Width="14" Height="14" Foreground="{DynamicResource XnTextBrush}" />
                       <TextBlock Text="{Binding Ui.TimedNote}" VerticalAlignment="Center" />
                     </StackPanel>
                   </Button>
                 </StackPanel>
               </Flyout>
             </Button.Flyout>
-            <PathIcon Classes="rivet" Data="{StaticResource IconPlus}" Foreground="{StaticResource XnTextBrush}" />
+            <PathIcon Classes="rivet" Data="{StaticResource IconPlus}" Foreground="{DynamicResource XnTextBrush}" />
           </Button>
         </StackPanel>
       </Grid>
@@ -408,7 +433,7 @@
               <Grid ColumnDefinitions="Auto,*" Margin="10,8">
                 <Grid Grid.Column="0" Width="14" Height="14" Margin="0,3,10,0" VerticalAlignment="Top">
                   <PathIcon Classes="rivet" Data="{StaticResource IconDot}" Width="8" Height="8"
-                            Foreground="{StaticResource XnTextDimBrush}"
+                            Foreground="{DynamicResource XnTextDimBrush}"
                             IsVisible="{Binding !IsTask}" />
 
                   <Border IsVisible="{Binding IsTask}"
@@ -418,22 +443,22 @@
                           Background="{Binding IsDone, Converter={x:Static vm:Converters.DoneToBrush}}">
                     <PathIcon Classes="rivet" Data="{StaticResource IconCheck}"
                               Width="9" Height="9"
-                              Foreground="{StaticResource XnBlackBrush}"
+                              Foreground="{DynamicResource XnBlackBrush}"
                               IsVisible="{Binding IsDone}" />
                   </Border>
                 </Grid>
                 <StackPanel Grid.Column="1" Spacing="3">
                   <StackPanel Orientation="Horizontal" Spacing="6">
                     <TextBlock Text="{Binding Title}"
-                               Foreground="{StaticResource XnTextBrush}"
+                               Foreground="{DynamicResource XnTextBrush}"
                                FontSize="14" FontWeight="Medium"
                                TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{Binding $parent[Window].((vm:MainVM)DataContext).Ui.Draft}" FontSize="10"
-                               Foreground="{StaticResource XnTextFaintBrush}"
+                               Foreground="{DynamicResource XnTextFaintBrush}"
                                VerticalAlignment="Center"
                                IsVisible="{Binding ShowDraftBadge}" />
                     <TextBlock Text="{Binding $parent[Window].((vm:MainVM)DataContext).Ui.Timed}" FontSize="10"
-                               Foreground="{StaticResource XnTextFaintBrush}"
+                               Foreground="{DynamicResource XnTextFaintBrush}"
                                VerticalAlignment="Center"
                                IsVisible="{Binding ShowTimedBadge}" />
                   </StackPanel>
@@ -448,12 +473,12 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
-                        <Border Background="{StaticResource XnPanelAltBrush}"
-                                BorderBrush="{StaticResource XnBorderSubtleBrush}"
+                        <Border Background="{DynamicResource XnPanelAltBrush}"
+                                BorderBrush="{DynamicResource XnBorderSubtleBrush}"
                                 BorderThickness="1" CornerRadius="8"
                                 Padding="7,1" Margin="0,2,4,0">
                           <TextBlock Text="{Binding}" FontSize="10"
-                                     Foreground="{StaticResource XnTextDimBrush}" />
+                                     Foreground="{DynamicResource XnTextDimBrush}" />
                         </Border>
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -468,21 +493,21 @@
         <StackPanel Orientation="Horizontal" Margin="20,10,20,16" Spacing="8"
                     IsVisible="{Binding !IsShowingUndo}" VerticalAlignment="Center">
           <TextBlock Text="{Binding TotalCountLabel}"
-                     Foreground="{StaticResource XnTextFaintBrush}" FontSize="11"
+                     Foreground="{DynamicResource XnTextFaintBrush}" FontSize="11"
                      VerticalAlignment="Center" />
         </StackPanel>
 
         <Border IsVisible="{Binding IsShowingUndo}"
-                Background="{StaticResource XnPanelBrush}"
-                BorderBrush="{StaticResource XnBorderSubtleBrush}"
+                Background="{DynamicResource XnPanelBrush}"
+                BorderBrush="{DynamicResource XnBorderSubtleBrush}"
                 BorderThickness="0,1,0,0"
                 Padding="14,10,10,14">
           <Grid ColumnDefinitions="*,Auto">
             <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2" VerticalAlignment="Center">
               <TextBlock Text="{Binding UndoStatusText}" FontSize="10"
-                         Foreground="{StaticResource XnTextFaintBrush}" />
+                         Foreground="{DynamicResource XnTextFaintBrush}" />
               <TextBlock Text="{Binding UndoTitle}" FontSize="12" FontWeight="Medium"
-                         Foreground="{StaticResource XnTextBrush}"
+                         Foreground="{DynamicResource XnTextBrush}"
                          TextTrimming="CharacterEllipsis" />
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
@@ -492,7 +517,7 @@
                       Command="{Binding DismissUndoCommand}"
                       ToolTip.Tip="{Binding Ui.Dismiss}">
                 <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}"
-                          Width="10" Height="10" Foreground="{StaticResource XnTextDimBrush}" />
+                          Width="10" Height="10" Foreground="{DynamicResource XnTextDimBrush}" />
               </Button>
             </StackPanel>
           </Grid>
@@ -500,9 +525,9 @@
       </Grid>
     </Grid>
 
-    <Border Grid.Column="1" Background="{StaticResource XnBorderSubtleBrush}" />
+    <Border Grid.Column="1" Background="{DynamicResource XnBorderSubtleBrush}" />
 
-    <Grid Grid.Column="2" Background="{StaticResource XnBlackBrush}" IsVisible="{Binding HasSelection}">
+    <Grid Grid.Column="2" Background="{DynamicResource XnBlackBrush}" IsVisible="{Binding HasSelection}">
       <Grid DataContext="{Binding SelectedNote}" x:DataType="vm:NoteVM"
             RowDefinitions="32,Auto,Auto,*,Auto">
         <Border Grid.Row="0" Background="Transparent" PointerPressed="TitleBar_PointerPressed" />
@@ -515,18 +540,18 @@
               <StackPanel Orientation="Horizontal" Spacing="6"
                           IsVisible="{Binding ShowDraftBadge}">
                 <Ellipse Width="7" Height="7" VerticalAlignment="Center"
-                         Fill="{StaticResource XnTextFaintBrush}" />
+                         Fill="{DynamicResource XnTextFaintBrush}" />
                 <TextBlock Text="{Binding Ui.Draft}" FontSize="11"
-                           Foreground="{StaticResource XnTextFaintBrush}"
+                           Foreground="{DynamicResource XnTextFaintBrush}"
                            VerticalAlignment="Center" />
               </StackPanel>
 
               <StackPanel Orientation="Horizontal" Spacing="6"
                           IsVisible="{Binding ShowTimedBadge}">
                 <Ellipse Width="7" Height="7" VerticalAlignment="Center"
-                         Fill="{StaticResource XnTextFaintBrush}" />
+                         Fill="{DynamicResource XnTextFaintBrush}" />
                 <TextBlock Text="{Binding Ui.Timed}" FontSize="11"
-                           Foreground="{StaticResource XnTextFaintBrush}"
+                           Foreground="{DynamicResource XnTextFaintBrush}"
                            VerticalAlignment="Center" />
               </StackPanel>
             </StackPanel>
@@ -562,7 +587,7 @@
                           Data="{StaticResource IconLock}"
                           Width="13" Height="13"
                           IsVisible="{Binding IsDraft}"
-                          Foreground="{StaticResource XnTextFaintBrush}" />
+                          Foreground="{DynamicResource XnTextFaintBrush}" />
               </StackPanel>
             </ToggleButton>
           
@@ -577,17 +602,17 @@
               <Button.Flyout>
                 <Flyout Placement="BottomEdgeAlignedRight">
                   <StackPanel Width="240" Spacing="10">
-                    <Border Background="{StaticResource XnPanelAltBrush}"
-                            BorderBrush="{StaticResource XnBorderSubtleBrush}"
+                    <Border Background="{DynamicResource XnPanelAltBrush}"
+                            BorderBrush="{DynamicResource XnBorderSubtleBrush}"
                             BorderThickness="1"
                             CornerRadius="8"
                             Padding="10">
                       <StackPanel Spacing="8">
                         <TextBlock Text="{Binding Ui.RemindMe}" FontSize="13" FontWeight="Medium"
-                                   Foreground="{StaticResource XnTextBrush}" />
+                                   Foreground="{DynamicResource XnTextBrush}" />
 
                         <TextBlock Text="{Binding Ui.Date}" FontSize="10"
-                                   Foreground="{StaticResource XnTextFaintBrush}" />
+                                   Foreground="{DynamicResource XnTextFaintBrush}" />
                         <CalendarDatePicker SelectedDate="{Binding PendingReminderDate, Mode=TwoWay}"
                                             DisplayDate="{Binding MinSelectableDate}"
                                             DisplayDateStart="{Binding MinSelectableDate}"
@@ -595,10 +620,10 @@
                                             HorizontalAlignment="Stretch" />
                         <TextBlock Text="{Binding YearRangeText}"
                                    FontSize="11"
-                                   Foreground="{StaticResource XnTextFaintBrush}" />
+                                   Foreground="{DynamicResource XnTextFaintBrush}" />
 
                         <TextBlock Text="{Binding Ui.Time}" FontSize="10"
-                                   Foreground="{StaticResource XnTextFaintBrush}" />
+                                   Foreground="{DynamicResource XnTextFaintBrush}" />
                         <TimePicker SelectedTime="{Binding PendingReminderTime, Mode=TwoWay}" HorizontalAlignment="Stretch" />
 
                         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
@@ -606,13 +631,13 @@
                                   IsVisible="{Binding HasReminder}"
                                   Click="ClearReminder_Click" />
                           <Button Content="{Binding Ui.Set}" Click="SetReminder_Click"
-                                  Background="{StaticResource XnTextBrush}"
-                                  Foreground="{StaticResource XnBlackBrush}"
+                                  Background="{DynamicResource XnTextBrush}"
+                                  Foreground="{DynamicResource XnBlackBrush}"
                                   CornerRadius="4" Padding="12,6" />
                         </StackPanel>
 
                         <TextBlock Text="{Binding RemindAtText}" FontSize="11"
-                                   Foreground="{StaticResource XnTextDimBrush}"
+                                   Foreground="{DynamicResource XnTextDimBrush}"
                                    IsVisible="{Binding HasReminder}" />
                       </StackPanel>
                     </Border>
@@ -620,8 +645,8 @@
                 </Flyout>
               </Button.Flyout>
               <Panel>
-                <PathIcon Classes="rivet" Data="{StaticResource IconBell}" Foreground="{StaticResource XnTextBrush}" />
-                <Ellipse Width="6" Height="6" Fill="{StaticResource XnAccentBrush}"
+                <PathIcon Classes="rivet" Data="{StaticResource IconBell}" Foreground="{DynamicResource XnTextBrush}" />
+                <Ellipse Width="6" Height="6" Fill="{DynamicResource XnAccentBrush}"
                          HorizontalAlignment="Right" VerticalAlignment="Top"
                          Margin="0,-2,-2,0"
                          IsVisible="{Binding HasReminder}" />
@@ -633,17 +658,17 @@
               <Button.Flyout>
                 <Flyout Placement="BottomEdgeAlignedRight">
                   <StackPanel Width="240" Spacing="10">
-                    <Border Background="{StaticResource XnPanelAltBrush}"
-                            BorderBrush="{StaticResource XnBorderSubtleBrush}"
+                    <Border Background="{DynamicResource XnPanelAltBrush}"
+                            BorderBrush="{DynamicResource XnBorderSubtleBrush}"
                             BorderThickness="1"
                             CornerRadius="8"
                             Padding="10">
                       <StackPanel Spacing="8">
                         <TextBlock Text="{Binding Ui.TimedNote}" FontSize="13" FontWeight="Medium"
-                                   Foreground="{StaticResource XnTextBrush}" />
+                                   Foreground="{DynamicResource XnTextBrush}" />
 
                         <TextBlock Text="{Binding Ui.ExpiryDate}" FontSize="10"
-                                   Foreground="{StaticResource XnTextFaintBrush}" />
+                                   Foreground="{DynamicResource XnTextFaintBrush}" />
                         <CalendarDatePicker SelectedDate="{Binding PendingExpiryDate, Mode=TwoWay}"
                                             DisplayDate="{Binding MinSelectableDate}"
                                             DisplayDateStart="{Binding MinSelectableDate}"
@@ -651,25 +676,25 @@
                                             HorizontalAlignment="Stretch" />
                         <TextBlock Text="{Binding YearRangeText}"
                                    FontSize="11"
-                                   Foreground="{StaticResource XnTextFaintBrush}" />
+                                   Foreground="{DynamicResource XnTextFaintBrush}" />
 
                         <TextBlock Text="{Binding Ui.ExpiryTime}" FontSize="10"
-                                   Foreground="{StaticResource XnTextFaintBrush}" />
+                                   Foreground="{DynamicResource XnTextFaintBrush}" />
                         <TimePicker SelectedTime="{Binding PendingExpiryTime, Mode=TwoWay}" HorizontalAlignment="Stretch" />
 
                         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
                           <Button Content="{Binding Ui.Set}" Click="SetExpiry_Click"
-                                  Background="{StaticResource XnTextBrush}"
-                                  Foreground="{StaticResource XnBlackBrush}"
+                                  Background="{DynamicResource XnTextBrush}"
+                                  Foreground="{DynamicResource XnBlackBrush}"
                                   CornerRadius="4" Padding="12,6" />
                         </StackPanel>
 
                         <TextBlock Text="{Binding ExpiryAtText}" FontSize="11"
-                                   Foreground="{StaticResource XnTextDimBrush}"
+                                   Foreground="{DynamicResource XnTextDimBrush}"
                                    IsVisible="{Binding HasExpiry}" />
                         <TextBlock Text="{Binding Ui.CountdownAfterSave}"
                                    FontSize="10"
-                                   Foreground="{StaticResource XnTextFaintBrush}"
+                                   Foreground="{DynamicResource XnTextFaintBrush}"
                                    IsVisible="{Binding IsDraft}"
                                    TextWrapping="Wrap" />
                       </StackPanel>
@@ -678,8 +703,8 @@
                 </Flyout>
               </Button.Flyout>
               <Panel>
-                <PathIcon Classes="rivet" Data="{StaticResource IconHourglass}" Foreground="{StaticResource XnTextBrush}" />
-                <Ellipse Width="6" Height="6" Fill="{StaticResource XnAccentBrush}"
+                <PathIcon Classes="rivet" Data="{StaticResource IconHourglass}" Foreground="{DynamicResource XnTextBrush}" />
+                <Ellipse Width="6" Height="6" Fill="{DynamicResource XnAccentBrush}"
                          HorizontalAlignment="Right" VerticalAlignment="Top"
                          Margin="0,-2,-2,0"
                          IsVisible="{Binding HasExpiry}" />
@@ -690,27 +715,27 @@
                     Click="ImportTxt_Click"
                     IsEnabled="{Binding !IsDraft}"
                     ToolTip.Tip="{Binding Ui.Import}">
-              <PathIcon Classes="rivet" Data="{StaticResource IconImport}" Foreground="{StaticResource XnTextBrush}" />
+              <PathIcon Classes="rivet" Data="{StaticResource IconImport}" Foreground="{DynamicResource XnTextBrush}" />
             </Button>
 
             <Button Classes="iconbtn"
                     Click="ExportTxt_Click"
                     IsEnabled="{Binding !IsDraft}"
                     ToolTip.Tip="{Binding Ui.Export}">
-              <PathIcon Classes="rivet" Data="{StaticResource IconExport}" Foreground="{StaticResource XnTextBrush}" />
+              <PathIcon Classes="rivet" Data="{StaticResource IconExport}" Foreground="{DynamicResource XnTextBrush}" />
             </Button>
 
             <Button Classes="iconbtn deletebtn"
                     Command="{Binding $parent[Window].((vm:MainVM)DataContext).RequestDeleteCommand}"
                     ToolTip.Tip="{Binding Ui.TipDelete}">
-              <PathIcon Classes="rivet" Data="{StaticResource IconTrash}" Foreground="{StaticResource XnTextDimBrush}" />
+              <PathIcon Classes="rivet" Data="{StaticResource IconTrash}" Foreground="{DynamicResource XnTextDimBrush}" />
             </Button>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right"
                         IsVisible="{Binding $parent[Window].((vm:MainVM)DataContext).IsConfirmingDelete}">
               <TextBlock Text="{Binding Ui.DeleteConfirm}"
-                         Foreground="{StaticResource XnTextDimBrush}"
+                         Foreground="{DynamicResource XnTextDimBrush}"
                          FontSize="12" VerticalAlignment="Center" Margin="0,0,4,0" />
               <Button Classes="danger" Padding="10,6"
                       Command="{Binding $parent[Window].((vm:MainVM)DataContext).ConfirmDeleteCommand}">
@@ -724,8 +749,8 @@
         </Grid>
 
         <Border Grid.Row="2" Margin="32,10,32,0"
-                Background="{StaticResource XnPanelBrush}"
-                BorderBrush="{StaticResource XnBorderBrush}"
+                Background="{DynamicResource XnPanelBrush}"
+                BorderBrush="{DynamicResource XnBorderBrush}"
                 BorderThickness="1" CornerRadius="8"
                 Padding="8,5">
           <StackPanel Spacing="4">
@@ -737,13 +762,13 @@
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <Border Background="{StaticResource XnPanelAltBrush}"
-                          BorderBrush="{StaticResource XnBorderSubtleBrush}"
+                  <Border Background="{DynamicResource XnPanelAltBrush}"
+                          BorderBrush="{DynamicResource XnBorderSubtleBrush}"
                           BorderThickness="1" CornerRadius="10"
                           Padding="9,2" Margin="0,2,4,2">
                     <StackPanel Orientation="Horizontal" Spacing="4">
                       <TextBlock Text="{Binding}" FontSize="12"
-                                 Foreground="{StaticResource XnTextBrush}"
+                                 Foreground="{DynamicResource XnTextBrush}"
                                  VerticalAlignment="Center"
                                  MaxWidth="150" TextTrimming="CharacterEllipsis" />
                       <Button Classes="iconbtn" Width="16" Height="16" Padding="0"
@@ -751,7 +776,7 @@
                               Click="RemoveTag_Click">
                         <PathIcon Classes="rivet" Data="{StaticResource IconCloseMini}"
                                   Width="7" Height="7"
-                                  Foreground="{StaticResource XnTextDimBrush}" />
+                                  Foreground="{DynamicResource XnTextDimBrush}" />
                       </Button>
                     </StackPanel>
                   </Border>
@@ -768,8 +793,8 @@
         </Border>
 
         <Border Grid.Row="3" Margin="32,10,32,0"
-                Background="{StaticResource XnPanelBrush}"
-                BorderBrush="{StaticResource XnBorderBrush}"
+                Background="{DynamicResource XnPanelBrush}"
+                BorderBrush="{DynamicResource XnBorderBrush}"
                 BorderThickness="1" CornerRadius="8"
                 ClipToBounds="True">
           <DockPanel>
@@ -777,7 +802,7 @@
                         Margin="10,8,10,0">
               <Button x:Name="EmojiButton" Classes="iconbtn" Width="30" Height="30"
                       ToolTip.Tip="{Binding Ui.TipEmoji}">
-                <PathIcon Classes="rivet" Data="{StaticResource IconSmile}" Foreground="{StaticResource XnTextBrush}" />
+                <PathIcon Classes="rivet" Data="{StaticResource IconSmile}" Foreground="{DynamicResource XnTextBrush}" />
                 <Button.Flyout>
                   <Flyout Placement="BottomEdgeAlignedLeft">
                     <views:EmojiPicker x:Name="EmojiPanel" />
@@ -786,7 +811,7 @@
               </Button>
               <Button x:Name="GifButton" Classes="iconbtn" Width="30" Height="30"
                       ToolTip.Tip="{Binding Ui.TipGif}">
-                <PathIcon Classes="rivet" Data="{StaticResource IconGif}" Foreground="{StaticResource XnTextBrush}" />
+                <PathIcon Classes="rivet" Data="{StaticResource IconGif}" Foreground="{DynamicResource XnTextBrush}" />
                 <Button.Flyout>
                   <Flyout Placement="BottomEdgeAlignedLeft">
                     <views:GifPicker x:Name="GifPanel" />
@@ -796,11 +821,11 @@
               <Button x:Name="PhotoButton" Classes="iconbtn" Width="30" Height="30"
                       Click="InsertImage_Click"
                       ToolTip.Tip="{Binding Ui.TipImage}">
-                <PathIcon Classes="rivet" Data="{StaticResource IconImage}" Foreground="{StaticResource XnTextBrush}" />
+                <PathIcon Classes="rivet" Data="{StaticResource IconImage}" Foreground="{DynamicResource XnTextBrush}" />
               </Button>
               <Button x:Name="VideoButton" Classes="iconbtn" Width="30" Height="30"
                       ToolTip.Tip="{Binding Ui.TipVideo}">
-                <PathIcon Classes="rivet" Data="{StaticResource IconVideo}" Foreground="{StaticResource XnTextBrush}" />
+                <PathIcon Classes="rivet" Data="{StaticResource IconVideo}" Foreground="{DynamicResource XnTextBrush}" />
                 <Button.Flyout>
                   <Flyout Placement="BottomEdgeAlignedLeft">
                     <StackPanel Width="300" Spacing="8">
@@ -808,13 +833,13 @@
                                FontSize="12" KeyDown="VideoUrlBox_KeyDown" />
                       <Button Classes="flat" HorizontalAlignment="Stretch" Click="InsertVideoLink_Click">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                          <PathIcon Classes="rivet" Data="{StaticResource IconLink}" Width="13" Height="13" Foreground="{StaticResource XnTextBrush}" />
+                          <PathIcon Classes="rivet" Data="{StaticResource IconLink}" Width="13" Height="13" Foreground="{DynamicResource XnTextBrush}" />
                           <TextBlock Text="{Binding Ui.InsertVideoLink}" VerticalAlignment="Center" />
                         </StackPanel>
                       </Button>
                       <Button Classes="flat" HorizontalAlignment="Stretch" Click="InsertVideo_Click">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                          <PathIcon Classes="rivet" Data="{StaticResource IconVideo}" Width="13" Height="13" Foreground="{StaticResource XnTextBrush}" />
+                          <PathIcon Classes="rivet" Data="{StaticResource IconVideo}" Width="13" Height="13" Foreground="{DynamicResource XnTextBrush}" />
                           <TextBlock Text="{Binding Ui.InsertVideoFile}" VerticalAlignment="Center" />
                         </StackPanel>
                       </Button>
@@ -832,22 +857,28 @@
 
         <StackPanel Grid.Row="4" Margin="32,8,32,24" Orientation="Horizontal" Spacing="16">
           <TextBlock Text="{Binding MetaLabel}"
-                     Foreground="{StaticResource XnTextFaintBrush}" FontSize="11" />
+                     Foreground="{DynamicResource XnTextFaintBrush}" FontSize="11" />
           <TextBlock Text="{Binding $parent[Window].((vm:MainVM)DataContext).SaveStatusText}"
-                     Foreground="{StaticResource XnTextDimBrush}" FontSize="11"
-                     IsVisible="{Binding $parent[Window].((vm:MainVM)DataContext).HasSaveStatus}" />
+                     Foreground="{DynamicResource XnTextDimBrush}" FontSize="11"
+                     IsVisible="{Binding $parent[Window].((vm:MainVM)DataContext).HasSaveStatus}">
+            <TextBlock.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseInOut" />
+              </Transitions>
+            </TextBlock.Transitions>
+          </TextBlock>
         </StackPanel>
       </Grid>
     </Grid>
 
-    <Grid Grid.Column="2" Background="{StaticResource XnBlackBrush}" IsVisible="{Binding !HasSelection}">
+    <Grid Grid.Column="2" Background="{DynamicResource XnBlackBrush}" IsVisible="{Binding !HasSelection}">
       <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
         <PathIcon Classes="rivet" Data="{StaticResource IconPlus}" Width="28" Height="28"
-                   Foreground="{StaticResource XnTextFaintBrush}"
+                   Foreground="{DynamicResource XnTextFaintBrush}"
                    HorizontalAlignment="Center" />
-        <TextBlock Text="{Binding Ui.NoNoteSelected}" Foreground="{StaticResource XnTextDimBrush}"
+        <TextBlock Text="{Binding Ui.NoNoteSelected}" Foreground="{DynamicResource XnTextDimBrush}"
                    FontSize="14" HorizontalAlignment="Center" />
-        <TextBlock Text="{Binding Ui.NoNoteHint}" Foreground="{StaticResource XnTextFaintBrush}"
+        <TextBlock Text="{Binding Ui.NoNoteHint}" Foreground="{DynamicResource XnTextFaintBrush}"
                    FontSize="12" HorizontalAlignment="Center" />
         <Button Classes="flat" HorizontalAlignment="Center"
                 Command="{Binding AddNoteCommand}" Content="{Binding Ui.CreateFirstNote}" />
@@ -856,28 +887,42 @@
 
     </Grid>
 
-    <Border Background="#66000000" IsVisible="{Binding IsSettingsOpen}" IsHitTestVisible="True">
-      <Border Background="{StaticResource XnPanelBrush}"
-              Width="420" Height="420"
+    <Border Background="#66000000" IsVisible="{Binding IsSettingsOpen}"
+            IsHitTestVisible="True" Opacity="0" Name="SettingsOverlay">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="CubicEaseOut" />
+        </Transitions>
+      </Border.Transitions>
+      <Border Background="{DynamicResource XnPanelBrush}"
+              Width="440" MaxHeight="620"
               CornerRadius="8"
-              BorderBrush="{StaticResource XnBorderBrush}"
+              BorderBrush="{DynamicResource XnBorderBrush}"
               BorderThickness="1"
               BoxShadow="0 8 32 0 #40000000"
-              HorizontalAlignment="Center" VerticalAlignment="Center">
+              HorizontalAlignment="Center" VerticalAlignment="Center"
+              RenderTransformOrigin="0.5,0.5"
+              Name="SettingsCard"
+              Opacity="0">
+        <Border.Transitions>
+          <Transitions>
+            <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="CubicEaseOut" />
+          </Transitions>
+        </Border.Transitions>
         <Grid RowDefinitions="Auto,Auto,*">
           <Grid Grid.Row="0" Margin="20,16,20,16">
-            <TextBlock Text="{Binding Ui.Settings}" FontSize="16" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Ui.Settings}" FontSize="16" FontWeight="Medium" Foreground="{DynamicResource XnTextBrush}" VerticalAlignment="Center" />
             <Button Classes="iconbtn" HorizontalAlignment="Right" Command="{Binding ToggleSettingsCommand}">
-              <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}" Foreground="{StaticResource XnTextDimBrush}" />
+              <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}" Foreground="{DynamicResource XnTextDimBrush}" />
             </Button>
           </Grid>
-          <Border Grid.Row="1" Height="1" Background="{StaticResource XnBorderSubtleBrush}" />
+          <Border Grid.Row="1" Height="1" Background="{DynamicResource XnBorderSubtleBrush}" />
 
           <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="20" Spacing="18">
               <StackPanel Spacing="8">
-                <TextBlock Text="{Binding Ui.Configuration}" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" />
-                <TextBlock Text="{Binding Ui.Language}" FontSize="12" Foreground="{StaticResource XnTextFaintBrush}" />
+                <TextBlock Text="{Binding Ui.Configuration}" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource XnTextBrush}" />
+                <TextBlock Text="{Binding Ui.Language}" FontSize="12" Foreground="{DynamicResource XnTextFaintBrush}" />
                 <ComboBox ItemsSource="{Binding LanguageOptions}"
                           SelectedItem="{Binding SelectedLanguageOption}"
                           HorizontalAlignment="Stretch"
@@ -890,45 +935,102 @@
                 </ComboBox>
                 <TextBlock Text="{Binding Ui.LanguageRestartHint}"
                            FontSize="11"
-                           Foreground="{StaticResource XnTextDimBrush}"
+                           Foreground="{DynamicResource XnTextDimBrush}"
                            TextWrapping="Wrap"
                            IsVisible="{Binding ShowLanguageRestartHint}" />
               </StackPanel>
 
-              <Border Height="1" Background="{StaticResource XnBorderSubtleBrush}" />
+              <Border Height="1" Background="{DynamicResource XnBorderSubtleBrush}" />
+
+              <StackPanel Spacing="10">
+                <TextBlock Text="{Binding Ui.Appearance}" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource XnTextBrush}" />
+                <TextBlock Text="{Binding Ui.Theme}" FontSize="12" Foreground="{DynamicResource XnTextFaintBrush}" />
+
+                <ItemsControl ItemsSource="{Binding ThemePresets}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ThemePresetOption">
+                      <Button Classes="flat" Padding="4" Margin="2"
+                              Command="{Binding $parent[Window].((vm:MainVM)DataContext).SelectThemePresetCommand}"
+                              CommandParameter="{Binding Id}"
+                              ToolTip.Tip="{Binding DisplayName}">
+                        <StackPanel Spacing="4" Width="52" HorizontalAlignment="Center">
+                          <Border Width="32" Height="32" CornerRadius="16"
+                                  Background="{Binding PreviewColor}"
+                                  BorderBrush="{DynamicResource XnBorderBrush}"
+                                  BorderThickness="1"
+                                  HorizontalAlignment="Center" />
+                          <TextBlock Text="{Binding DisplayName}" FontSize="10"
+                                     Foreground="{DynamicResource XnTextFaintBrush}"
+                                     HorizontalAlignment="Center"
+                                     TextAlignment="Center" />
+                        </StackPanel>
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <StackPanel Spacing="8" IsVisible="{Binding IsCustomThemeSelected}">
+                  <TextBlock Text="{Binding Ui.ThemeCustom}" FontSize="12" Foreground="{DynamicResource XnTextFaintBrush}" />
+                  <Slider Minimum="0" Maximum="359" Value="{Binding PreviewCustomHue}" TickFrequency="30" IsSnapToTickEnabled="False" />
+                  <TextBlock Text="{Binding CustomHuePreviewHex}" FontSize="11" Foreground="{DynamicResource XnTextDimBrush}" FontFamily="Consolas" />
+                </StackPanel>
+
+                <TextBlock Text="{Binding Ui.ThemeFormattingHint}"
+                           FontSize="11"
+                           Foreground="{DynamicResource XnTextDimBrush}"
+                           TextWrapping="Wrap" />
+
+                <TextBlock Text="{Binding Ui.ThemeUnsavedHint}"
+                           FontSize="11"
+                           Foreground="{DynamicResource XnTextFaintBrush}"
+                           TextWrapping="Wrap"
+                           IsVisible="{Binding HasThemeChanges}" />
+
+                <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding HasThemeChanges}">
+                  <Button Classes="flat" Command="{Binding ApplyThemeCommand}" Content="{Binding Ui.Apply}" Padding="14,6" />
+                  <Button Classes="flat" Command="{Binding CancelThemeCommand}" Content="{Binding Ui.Cancel}" Padding="14,6" />
+                </StackPanel>
+              </StackPanel>
+
+              <Border Height="1" Background="{DynamicResource XnBorderSubtleBrush}" />
 
               <StackPanel Spacing="12">
-                <TextBlock Text="{Binding Ui.Information}" FontSize="14" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" />
+                <TextBlock Text="{Binding Ui.Information}" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource XnTextBrush}" />
 
                 <StackPanel Spacing="4">
-                  <TextBlock Text="{Binding Ui.About}" FontSize="13" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" />
-                  <TextBlock Text="{Binding Ui.AboutText}" Foreground="{StaticResource XnTextDimBrush}" FontSize="13" />
+                  <TextBlock Text="{Binding Ui.About}" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource XnTextBrush}" />
+                  <TextBlock Text="{Binding Ui.AboutText}" Foreground="{DynamicResource XnTextDimBrush}" FontSize="13" />
                 </StackPanel>
 
                 <StackPanel Spacing="10">
-                  <TextBlock Text="{Binding Ui.Hotkeys}" FontSize="13" FontWeight="Medium" Foreground="{StaticResource XnTextBrush}" Margin="0,4,0,0" />
+                  <TextBlock Text="{Binding Ui.Hotkeys}" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource XnTextBrush}" Margin="0,4,0,0" />
 
                   <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*" Margin="4,0,0,0">
                     <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-                      <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + B" FontSize="11" FontWeight="Medium" /></Border>
-                      <TextBlock Text="{Binding Ui.Bold}" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                      <Border Background="{DynamicResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + B" FontSize="11" FontWeight="Medium" /></Border>
+                      <TextBlock Text="{Binding Ui.Bold}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource XnTextDimBrush}" />
                     </StackPanel>
                     <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-                      <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + I" FontSize="11" FontWeight="Medium" /></Border>
-                      <TextBlock Text="{Binding Ui.Italic}" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                      <Border Background="{DynamicResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + I" FontSize="11" FontWeight="Medium" /></Border>
+                      <TextBlock Text="{Binding Ui.Italic}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource XnTextDimBrush}" />
                     </StackPanel>
                     <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                      <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + U" FontSize="11" FontWeight="Medium" /></Border>
-                      <TextBlock Text="{Binding Ui.Underline}" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                      <Border Background="{DynamicResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + U" FontSize="11" FontWeight="Medium" /></Border>
+                      <TextBlock Text="{Binding Ui.Underline}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource XnTextDimBrush}" />
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-                      <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + Z" FontSize="11" FontWeight="Medium" /></Border>
-                      <TextBlock Text="{Binding Ui.Undo}" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                      <Border Background="{DynamicResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + Z" FontSize="11" FontWeight="Medium" /></Border>
+                      <TextBlock Text="{Binding Ui.Undo}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource XnTextDimBrush}" />
                     </StackPanel>
                     <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-                      <Border Background="{StaticResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + Y" FontSize="11" FontWeight="Medium" /></Border>
-                      <TextBlock Text="{Binding Ui.Redo}" FontSize="13" VerticalAlignment="Center" Foreground="{StaticResource XnTextDimBrush}" />
+                      <Border Background="{DynamicResource XnBorderSubtleBrush}" CornerRadius="4" Padding="6,2"><TextBlock Text="Ctrl + Y" FontSize="11" FontWeight="Medium" /></Border>
+                      <TextBlock Text="{Binding Ui.Redo}" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource XnTextDimBrush}" />
                     </StackPanel>
                   </Grid>
                 </StackPanel>
@@ -943,13 +1045,13 @@
                 HorizontalAlignment="Right" VerticalAlignment="Top"
                 Margin="0,5,10,0">
       <Button Classes="titlebtn" Click="Minimize_Click" ToolTip.Tip="{Binding Ui.Minimize}">
-        <PathIcon Classes="rivet" Data="{StaticResource IconWinMinimize}" Foreground="{StaticResource XnTextDimBrush}" />
+        <PathIcon Classes="rivet" Data="{StaticResource IconWinMinimize}" Foreground="{DynamicResource XnTextDimBrush}" />
       </Button>
       <Button Classes="titlebtn" Click="MaximizeRestore_Click" ToolTip.Tip="{Binding Ui.MaximizeRestore}">
-        <PathIcon x:Name="MaxRestoreIcon" Classes="rivet" Data="{StaticResource IconWinMaximize}" Foreground="{StaticResource XnTextDimBrush}" />
+        <PathIcon x:Name="MaxRestoreIcon" Classes="rivet" Data="{StaticResource IconWinMaximize}" Foreground="{DynamicResource XnTextDimBrush}" />
       </Button>
       <Button Classes="titlebtn titlebtn-close" Click="Close_Click" ToolTip.Tip="{Binding Ui.Close}">
-        <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}" Foreground="{StaticResource XnTextDimBrush}" />
+        <PathIcon Classes="rivet" Data="{StaticResource IconWinClose}" Foreground="{DynamicResource XnTextDimBrush}" />
       </Button>
     </StackPanel>
   </Panel>

@@ -72,6 +72,10 @@ public partial class MainWindow : Window
             {
                 SelectedNoteChanged();
             }
+            else if (e.PropertyName == nameof(MainVM.IsSettingsOpen))
+            {
+                AnimateSettings(vm.IsSettingsOpen);
+            }
         };
 
         vm.OnShowNotification += ShowReminderNotification;
@@ -89,6 +93,24 @@ public partial class MainWindow : Window
             GifButton.Flyout?.Hide();
             await InsertImageFromUrlAsync(url);
         };
+    }
+
+    private void AnimateSettings(bool open)
+    {
+        var overlay = this.FindControl<Avalonia.Controls.Border>("SettingsOverlay");
+        var card = this.FindControl<Avalonia.Controls.Border>("SettingsCard");
+        if (overlay is null || card is null) return;
+
+        if (open)
+        {
+            overlay.Opacity = 1;
+            card.Opacity = 1;
+        }
+        else
+        {
+            overlay.Opacity = 0;
+            card.Opacity = 0;
+        }
     }
 
     private void InsertEmojiAtFocus(string emoji)

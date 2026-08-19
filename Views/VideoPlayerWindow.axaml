@@ -6,7 +6,7 @@
         Width="860" Height="520"
         MinWidth="520" MinHeight="320"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource XnBlackBrush}"
+        Background="{DynamicResource XnBlackBrush}"
         ExtendClientAreaToDecorationsHint="True"
         WindowDecorations="BorderOnly">
 
@@ -21,16 +21,16 @@
   <Window.Styles>
     <Style Selector="Button.flat">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextBrush}" />
       <Setter Property="Padding" Value="12,6" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="FontSize" Value="13" />
     </Style>
     <Style Selector="Button.flat:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
     </Style>
 
     <Style Selector="Button.yt">
@@ -50,7 +50,7 @@
     <Style Selector="Button.iconbtn">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextDimBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextDimBrush}" />
       <Setter Property="Padding" Value="6" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
@@ -58,7 +58,7 @@
       <Setter Property="Height" Value="30" />
     </Style>
     <Style Selector="Button.iconbtn:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
     </Style>
 
     <Style Selector="Button.titlebtn">
@@ -77,7 +77,7 @@
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style Selector="Button.titlebtn:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
     </Style>
     <Style Selector="Button.titlebtn-close:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="#FBEAEA" />
@@ -92,20 +92,20 @@
     </Style>
   </Window.Styles>
 
-  <Border BorderBrush="{StaticResource XnBorderBrush}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+  <Border BorderBrush="{DynamicResource XnBorderBrush}" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
     <Grid RowDefinitions="36,*">
-      <Border x:Name="TitleBar" Grid.Row="0" Background="{StaticResource XnPanelBrush}" Padding="12,0,6,0" PointerPressed="TitleBar_PointerPressed">
+      <Border x:Name="TitleBar" Grid.Row="0" Background="{DynamicResource XnPanelBrush}" Padding="12,0,6,0" PointerPressed="TitleBar_PointerPressed">
         <Grid ColumnDefinitions="Auto,*,Auto,Auto">
           <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
             <TextBlock x:Name="BrandText" Text="XNote Player" VerticalAlignment="Center"
-                       Foreground="{StaticResource XnTextBrush}" FontWeight="SemiBold" FontSize="13" />
+                       Foreground="{DynamicResource XnTextBrush}" FontWeight="SemiBold" FontSize="13" />
           </StackPanel>
           <Button x:Name="OpenBrowserTitleBtn" Grid.Column="2" Classes="iconbtn titlebtn" Width="28" Height="28"
                   IsVisible="False" Click="OpenInBrowser_Click" ToolTip.Tip="{Binding Ui.OpenInBrowser}">
-            <PathIcon Classes="rivet" Data="{StaticResource IconExternal}" Width="13" Height="13" Foreground="{StaticResource XnTextDimBrush}" />
+            <PathIcon Classes="rivet" Data="{StaticResource IconExternal}" Width="13" Height="13" Foreground="{DynamicResource XnTextDimBrush}" />
           </Button>
           <Button Grid.Column="3" Classes="iconbtn titlebtn-close" Width="28" Height="28" Click="Close_Click">
-            <PathIcon Classes="rivet" Data="{StaticResource IconClose}" Width="12" Height="12" Foreground="{StaticResource XnTextDimBrush}" />
+            <PathIcon Classes="rivet" Data="{StaticResource IconClose}" Width="12" Height="12" Foreground="{DynamicResource XnTextDimBrush}" />
           </Button>
         </Grid>
       </Border>
@@ -150,12 +150,12 @@
         <Grid x:Name="FallbackPanel" IsVisible="False">
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" MaxWidth="480">
             <TextBlock x:Name="FallbackTitle" HorizontalAlignment="Center" FontSize="15" FontWeight="Medium"
-                       Foreground="{StaticResource XnTextBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+                       Foreground="{DynamicResource XnTextBrush}" TextWrapping="Wrap" TextAlignment="Center" />
             <TextBlock x:Name="FallbackUrl" HorizontalAlignment="Center" FontSize="12"
-                       Foreground="{StaticResource XnTextDimBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+                       Foreground="{DynamicResource XnTextDimBrush}" TextWrapping="Wrap" TextAlignment="Center" />
             <Button Classes="flat" HorizontalAlignment="Center" Click="OpenInBrowser_Click">
               <StackPanel Orientation="Horizontal" Spacing="8">
-                <PathIcon Classes="rivet" Data="{StaticResource IconExternal}" Width="14" Height="14" Foreground="{StaticResource XnTextBrush}" />
+                <PathIcon Classes="rivet" Data="{StaticResource IconExternal}" Width="14" Height="14" Foreground="{DynamicResource XnTextBrush}" />
                 <TextBlock x:Name="FallbackOpenText" Text="Open in browser" VerticalAlignment="Center" />
               </StackPanel>
             </Button>

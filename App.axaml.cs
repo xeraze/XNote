@@ -18,6 +18,7 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        Utils.ThemeService.ApplyFromSettings();
         WarmUpFonts();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

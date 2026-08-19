@@ -7,7 +7,7 @@
   <UserControl.Resources>
     <StreamGeometry x:Key="IconCloseMini">M 10.586,2.086 L 8,4.672 L 5.414,2.086 L 4,3.5 L 6.586,6.086 L 4,8.672 L 5.414,10.086 L 8,7.5 L 10.586,10.086 L 12,8.672 L 9.414,6.086 L 12,3.5 Z</StreamGeometry>
   </UserControl.Resources>
-  <Grid Background="{StaticResource XnPanelBrush}"
+  <Grid Background="{DynamicResource XnPanelBrush}"
         RowDefinitions="Auto,Auto,Auto,*">
 
       <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" Margin="10,10,10,6">
@@ -32,7 +32,7 @@
           <Button x:Name="CustomEmojiBtn" Classes="filtertab active" Padding="10,3" FontSize="11" Content="{Binding CustomEmojiCategory}" Click="CustomEmojiBtn_Click" />
           <Button x:Name="CustomSymbolsBtn" Classes="filtertab" Padding="10,3" FontSize="11" Content="{Binding CustomSymbolsCategory}" Click="CustomSymbolsBtn_Click" />
         </StackPanel>
-        <TextBlock x:Name="CustomHintText" Text="{Binding CustomFormatsHint}" FontSize="10" TextWrapping="Wrap" Foreground="{StaticResource XnTextFaintBrush}" />
+        <TextBlock x:Name="CustomHintText" Text="{Binding CustomFormatsHint}" FontSize="10" TextWrapping="Wrap" Foreground="{DynamicResource XnTextFaintBrush}" />
         <TextBlock x:Name="CustomErrorText" Text="" FontSize="10" TextWrapping="Wrap" Foreground="#B33030" IsVisible="False" />
       </StackPanel>
 
@@ -71,6 +71,6 @@
 
       <TextBlock x:Name="CustomEmptyLabel" Grid.Row="3" IsVisible="False"
                  HorizontalAlignment="Center" VerticalAlignment="Center"
-                 Foreground="{StaticResource XnTextFaintBrush}" FontSize="12" />
+                 Foreground="{DynamicResource XnTextFaintBrush}" FontSize="12" />
   </Grid>
 </UserControl>

@@ -41,11 +41,72 @@ public class MainVM : ViewModel
     private int _savingDots = 0;
 
     private bool _isSettingsOpen;
+    private string _appliedThemePresetId = ThemeService.DefaultPresetId;
+    private int _appliedCustomHue = 180;
+    private string _previewThemePresetId = ThemeService.DefaultPresetId;
+    private int _previewCustomHue = 180;
+
     public bool IsSettingsOpen
     {
         get => _isSettingsOpen;
-        set => SetField(ref _isSettingsOpen, value);
+        set
+        {
+            if (value && !_isSettingsOpen)
+                BeginThemePreview();
+            else if (!value && _isSettingsOpen && HasThemeChanges)
+                RevertThemePreview();
+
+            SetField(ref _isSettingsOpen, value);
+        }
     }
+
+    public IReadOnlyList<ThemePresetOption> ThemePresets { get; } =
+        ThemeService.Presets.Select(p => new ThemePresetOption(p)).ToList();
+
+    public string PreviewThemePresetId
+    {
+        get => _previewThemePresetId;
+        set
+        {
+            if (!SetField(ref _previewThemePresetId, value)) return;
+            OnPropertyChanged(nameof(IsCustomThemeSelected));
+            OnPropertyChanged(nameof(HasThemeChanges));
+            ThemeService.Preview(_previewThemePresetId, _previewCustomHue);
+            ApplyThemeCommand.RaiseCanExecuteChanged();
+            CancelThemeCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    public int PreviewCustomHue
+    {
+        get => _previewCustomHue;
+        set
+        {
+            var normalized = ((value % 360) + 360) % 360;
+            if (!SetField(ref _previewCustomHue, normalized)) return;
+            OnPropertyChanged(nameof(CustomHuePreviewHex));
+            OnPropertyChanged(nameof(HasThemeChanges));
+            if (IsCustomThemeSelected)
+                ThemeService.Preview(ThemeService.CustomPresetId, normalized);
+            ApplyThemeCommand.RaiseCanExecuteChanged();
+            CancelThemeCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    public bool IsCustomThemeSelected =>
+        string.Equals(_previewThemePresetId, ThemeService.CustomPresetId, StringComparison.OrdinalIgnoreCase);
+
+    public string CustomHuePreviewHex =>
+        ThemeService.GetPalette(ThemeService.CustomPresetId, _previewCustomHue).PreviewHex;
+
+    public bool HasThemeChanges =>
+        !string.Equals(_previewThemePresetId, _appliedThemePresetId, StringComparison.OrdinalIgnoreCase)
+        || (_previewThemePresetId == ThemeService.CustomPresetId
+            && _previewCustomHue != _appliedCustomHue);
+
+    public RelayCommand<string?> SelectThemePresetCommand { get; }
+    public RelayCommand ApplyThemeCommand { get; }
+    public RelayCommand CancelThemeCommand { get; }
 
     public UiStrings Ui => Utils.Ui.Strings;
 
@@ -213,6 +274,46 @@ public class MainVM : ViewModel
     public RelayCommand DismissUndoCommand { get; }
     public RelayCommand ToggleSettingsCommand { get; }
 
+    private void BeginThemePreview()
+    {
+        (_appliedThemePresetId, _appliedCustomHue) = ThemeService.CaptureApplied();
+        _previewThemePresetId = _appliedThemePresetId;
+        _previewCustomHue = _appliedCustomHue;
+        OnPropertyChanged(nameof(PreviewThemePresetId));
+        OnPropertyChanged(nameof(PreviewCustomHue));
+        OnPropertyChanged(nameof(IsCustomThemeSelected));
+        OnPropertyChanged(nameof(CustomHuePreviewHex));
+        OnPropertyChanged(nameof(HasThemeChanges));
+    }
+
+    private void RevertThemePreview()
+    {
+        ThemeService.Restore(_appliedThemePresetId, _appliedCustomHue);
+        _previewThemePresetId = _appliedThemePresetId;
+        _previewCustomHue = _appliedCustomHue;
+        OnPropertyChanged(nameof(PreviewThemePresetId));
+        OnPropertyChanged(nameof(PreviewCustomHue));
+        OnPropertyChanged(nameof(IsCustomThemeSelected));
+        OnPropertyChanged(nameof(CustomHuePreviewHex));
+        OnPropertyChanged(nameof(HasThemeChanges));
+        ApplyThemeCommand.RaiseCanExecuteChanged();
+        CancelThemeCommand.RaiseCanExecuteChanged();
+    }
+
+    private void ApplyTheme()
+    {
+        ThemeService.Commit(_previewThemePresetId, _previewCustomHue);
+        (_appliedThemePresetId, _appliedCustomHue) = ThemeService.CaptureApplied();
+        OnPropertyChanged(nameof(HasThemeChanges));
+        ApplyThemeCommand.RaiseCanExecuteChanged();
+        CancelThemeCommand.RaiseCanExecuteChanged();
+    }
+
+    private void CancelTheme()
+    {
+        RevertThemePreview();
+    }
+
     public MainVM() : this(new Notes())
     {
     }
@@ -238,6 +339,13 @@ public class MainVM : ViewModel
         UndoDeleteCommand = new RelayCommand(UndoDelete);
         DismissUndoCommand = new RelayCommand(DismissUndo);
         ToggleSettingsCommand = new RelayCommand(() => IsSettingsOpen = !IsSettingsOpen);
+        SelectThemePresetCommand = new RelayCommand<string?>(id =>
+        {
+            if (string.IsNullOrWhiteSpace(id)) return;
+            PreviewThemePresetId = id;
+        });
+        ApplyThemeCommand = new RelayCommand(ApplyTheme, () => HasThemeChanges);
+        CancelThemeCommand = new RelayCommand(CancelTheme, () => HasThemeChanges);
 
         _saveDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
         _saveDebounceTimer.Tick += (_, _) =>
@@ -254,6 +362,10 @@ public class MainVM : ViewModel
         _expiryTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         _expiryTimer.Tick += (_, _) => CheckTimedNotes();
         _expiryTimer.Start();
+
+        (_appliedThemePresetId, _appliedCustomHue) = ThemeService.CaptureApplied();
+        _previewThemePresetId = _appliedThemePresetId;
+        _previewCustomHue = _appliedCustomHue;
 
         LoadFromDisk();
     }

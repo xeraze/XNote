@@ -15,6 +15,7 @@ A lightweight desktop notes app for Windows. Everything stays on your machine �
 - **Custom emoji editor** — draw a symbol or an emoji and insert it anywhere in a note
 - **Tray** — minimize to the system tray; app keeps running in the background
 - **Import / export** — bring in `.txt` files or save note text out
+- **Themes** — light preset themes and custom hue with live preview
 - **English & Russian** UI (switch in Settings)
 
 Data is stored locally in your Windows profile (`%AppData%\XNote`).
@@ -39,4 +40,4 @@ Open source · LICENSED
 
 ---
 
-*v0.9 · developed by xeraze*
+*v1.0 · developed by xeraze*

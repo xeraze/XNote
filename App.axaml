@@ -33,16 +33,16 @@
     <Color x:Key="XnAccentColor">#000000</Color>
     <Color x:Key="XnDoneColor">#A3A3A3</Color>
 
-    <SolidColorBrush x:Key="XnBlackBrush" Color="{StaticResource XnBlackColor}" />
-    <SolidColorBrush x:Key="XnPanelBrush" Color="{StaticResource XnPanelColor}" />
-    <SolidColorBrush x:Key="XnPanelAltBrush" Color="{StaticResource XnPanelAltColor}" />
-    <SolidColorBrush x:Key="XnBorderBrush" Color="{StaticResource XnBorderColor}" />
-    <SolidColorBrush x:Key="XnBorderSubtleBrush" Color="{StaticResource XnBorderSubtleColor}" />
-    <SolidColorBrush x:Key="XnTextBrush" Color="{StaticResource XnTextColor}" />
-    <SolidColorBrush x:Key="XnTextDimBrush" Color="{StaticResource XnTextDimColor}" />
-    <SolidColorBrush x:Key="XnTextFaintBrush" Color="{StaticResource XnTextFaintColor}" />
-    <SolidColorBrush x:Key="XnAccentBrush" Color="{StaticResource XnAccentColor}" />
-    <SolidColorBrush x:Key="XnDoneBrush" Color="{StaticResource XnDoneColor}" />
+    <SolidColorBrush x:Key="XnBlackBrush" Color="{DynamicResource XnBlackColor}" />
+    <SolidColorBrush x:Key="XnPanelBrush" Color="{DynamicResource XnPanelColor}" />
+    <SolidColorBrush x:Key="XnPanelAltBrush" Color="{DynamicResource XnPanelAltColor}" />
+    <SolidColorBrush x:Key="XnBorderBrush" Color="{DynamicResource XnBorderColor}" />
+    <SolidColorBrush x:Key="XnBorderSubtleBrush" Color="{DynamicResource XnBorderSubtleColor}" />
+    <SolidColorBrush x:Key="XnTextBrush" Color="{DynamicResource XnTextColor}" />
+    <SolidColorBrush x:Key="XnTextDimBrush" Color="{DynamicResource XnTextDimColor}" />
+    <SolidColorBrush x:Key="XnTextFaintBrush" Color="{DynamicResource XnTextFaintColor}" />
+    <SolidColorBrush x:Key="XnAccentBrush" Color="{DynamicResource XnAccentColor}" />
+    <SolidColorBrush x:Key="XnDoneBrush" Color="{DynamicResource XnDoneColor}" />
   </Application.Resources>
 
 </Application>

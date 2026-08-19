@@ -13,8 +13,8 @@
     <StreamGeometry x:Key="IconHourglass">M3,0 H13 V2.2 L9.2,6.5 V9.5 L13,13.8 V16 H3 V13.8 L6.8,9.5 V6.5 L3,2.2 Z M4.6,1.4 V1.9 L7.3,5.2 H8.7 L11.4,1.9 V1.4 Z M4.6,14.6 H11.4 V14.1 L8.7,10.8 H7.3 L4.6,14.1 Z</StreamGeometry>
   </Window.Resources>
 
-  <Border Background="{StaticResource XnPanelBrush}"
-          BorderBrush="{StaticResource XnBorderBrush}"
+  <Border Background="{DynamicResource XnPanelBrush}"
+          BorderBrush="{DynamicResource XnBorderBrush}"
           BorderThickness="1"
           CornerRadius="8"
           BoxShadow="0 4 20 0 #40000000"
@@ -23,28 +23,28 @@
       <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" Margin="0,0,0,6">
         <Panel Width="12" Height="12">
           <PathIcon Classes="rivet" Data="{StaticResource IconBell}" Width="12" Height="12"
-                    Foreground="{StaticResource XnTextDimBrush}"
+                    Foreground="{DynamicResource XnTextDimBrush}"
                     IsVisible="{Binding !IsTimed}" />
           <PathIcon Classes="rivet" Data="{StaticResource IconHourglass}" Width="12" Height="12"
-                    Foreground="{StaticResource XnTextDimBrush}"
+                    Foreground="{DynamicResource XnTextDimBrush}"
                     IsVisible="{Binding IsTimed}" />
         </Panel>
         <TextBlock Text="{Binding NotificationKindLabel}" FontSize="11"
-                   Foreground="{StaticResource XnTextFaintBrush}" FontWeight="Medium" />
+                   Foreground="{DynamicResource XnTextFaintBrush}" FontWeight="Medium" />
       </StackPanel>
 
       <StackPanel Grid.Row="1" Spacing="4">
         <TextBlock x:Name="TitleText" Text="{Binding Title}" FontSize="14" FontWeight="Medium"
-                   Foreground="{StaticResource XnTextBrush}" TextTrimming="CharacterEllipsis" />
+                   Foreground="{DynamicResource XnTextBrush}" TextTrimming="CharacterEllipsis" />
         <TextBlock x:Name="MessageText" Text="{Binding NotificationMessage}" FontSize="11"
-                   Foreground="{StaticResource XnTextDimBrush}"
+                   Foreground="{DynamicResource XnTextDimBrush}"
                    TextWrapping="Wrap" />
       </StackPanel>
 
       <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,12,0,0">
         <Button Classes="flat" Content="{Binding Ui.Dismiss}" FontSize="12" Padding="12,6" Click="Dismiss_Click" />
         <Button x:Name="OpenNoteButton" Content="{Binding Ui.OpenNote}" FontSize="12" Padding="12,6" Click="OpenNote_Click"
-                Background="{StaticResource XnTextBrush}" Foreground="{StaticResource XnBlackBrush}" CornerRadius="4" />
+                Background="{DynamicResource XnTextBrush}" Foreground="{DynamicResource XnBlackBrush}" CornerRadius="4" />
       </StackPanel>
     </Grid>
   </Border>

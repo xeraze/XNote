@@ -14,16 +14,16 @@
   <Window.Styles>
     <Style Selector="Button.flat">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderBrush" Value="{StaticResource XnBorderBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource XnBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Foreground" Value="{StaticResource XnTextBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource XnTextBrush}" />
       <Setter Property="Padding" Value="12,6" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="FontSize" Value="13" />
     </Style>
     <Style Selector="Button.flat:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{StaticResource XnPanelAltBrush}" />
+      <Setter Property="Background" Value="{DynamicResource XnPanelAltBrush}" />
     </Style>
     <Style Selector="CalendarDatePicker /template/ TextBox#PART_TextBox">
       <Setter Property="IsReadOnly" Value="True" />
@@ -31,8 +31,8 @@
     </Style>
   </Window.Styles>
 
-  <Border Background="{StaticResource XnPanelBrush}"
-          BorderBrush="{StaticResource XnBorderBrush}"
+  <Border Background="{DynamicResource XnPanelBrush}"
+          BorderBrush="{DynamicResource XnBorderBrush}"
           BorderThickness="1"
           CornerRadius="10"
           BoxShadow="0 8 28 0 #33000000"
@@ -41,15 +41,15 @@
     <Grid RowDefinitions="Auto,*,Auto">
       <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,12">
         <TextBlock Text="{Binding Ui.SetupTitle}" FontSize="16" FontWeight="SemiBold"
-                   Foreground="{StaticResource XnTextBrush}" />
+                   Foreground="{DynamicResource XnTextBrush}" />
         <TextBlock Text="{Binding Ui.SetupSubtitle}"
                    FontSize="12" TextWrapping="Wrap"
-                   Foreground="{StaticResource XnTextDimBrush}" />
+                   Foreground="{DynamicResource XnTextDimBrush}" />
       </StackPanel>
 
       <StackPanel Grid.Row="1" Spacing="10">
         <TextBlock Text="{Binding Ui.ExpiryDate}" FontSize="10"
-                   Foreground="{StaticResource XnTextFaintBrush}" />
+                   Foreground="{DynamicResource XnTextFaintBrush}" />
         <CalendarDatePicker SelectedDate="{Binding PendingDate, Mode=TwoWay}"
                             DisplayDate="{Binding MinSelectableDate}"
                             DisplayDateStart="{Binding MinSelectableDate}"
@@ -57,21 +57,21 @@
                             HorizontalAlignment="Stretch" />
         <TextBlock Text="{Binding YearRangeText}"
                    FontSize="11"
-                   Foreground="{StaticResource XnTextFaintBrush}" />
+                   Foreground="{DynamicResource XnTextFaintBrush}" />
 
         <TextBlock Text="{Binding Ui.ExpiryTime}" FontSize="10" Margin="0,4,0,0"
-                   Foreground="{StaticResource XnTextFaintBrush}" />
+                   Foreground="{DynamicResource XnTextFaintBrush}" />
         <TimePicker SelectedTime="{Binding PendingTime, Mode=TwoWay}"
                     HorizontalAlignment="Stretch" />
 
-        <Border Background="{StaticResource XnPanelAltBrush}"
-                BorderBrush="{StaticResource XnBorderSubtleBrush}"
+        <Border Background="{DynamicResource XnPanelAltBrush}"
+                BorderBrush="{DynamicResource XnBorderSubtleBrush}"
                 BorderThickness="1"
                 CornerRadius="8"
                 Padding="10"
                 Margin="0,6,0,0">
           <TextBlock FontSize="11" TextWrapping="Wrap"
-                     Foreground="{StaticResource XnTextDimBrush}"
+                     Foreground="{DynamicResource XnTextDimBrush}"
                      Text="{Binding Ui.SetupConfirmInfo}" />
         </Border>
       </StackPanel>
@@ -81,8 +81,8 @@
         <Button Classes="flat" Content="{Binding Ui.Cancel}" Click="Cancel_Click" />
         <Button Content="{Binding Ui.Confirm}"
                 Click="Confirm_Click"
-                Background="{StaticResource XnTextBrush}"
-                Foreground="{StaticResource XnBlackBrush}"
+                Background="{DynamicResource XnTextBrush}"
+                Foreground="{DynamicResource XnBlackBrush}"
                 CornerRadius="6"
                 Padding="14,6" />
       </StackPanel>

@@ -4,7 +4,7 @@
              x:Class="XNote.Views.GifPicker"
              x:CompileBindings="False"
              Width="340" Height="380">
-  <Grid Background="{StaticResource XnPanelBrush}"
+  <Grid Background="{DynamicResource XnPanelBrush}"
         RowDefinitions="Auto,*">
 
       <TextBox x:Name="SearchBox" Grid.Row="0" Margin="10,10,10,8" Height="30" FontSize="12"
@@ -31,7 +31,7 @@
 
         <TextBlock x:Name="StatusLabel" IsVisible="False"
                    HorizontalAlignment="Center" VerticalAlignment="Center"
-                   Foreground="{StaticResource XnTextFaintBrush}" FontSize="12"
+                   Foreground="{DynamicResource XnTextFaintBrush}" FontSize="12"
                    TextWrapping="Wrap" TextAlignment="Center" MaxWidth="240" />
       </Grid>
   </Grid>

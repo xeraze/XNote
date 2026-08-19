@@ -7,7 +7,7 @@
         CanResize="False"
         WindowDecorations="None"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource XnBlackBrush}"
+        Background="{DynamicResource XnBlackBrush}"
         ShowInTaskbar="True">
 
   <Window.Styles>
@@ -17,7 +17,7 @@
   </Window.Styles>
 
   <Border Name="RootBorder"
-          Background="{StaticResource XnBlackBrush}"
+          Background="{DynamicResource XnBlackBrush}"
           Opacity="0">
     <Border.Transitions>
       <Transitions>
@@ -30,28 +30,28 @@
       <Viewbox Grid.Row="1" Width="88" Height="88" HorizontalAlignment="Center">
         <Canvas Width="100" Height="100">
           <Path Fill="Transparent"
-                Stroke="{StaticResource XnAccentBrush}"
+                Stroke="{DynamicResource XnAccentBrush}"
                 StrokeThickness="3"
                 Data="M 20,10 L 68,10 L 90,32 L 90,90 L 20,90 Z" />
-          <Path Fill="{StaticResource XnPanelBrush}"
-                Stroke="{StaticResource XnAccentBrush}"
+          <Path Fill="{DynamicResource XnPanelBrush}"
+                Stroke="{DynamicResource XnAccentBrush}"
                 StrokeThickness="3"
                 Data="M 68,10 L 68,32 L 90,32 Z" />
-          <Line StartPoint="34,46" EndPoint="76,46" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="3" />
-          <Line StartPoint="34,60" EndPoint="76,60" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="3" />
-          <Line StartPoint="34,74" EndPoint="60,74" Stroke="{StaticResource XnTextDimBrush}" StrokeThickness="3" />
+          <Line StartPoint="34,46" EndPoint="76,46" Stroke="{DynamicResource XnTextDimBrush}" StrokeThickness="3" />
+          <Line StartPoint="34,60" EndPoint="76,60" Stroke="{DynamicResource XnTextDimBrush}" StrokeThickness="3" />
+          <Line StartPoint="34,74" EndPoint="60,74" Stroke="{DynamicResource XnTextDimBrush}" StrokeThickness="3" />
         </Canvas>
       </Viewbox>
 
       <StackPanel Grid.Row="3" HorizontalAlignment="Center" Margin="0,28,0,40" Spacing="10">
         <TextBlock Text="XNote"
-                   Foreground="{StaticResource XnAccentBrush}"
+                   Foreground="{DynamicResource XnAccentBrush}"
                    FontFamily="avares://XNote/Assets/Fonts/Battley.otf#Battley"
                    FontSize="100"
                    HorizontalAlignment="Center" />
         <TextBlock Name="StatusText"
                    Text="loading"
-                   Foreground="{StaticResource XnTextFaintBrush}"
+                   Foreground="{DynamicResource XnTextFaintBrush}"
                    FontSize="12"
                    LetterSpacing="2"
                    HorizontalAlignment="Center" />
